@@ -1,0 +1,82 @@
+[project]
+name = "glatasks"
+dynamic = ["version"]
+requires-python = ">=3.13,<4.0"
+dependencies = [
+    "alembic",
+    "asyncmy",
+    "bcrypt",
+    "better-exceptions",
+    "hypercorn",
+    "pandas",
+    "pycryptodome",
+    "python-dotenv>=1.1.0",
+    "pytilpack[all]>=1.20.0",
+    "quart",
+    "quart-auth",
+    "quart-flask-patch",
+    "quart-schema",
+    "sqlalchemy[asyncio]",
+]
+
+[dependency-groups]
+dev = [
+    "aiosqlite",
+    "pyfltr",
+    "pytest-asyncio",
+    "types-pyyaml",
+    "types-requests",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+pytilpack = { git = "https://github.com/ak110/pytilpack.git" }
+
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.pyfltr]
+pyupgrade-args = ["--py313-plus"]
+pylint-args = ["--jobs=4"]
+extend-exclude = ["data"]
+
+[tool.isort]
+# https://black.readthedocs.io/en/stable/guides/using_black_with_other_tools.html#isort
+# https://pycqa.github.io/isort/docs/configuration/options.html
+profile = "black"
+
+[tool.black]
+# https://black.readthedocs.io/en/stable/usage_and_configuration/the_basics.html
+target-version = ['py313']
+skip-magic-trailing-comma = true
+
+[tool.flake8]
+# https://black.readthedocs.io/en/stable/guides/using_black_with_other_tools.html#flake8
+# https://flake8.pycqa.org/en/latest/user/configuration.html
+max-line-length = 128
+extend-ignore = "E203,"
+
+[tool.mypy]
+# https://mypy.readthedocs.io/en/stable/config_file.html
+allow_redefinition = true
+check_untyped_defs = true
+ignore_missing_imports = true
+strict_optional = true
+strict_equality = true
+warn_no_return = true
+warn_redundant_casts = true
+warn_unused_configs = true
+show_error_codes = true
+plugins = ["sqlalchemy.ext.mypy.plugin"]
+
+[tool.pytest.ini_options]
+# https://docs.pytest.org/en/latest/reference/reference.html#ini-options-ref
+addopts = "--showlocals -p no:cacheprovider"
+asyncio_mode = "strict"
+asyncio_default_fixture_loop_scope = "session"

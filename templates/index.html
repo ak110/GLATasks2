@@ -1,0 +1,205 @@
+{% extends "_layout.html" %}
+
+{% block title %}
+  {{ helpers.get_title() }}
+{% endblock %}
+
+{% block head %}
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="GLATasks" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.webmanifest') }}" />
+{% endblock %}
+
+{% block body %}
+  <span id="lists-data" class="d-none">{{ helpers.encryptObject(lists) }}</span>
+  <div
+    x-data='{
+      lists: globalThis.decryptObject(document.querySelector("#lists-data").innerText),
+      show_type: {{ show_type | tojson }},
+    }'
+  >
+    <div class="row mt-3 mb-3">
+      <div class="col-3">
+        {# 左ペイン #}
+        <div class="list-group list-group-flush" role="tablist" aria-label="タスクリスト">
+          <template x-for="(list_, index) in lists" :key="list_.id">
+            <a
+              class="list-group-item list-group-item-action"
+              :class="index == 0 ? 'active' : ''"
+              :href="`#list-${list_.id}`"
+              data-bs-toggle="pill"
+              role="tab"
+              :aria-controls="`list-${list_.id}`"
+              x-text="list_.title"
+            ></a>
+          </template>
+          <div class="list-group-item">
+            {# リスト追加 #}
+            <form action="{{ url_for('lists.post') }}" method="post" class="input-group">
+              <input type="hidden" name="nonce" value="{{ csrf_token() }}" />
+              <input type="text" name="title" class="form-control form-control-sm" required />
+              <button type="button" class="submitButton btn btn-sm btn-primary">追加</button>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="col-9 tab-content">
+        {# 右ペイン #}
+        <template x-for="(list_, index) in lists" :key="list_.id">
+          <div
+            :id="`list-${list_.id}`"
+            class="tab-pane fade"
+            :class="index == 0 ? 'show active' : ''"
+            role="tabpanel"
+            :aria-labelledby="`list-${list_.id}-tab`"
+          >
+            <div class="row mb-3">
+              <div class="col-12 text-end">
+                <div class="btn-group">
+                  <a class="btn btn-sm btn-outline-primary" href="{{ url_for('main.index') }}">再読み込み</a>
+                </div>
+                <div class="btn-group">
+                  <form :action="`{{ url_for('lists.clear', list_id=-9999) }}`.replace('-9999', list_.id)" method="post">
+                    <input type="hidden" name="nonce" value="{{ csrf_token() }}" />
+                    <button type="button" class="submitButton btn btn-sm btn-outline-warning">完了済みを非表示化</button>
+                  </form>
+                </div>
+                <div class="btn-group">
+                  <a
+                    class="btn btn-sm btn-outline-secondary {{ 'active' if show_type == 'list' else '' }}"
+                    href="{{ url_for('main.index', show_type='list') }}"
+                    >リスト</a
+                  >
+                  <a
+                    class="btn btn-sm btn-outline-secondary {{ 'active' if show_type == 'hidden' else '' }}"
+                    href="{{ url_for('main.index', show_type='hidden') }}"
+                    >非表示済みを表示</a
+                  >
+                  <a
+                    class="btn btn-sm btn-outline-secondary {{ 'active' if show_type == 'all' else '' }}"
+                    href="{{ url_for('main.index', show_type='all') }}"
+                    >全て表示</a
+                  >
+                </div>
+              </div>
+            </div>
+
+            <form
+              :action="`{{ url_for('tasks.post', list_id=-9999) }}`.replace('-9999', list_.id)"
+              method="post"
+              class="taskPostForm mb-3 text-end"
+            >
+              <input type="hidden" name="nonce" value="{{ csrf_token() }}" />
+              <textarea name="text" class="form-control form-control-sm" rows="1"></textarea>
+              <button type="button" class="submitButton btn btn-sm btn-primary" style="display: none;">追加</button>
+            </form>
+
+            <ul class="list-group mb-3">
+              <template x-for="(task, index) in list_.tasks" :key="task.id">
+                <template
+                  x-if="['needsAction', 'completed'].includes(task.status) === (show_type == 'list') || show_type == 'all'"
+                >
+                  <li
+                    :id="task.id"
+                    :data-list-id="list_.id"
+                    class="list-group-item taskItem"
+                    :class="task.status == 'needsAction' ? '' : 'taskCompleted'"
+                  >
+                    <input type="checkbox" :checked="task.status !== 'needsAction'" />
+                    <span class="editButton">編集</span>
+
+                    <span class="title" x-text="task.title"></span><br />
+                    <small class="notes text-muted" style="white-space: pre-wrap;" x-text="task.notes.trim()"></small>
+                  </li>
+                </template>
+              </template>
+            </ul>
+
+            <details class="mt-5">
+              <summary>リスト操作</summary>
+              {# リストリネーム #}
+              <form
+                :action="`{{ url_for('lists.rename', list_id=-9999) }}`.replace('-9999', list_.id)"
+                method="post"
+                class="input-group"
+              >
+                <input type="hidden" name="nonce" value="{{ csrf_token() }}" />
+                <input type="text" name="title" :value="list_.title" class="form-control form-control-sm" required />
+                <button
+                  type="button"
+                  class="submitButton btn btn-sm btn-primary"
+                  data-confirm="リストの名前を変更します。よろしいですか?"
+                >
+                  リネーム
+                </button>
+              </form>
+              {# リスト非表示化 #}
+              <form :action="`{{ url_for('lists.hide', list_id=-9999) }}`.replace('-9999', list_.id)" method="post">
+                <input type="hidden" name="nonce" value="{{ csrf_token() }}" />
+                <div class="text-end">
+                  <button
+                    type="button"
+                    class="submitButton btn btn-sm btn-danger"
+                    data-confirm="リストを非表示化します。よろしいですか?"
+                  >
+                    非表示化
+                  </button>
+                </div>
+              </form>
+              {# リスト削除 #}
+              <form :action="`{{ url_for('lists.delete', list_id=-9999) }}`.replace('-9999', list_.id)" method="post">
+                <input type="hidden" name="nonce" value="{{ csrf_token() }}" />
+                <div class="text-end">
+                  <button
+                    type="button"
+                    class="submitButton btn btn-sm btn-danger"
+                    data-confirm="リストと関連するタスクを全て削除します。よろしいですか?"
+                  >
+                    削除
+                  </button>
+                </div>
+              </form>
+            </details>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <form id="tasks_patch_form" action="." method="post">
+      <input type="hidden" name="nonce" value="{{ csrf_token() }}" />
+      <div class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">タスクの編集</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div class="form-group">
+                <textarea name="text" class="form-control form-control-sm" rows="10"></textarea>
+              </div>
+              <div class="form-group">
+                <select name="move_to" class="form-control">
+                  <template x-for="(list_, index) in lists" :key="list_.id">
+                    <template x-if='list_.status !== "hidden"'>
+                      <option :value="list_.id" x-text="list_.title"></option>
+                    </template>
+                  </template>
+                </select>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-primary">保存</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+{% endblock %}
+
+{% block foot %}
+  <script nonce="{{ g.script_nonce }}"></script>
+{% endblock %}

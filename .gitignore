@@ -1,0 +1,10 @@
+.cache
+.env
+.local
+.npm
+.pnpm-store
+.venv
+/compose.override.yaml
+/data
+/dist
+/node_modules

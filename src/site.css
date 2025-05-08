@@ -1,0 +1,35 @@
+.list-group-item {
+  word-break: break-all;
+}
+.taskCompleted {
+  text-decoration: line-through;
+}
+.taskItem > input[type="checkbox"] {
+  transform: scale(2);
+  margin-right: 0.5em;
+}
+.editButton {
+  float: right;
+  color: #007bff;
+  border: solid 1px #007bff;
+  border-radius: 0.2rem;
+  padding: 0.1rem 0.2rem;
+  font-size: 0.3rem;
+  line-height: 1.5;
+  margin: 0.2rem;
+  user-select: none;
+}
+.editButton:hover {
+  color: #ffffff;
+  background-color: #007bff;
+  cursor: pointer;
+}
+
+.onlyPWA {
+  display: none;
+}
+@media (display-mode: standalone) {
+  .onlyPWA {
+    display: block;
+  }
+}

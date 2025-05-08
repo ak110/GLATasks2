@@ -1,0 +1,53 @@
+{% extends "_layout.html" %}
+
+{% block title %}
+  {{ helpers.get_title() }}
+{% endblock %}
+
+{% block head %}
+{% endblock %}
+
+{% block body %}
+  <span id="lists-data" class="d-none">{{ helpers.encryptObject(lists) }}</span>
+  <div
+    class="row mt-3 mb-3"
+    x-data='{
+      lists: globalThis.decryptObject(document.querySelector("#lists-data").innerText),
+    }'
+  >
+    <div class="col">
+      <form
+        action="."
+        data-url="{{ url_for('tasks.post', list_id=":list_id:") }}"
+        method="post"
+        class="taskPostForm mb-3 text-right"
+      >
+        <input type="hidden" name="nonce" value="{{ csrf_token() }}" />
+        <textarea name="text" class="form-control" rows="10"></textarea>
+        <select class="form-control listSelector">
+          <template x-for="list_ in lists" :key="list_.id">
+            <option :value="list_.id" x-text="list_.title"></option>
+          </template>
+        </select>
+        <button type="submit" class="btn btn-primary">追加</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}
+
+{% block foot %}
+  <script nonce="{{ g.script_nonce }}">
+    $(function () {
+      $(".taskPostForm").on("submit", function () {
+        const form = $(this)
+        const listId = form.find(".listSelector").val()
+        form.attr("action", form.attr("data-url").replace(":list_id:", listId))
+      })
+
+      const intent = window.intent || window.webkitIntent
+      if (intent && intent.data) {
+        $('.taskPostForm [name="text"]').val(intent.data)
+      }
+    })
+  </script>
+{% endblock %}

@@ -1,0 +1,42 @@
+---
+services:
+  devserver:
+    image: node:lts
+    restart: always
+    command: >
+      bash -xc '
+        mkdir -p ~/.local/bin &&\
+        corepack enable --install-directory ~/.local/bin &&\
+        export PATH=~/.local/bin:$$PNPM_HOME:$$PATH &&\
+        pnpm install &&\
+        exec pnpm run build:watch
+      '
+    user: ${UID}:${GID}
+    environment:
+      - HOME=/usr/src/app
+      - PNPM_HOME=/usr/src/app/.local/share/pnpm
+    volumes:
+      - ${PWD}:/usr/src/app
+    working_dir: /usr/src/app
+    networks:
+      - network
+
+  app:
+    build:
+      context: ./docker
+    restart: always
+    volumes:
+      - ${PWD}:/usr/src/app
+    environment:
+      - SQLALCHEMY_DATABASE_URI=mysql+asyncmy://glatasks:glatasks@db/glatasks?charset=utf8mb4
+    networks:
+      - network
+    logging:
+      options:
+        max-size: "1m"
+        max-file: "3"
+    depends_on:
+      db:
+        condition: service_healthy
+      devserver:
+        condition: service_started

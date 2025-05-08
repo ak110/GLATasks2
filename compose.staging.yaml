@@ -1,0 +1,18 @@
+---
+services:
+  app:
+    image: ghcr.io/ak110/glatasks:latest
+    restart: always
+    volumes:
+      - ${PWD}:/usr/src/app
+    environment:
+      - SQLALCHEMY_DATABASE_URI=mysql+asyncmy://glatasks:glatasks@db/glatasks?charset=utf8mb4
+    networks:
+      - network
+    logging:
+      options:
+        max-size: "1m"
+        max-file: "3"
+    depends_on:
+      db:
+        condition: service_healthy
