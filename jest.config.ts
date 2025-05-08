@@ -2,11 +2,13 @@ import type { Config } from "jest"
 
 const config: Config = {
   preset: "ts-jest/presets/default-esm",
-  testEnvironment: "jsdom", // ブラウザ向け想定
+  // TestEnvironment: "jsdom", // ブラウザ向け想定
+  testEnvironment: "node",
+  setupFiles: ["<rootDir>/appjs/jest.setup.ts"],
   moduleNameMapper: {
     "^(\\.{1,2}/.*)\\.js$": "$1", // eslint-disable-line @typescript-eslint/naming-convention
   },
-  moduleDirectories: ["node_modules", "src"],
+  moduleDirectories: ["node_modules", "appjs"],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json"],
   extensionsToTreatAsEsm: [".ts", ".tsx"],
   transform: {

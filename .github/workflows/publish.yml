@@ -32,7 +32,7 @@ jobs:
           context: ./docker
           file: ./docker/Dockerfile
           push: true
-          tags: ghcr.io/ak110/glatasks:latest
+          tags: ghcr.io/ak110/glatasks2:latest
 
   deploy:
     needs: build-and-push
@@ -49,4 +49,4 @@ jobs:
           ssh-keyscan -p 22 aws.tqzh.tk >> ~/.ssh/known_hosts
 
       - name: Deploy to aws.tqzh.tk
-        run: ssh ubuntu@aws.tqzh.tk "cd glatasks && git pull && make deploy"
+        run: ssh ubuntu@aws.tqzh.tk "cd glatasks && make sync deploy"

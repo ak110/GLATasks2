@@ -40,3 +40,4 @@ repos:
         types: [python]
         require_serial: true
         language: system
+        include: ^app/

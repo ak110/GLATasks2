@@ -1,5 +1,28 @@
 ---
 services:
+  app:
+    build:
+      context: ./docker
+    restart: always
+    volumes:
+      - ${PWD}:/usr/src/app
+      - ${DATA_DIR}:${DATA_DIR}
+    working_dir: /usr/src/app/app
+    environment:
+      - SQLALCHEMY_DATABASE_URI=mysql+asyncmy://glatasks:glatasks@db/glatasks?charset=utf8mb4
+      - DATA_DIR=${DATA_DIR}
+    networks:
+      - network
+    logging:
+      options:
+        max-size: "1m"
+        max-file: "3"
+    depends_on:
+      db:
+        condition: service_healthy
+      devserver:
+        condition: service_started
+
   devserver:
     image: node:lts
     restart: always
@@ -20,23 +43,3 @@ services:
     working_dir: /usr/src/app
     networks:
       - network
-
-  app:
-    build:
-      context: ./docker
-    restart: always
-    volumes:
-      - ${PWD}:/usr/src/app
-    environment:
-      - SQLALCHEMY_DATABASE_URI=mysql+asyncmy://glatasks:glatasks@db/glatasks?charset=utf8mb4
-    networks:
-      - network
-    logging:
-      options:
-        max-size: "1m"
-        max-file: "3"
-    depends_on:
-      db:
-        condition: service_healthy
-      devserver:
-        condition: service_started

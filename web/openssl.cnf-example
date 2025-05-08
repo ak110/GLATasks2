@@ -1,0 +1,19 @@
+[ req ]
+default_bits = 2048
+prompt = no
+default_md = sha256
+distinguished_name = dn
+req_extensions = req_ext
+
+[ dn ]
+C = JP
+ST = TOKYO
+L = KITA
+O = tqzh.tk
+CN = glatasks.tqzh.tk
+
+[ req_ext ]
+subjectAltName = @alt_names
+
+[ alt_names ]
+DNS.1 = glatasks.tqzh.tk

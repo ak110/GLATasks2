@@ -3,16 +3,15 @@ services:
   web:
     image: nginx
     restart: always
-    command: /bin/bash -c "envsubst '$$NGINX_HOST' < /nginx.conf > /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"
     volumes:
-      - ./nginx.conf:/nginx.conf
+      - ./web/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./web/ssl:/etc/nginx/ssl
     environment:
       - TZ=Asia/Tokyo
-      - NGINX_HOST=app
     networks:
       - network
     ports:
-      - "38180:80"
+      - "38180:443"
     depends_on:
       - app
     logging:
@@ -24,7 +23,7 @@ services:
     image: mariadb:lts
     restart: always
     volumes:
-      - ${PWD}/data/mariadb:/var/lib/mysql
+      - ${DATA_DIR}/mariadb:/var/lib/mysql
       - ${PWD}/db/my.cnf:/etc/mysql/conf.d/my.cnf:ro
     environment:
       - TZ=Asia/Tokyo

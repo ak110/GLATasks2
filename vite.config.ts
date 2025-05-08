@@ -18,7 +18,7 @@ export default defineConfig({
     sourcemap: true,
     rollupOptions: {
       input: {
-        main: resolve(__dirname, "src/main.ts"),
+        main: resolve(__dirname, "appjs/main.ts"),
       },
       output: {
         entryFileNames: "js/[name].mjs",

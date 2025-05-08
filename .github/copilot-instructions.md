@@ -45,3 +45,7 @@ def test_yyy(tmp_path: pathlib.Path, x: str, expected: str) -> None:
 ```
 
 - テストコードの実行は `uv run pytest` で実行する
+
+## リリース手順
+
+- DEVELOPMENT.mdを参照

@@ -25,8 +25,22 @@ jobs:
       - name: Install dependencies
         run: uv sync --all-extras --dev
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install frontend dependencies
+        run: pnpm install
+
+      - name: Build frontend
+        run: pnpm run build
+
       - name: Test with pyfltr
-        run: uv run pyfltr *.py
+        run: uv run pyfltr app
 
       - name: Prune uv cache for CI
         run: uv cache prune --ci

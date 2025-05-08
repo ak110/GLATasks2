@@ -13,12 +13,11 @@
 
 ```bash
 docker compose up --detach db
-docker compose run --rm app flask db init
-docker compose run --rm app flask db migrate --message=""
-docker compose run --rm app flask db revision --message=""
-docker compose run --rm app flask db upgrade  # make db-upgrade
-docker compose run --rm app flask db downgrade  # make db-downgrade
-docker compose run --rm app flask db history  # make db-history
+docker compose run --rm app alembic init -t async migrations
+docker compose run --rm app alembic revision --autogenerate --message=""
+docker compose run --rm app alembic upgrade head
+docker compose run --rm app alembic downgrade -1
+docker compose run --rm app alembic history
 ```
 
 ## GitHub Actionsのデプロイ用SSHキー作成手順
@@ -47,8 +46,10 @@ GitHub に秘密鍵を登録:
 事前に`gh`コマンドをインストールし、`gh auth login`でログインしておく。
 
 1. 変更がコミット・プッシュ済みでアクションが成功していることを確認:
-   `git status ; gh run list --commit=$(git rev-parse HEAD)`
+  `git status ; gh run list --commit=$(git rev-parse HEAD)`
 2. 現在のバージョンの確認:
-   `git fetch --tags && git tag --sort=version:refname | tail -n1`
+  `git fetch --tags && git tag --sort=version:refname | tail -n1`
 3. GitHubでリリースを作成:
-   `gh release create --target=master --generate-notes v1.x.x`
+  `gh release create --target=master --generate-notes v1.x.x`
+4. リリースアクションの確認:
+  `gh run list --commit=$(git rev-parse HEAD)`

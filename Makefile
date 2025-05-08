@@ -9,7 +9,7 @@ export DOCKER_BUILDKIT=1
 export BETTER_EXCEPTIONS=1
 
 # pnpm実行用の共通コマンド
-RUN_NODE = docker run --rm \
+RUN_NODE = docker run --rm $(2) \
 	--volume=${PWD}:/usr/src/app \
 	--workdir=/usr/src/app \
 	--user=$(shell id -u):$(shell id -g) \
@@ -42,18 +42,18 @@ update:
 
 format:
 	-$(call RUN_NODE, pnpm run format)
-	-uv run pyfltr --exit-zero-even-if-formatted --commands=fast *.py
+	-uv run pyfltr --exit-zero-even-if-formatted --commands=fast app
 
 test:
 	$(call RUN_NODE, pnpm run format && pnpm run test && pnpm run build)
-	uv run pyfltr --exit-zero-even-if-formatted *.py
+	uv run pyfltr --exit-zero-even-if-formatted app
 
 build:
 	docker compose pull
 ifeq ($(COMPOSE_PROFILE), development)
 	docker compose --progress=plain build --pull
 else
-	$(call RUN_NODE, pnpm run build)
+	$(call RUN_NODE, pnpm install && pnpm run build)
 endif
 
 build-ts:
@@ -90,6 +90,6 @@ shell:
 	docker compose exec app bash
 
 node-shell:
-	$(call RUN_NODE, bash)
+	$(call RUN_NODE, bash, --interactive --tty)
 
 .PHONY: help sync update format test build deploy stop hup logs ps start-devserver logs-devserver sql shell node-shell
