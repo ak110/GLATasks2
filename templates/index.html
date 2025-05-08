@@ -168,7 +168,7 @@
 
     <form id="tasks_patch_form" action="." method="post">
       <input type="hidden" name="nonce" value="{{ csrf_token() }}" />
-      <div class="modal" tabindex="-1" role="dialog">
+      <div class="modal" tabindex="-1" role="dialog" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-lg" role="document">
           <div class="modal-content">
             <div class="modal-header">
