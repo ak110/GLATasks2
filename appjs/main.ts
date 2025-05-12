@@ -11,30 +11,9 @@ async function initializeApp(config: AppConfig): Promise<void> {
   globalThis.encrypt_key = await createKey(config.encrypt_key)
   globalThis.encrypt_iv = fromBase64(config.encrypt_iv)
 
-  // リスト選択の保存・復元
-  const selectedList = localStorage.getItem("selectedList")
-  const listElement = document.querySelector(`a.list-group-item[href="${selectedList ?? ""}"]`)
-  if (listElement instanceof HTMLElement) {
-    listElement.click()
-  } else {
-    const defaultElement = document.querySelector("a.list-group-item")
-    if (defaultElement instanceof HTMLElement) {
-      defaultElement.click()
-    }
-  }
-
   // フォームハンドラの設定
   setupTaskFormHandlers()
   setupTaskOperationHandlers(config)
-
-  // リスト選択の保存
-  document.addEventListener("click", (event) => {
-    const target = event.target as HTMLElement
-    if (target.matches('a[data-bs-toggle="pill"]')) {
-      const href = target.getAttribute("href") ?? ""
-      localStorage.setItem("selectedList", href)
-    }
-  })
 
   // サービスワーカーの登録
   if ("serviceWorker" in navigator) {

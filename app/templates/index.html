@@ -17,10 +17,14 @@
     x-data='{
       lists: [],
       show_type: {{ show_type | tojson }},
+      selectedList: null,
       __dummy_for_prettier: "",
     }'
     x-init='
-      lists = await globalThis.decryptObject(document.querySelector("#lists-data").innerText)
+      lists = await globalThis.decryptObject(document.querySelector("#lists-data").innerText);
+      const savedList = localStorage.getItem("selectedList");
+      selectedList = savedList ? parseInt(savedList) : (lists.length > 0 ? lists[0].id : null);
+      $watch("selectedList", value => localStorage.setItem("selectedList", value));
     '
   >
     <div class="row mt-3 mb-3">
@@ -30,9 +34,9 @@
           <template x-for="(list_, index) in lists" :key="list_.id">
             <a
               class="list-group-item list-group-item-action"
-              :class="index == 0 ? 'active' : ''"
+              :class="selectedList === list_.id ? 'active' : ''"
+              @click.prevent="selectedList = list_.id"
               :href="`#list-${list_.id}`"
-              data-bs-toggle="pill"
               role="tab"
               :aria-controls="`list-${list_.id}`"
               x-text="list_.title"
@@ -54,7 +58,7 @@
           <div
             :id="`list-${list_.id}`"
             class="tab-pane fade"
-            :class="index == 0 ? 'show active' : ''"
+            :class="selectedList === list_.id ? 'show active' : ''"
             role="tabpanel"
             :aria-labelledby="`list-${list_.id}-tab`"
           >
