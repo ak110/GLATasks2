@@ -1,3 +1,11 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@utility testUtility {
+  @apply bg-gray-200 text-gray-900 dark:bg-gray-800 dark:text-gray-100;
+}
+
 .list-group-item {
   word-break: break-all;
 }

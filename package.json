@@ -2,7 +2,7 @@
   "name": "glatasks",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "type": "module",
   "scripts": {
     "format": "prettier --write *.ts *.json appjs/* app/templates/* && xo --fix *.ts appjs/* app/templates/*",
     "test": "tsc && jest",
@@ -84,8 +84,10 @@
   },
   "dependencies": {
     "@popperjs/core": "^2.11.8",
+    "@tailwindcss/vite": "^4.1.6",
     "alpinejs": "^3.14.9",
     "bootstrap": "^5.3.6",
+    "tailwindcss": "^4.1.6",
     "uint8array-extras": "^1.4.0"
   }
 }

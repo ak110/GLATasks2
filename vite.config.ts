@@ -1,5 +1,6 @@
 import path, { resolve } from "node:path"
 import { fileURLToPath } from "node:url"
+import tailwindcss from "@tailwindcss/vite"
 import { defineConfig } from "vite"
 import tsconfigPaths from "vite-tsconfig-paths"
 
@@ -26,10 +27,5 @@ export default defineConfig({
       },
     },
   },
-  resolve: {
-    extensions: [".mjs", ".js", ".ts", ".jsx", ".tsx", ".json"],
-  },
-  plugins: [
-    tsconfigPaths(), // Tsconfig.json のパスエイリアスを解決
-  ],
+  plugins: [tsconfigPaths(), tailwindcss()],
 })

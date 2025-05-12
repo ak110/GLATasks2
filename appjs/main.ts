@@ -2,7 +2,7 @@ import AlpineJS from "alpinejs"
 import * as bootstrap from "bootstrap"
 import "bootstrap/dist/css/bootstrap.min.css"
 import { createKey, decryptText, fromBase64 } from "./crypto.js"
-import "./site.css"
+import "./tailwind.css"
 import { setupTaskFormHandlers } from "./task-form.js"
 import { setupTaskOperationHandlers } from "./task-operation.js"
 
