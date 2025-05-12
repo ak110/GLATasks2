@@ -19,7 +19,7 @@ RUN_NODE = docker run --rm $(2) \
 	bash -xc '\
 		mkdir -p ~/.local/bin && \
 		corepack enable --install-directory ~/.local/bin && \
-		export PATH=~/.local/bin:$$PNPM_HOME:$$PATH && \
+		export PATH=~/.local/bin:~/node_modules/.bin:$$PNPM_HOME:$$PATH && \
 		$(1)\
 	'
 
