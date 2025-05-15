@@ -2,7 +2,6 @@
 
 import base64
 import json
-import pathlib
 import secrets
 import typing
 
@@ -10,8 +9,8 @@ import Crypto.Cipher.AES
 import Crypto.Random
 import Crypto.Util.Padding
 import models
+import pytilpack.quart_
 import pytilpack.quart_auth_
-import quart
 
 encrypt_key = secrets.token_bytes(16)
 encrypt_iv = Crypto.Random.get_random_bytes(16)
@@ -34,13 +33,9 @@ def get_title(*args):
     return " - ".join(filter(lambda x: x is not None, parts))
 
 
-def static_url_for(**kwargs):
+def static_url_for(filename: str) -> str:
     """cash busting付きのstatic用url_for。"""
-    filename = kwargs.get("filename", None)
-    if filename:
-        path = pathlib.Path(quart.current_app.root_path) / "static" / filename
-        kwargs["q"] = int(path.stat().st_mtime)
-    return quart.url_for("static", **kwargs)
+    return pytilpack.quart_.static_url_for(filename=filename)
 
 
 def base64encode(s: str | bytes) -> str:
