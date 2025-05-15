@@ -28,18 +28,19 @@ services:
     restart: always
     command: >
       bash -xc '
-        mkdir -p ~/.local/bin &&\
-        corepack enable --install-directory ~/.local/bin &&\
-        export PATH=~/.local/bin:$$PNPM_HOME:$$PATH &&\
+        mkdir -p ${PWD}/.cache/bin &&\
+        corepack enable --install-directory ${PWD}/.cache/bin &&\
+        export PATH=${PWD}/.cache/bin:${PWD}/node_modules/.bin:$$PATH &&\
+        pnpm store path &&\
         pnpm install &&\
         exec pnpm run build:watch
       '
     user: ${UID}:${GID}
     environment:
-      - HOME=/usr/src/app
-      - PNPM_HOME=/usr/src/app/.local/share/pnpm
+      - HOME=${PWD}/.cache
+      - COREPACK_ENABLE_DOWNLOAD_PROMPT=0
     volumes:
-      - ${PWD}:/usr/src/app
-    working_dir: /usr/src/app
+      - ${PWD}:${PWD}
+    working_dir: ${PWD}
     networks:
       - network

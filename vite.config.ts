@@ -14,7 +14,7 @@ export default defineConfig({
     allowedHosts: true,
   },
   build: {
-    outDir: "dist",
+    outDir: "app/static/assets",
     emptyOutDir: true, // ビルド前に出力ディレクトリを空にする
     sourcemap: true,
     rollupOptions: {
@@ -22,8 +22,8 @@ export default defineConfig({
         main: resolve(__dirname, "appjs/main.ts"),
       },
       output: {
-        entryFileNames: "js/[name].mjs",
-        assetFileNames: "css/[name].[ext]",
+        entryFileNames: "[name].mjs",
+        assetFileNames: "[name].[ext]",
       },
     },
   },

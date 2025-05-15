@@ -129,7 +129,7 @@ async function updateTaskStatus(config: AppConfig, listId: string, taskId: strin
 async function updateTask(config: AppConfig, listId: string, taskId: string, text: string, moveTo: string): Promise<void> {
   const data = {
     text,
-    move_to: moveTo, // eslint-disable-line @typescript-eslint/naming-convention
+    move_to: moveTo,
   }
 
   const key = globalThis.encrypt_key as CryptoKey

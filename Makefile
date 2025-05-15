@@ -10,16 +10,16 @@ export BETTER_EXCEPTIONS=1
 
 # pnpm実行用の共通コマンド
 RUN_NODE = docker run --rm $(2) \
-	--volume=${PWD}:/usr/src/app \
-	--workdir=/usr/src/app \
-	--user=$(shell id -u):$(shell id -g) \
-	--env=HOME=/usr/src/app \
-	--env=PNPM_HOME=/usr/src/app/.local/share/pnpm \
+    --env=HOME=${PWD}/.cache \
+	--env=COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
+	--volume=${PWD}:${PWD} \
+	--workdir=${PWD} \
+	$(RUN_ARGS) \
 	node:lts \
 	bash -xc '\
-		mkdir -p ~/.local/bin && \
-		corepack enable --install-directory ~/.local/bin && \
-		export PATH=~/.local/bin:~/node_modules/.bin:$$PNPM_HOME:$$PATH && \
+	    mkdir -p ${PWD}/.cache/bin &&\
+        corepack enable --install-directory ${PWD}/.cache/bin &&\
+        export PATH=${PWD}/.cache/bin:${PWD}/node_modules/.bin:$$PATH &&\
 		$(1)\
 	'
 

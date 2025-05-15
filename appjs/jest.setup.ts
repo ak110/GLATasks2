@@ -1,3 +1,4 @@
-import { webcrypto } from "node:crypto"
+import failOnConsole from "jest-fail-on-console"
 
-globalThis.crypto = webcrypto as Crypto
+// Console.warnなどをエラーにする
+failOnConsole()
