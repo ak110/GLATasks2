@@ -14,7 +14,7 @@ export default defineConfig({
     allowedHosts: true,
   },
   build: {
-    outDir: "app/static/assets",
+    outDir: "app/static/dist",
     emptyOutDir: true, // ビルド前に出力ディレクトリを空にする
     sourcemap: true,
     rollupOptions: {

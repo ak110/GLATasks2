@@ -6,8 +6,8 @@
     <title>{% block title %}{% endblock %}</title>
     <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon-32.png') }}" type="image/png" />
     <link rel="icon" href="{{ url_for('static', filename='img/favicon-32.png') }}" type="image/png" />
-    <link rel="stylesheet" href="{{ helpers.static_url_for(filename='assets/main.css') }}" />
-    <script type="module" src="{{ helpers.static_url_for(filename='assets/main.mjs') }}"></script>
+    <link rel="stylesheet" href="{{ helpers.static_url_for(filename='dist/main.css') }}" />
+    <script type="module" src="{{ helpers.static_url_for(filename='dist/main.mjs') }}"></script>
     <script type="module" nonce="{{ g.script_nonce }}">
       const config = {
         urls: {
