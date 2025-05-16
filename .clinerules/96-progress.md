@@ -2,6 +2,17 @@
 
 ## 最新のプログレス
 
+### v2.1.0 リリース (2025/5/17)
+
+- [x] TailwindCSSの導入
+- [x] ビルド出力ディレクトリの整理
+- [x] コード品質管理ツールの設定改善
+  - [x] prettier.config.js
+  - [x] xo.config.js
+  - [x] jest.config.ts
+- [x] セッションセキュリティの強化
+  - [x] SESSION_COOKIE_SECURE: True
+
 ### v2.0.1 リリース (2025/5/10)
 
 - [x] デプロイワークフローの実行
