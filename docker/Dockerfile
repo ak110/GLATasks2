@@ -3,10 +3,12 @@ FROM node:lts AS build
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
-COPY . /app
+COPY package.json pnpm-lock.yaml tsconfig.json vite.config.ts /app/
+COPY appjs /app/appjs
 WORKDIR /app
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     set -x \
+    && pnpm store path \
     && pnpm install --frozen-lockfile \
     && pnpm build
 
