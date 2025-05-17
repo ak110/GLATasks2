@@ -1,0 +1,5 @@
+.cache
+.pnpm-store
+.venv
+node_modules
+app/static/dist

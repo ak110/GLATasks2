@@ -52,8 +52,6 @@ build:
 	docker compose pull
 ifeq ($(COMPOSE_PROFILE), development)
 	docker compose --progress=plain build --pull
-else
-	$(call RUN_NODE, pnpm install && pnpm run build)
 endif
 
 build-ts:

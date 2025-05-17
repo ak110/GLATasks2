@@ -1,10 +1,20 @@
+FROM node:lts AS build
+
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+COPY . /app
+WORKDIR /app
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    set -x \
+    && pnpm install --frozen-lockfile \
+    && pnpm build
+
 FROM python:3.13
 
 # APTのキャッシュ https://github.com/moby/buildkit/blob/master/frontend/dockerfile/docs/reference.md#example-cache-apt-packages
 RUN rm -f /etc/apt/apt.conf.d/docker-clean; \
     echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
-
-WORKDIR /usr/src/app
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN --mount=type=cache,target=/var/lib/apt/lists,sharing=private \
@@ -18,15 +28,19 @@ RUN --mount=type=cache,target=/var/lib/apt/lists,sharing=private \
     && localedef -f UTF-8 -i ja_JP ja_JP.utf8 \
     && update-locale LANG=ja_JP.UTF-8 LANGUAGE='ja_JP:ja'
 
+COPY . /usr/src/app
+WORKDIR /usr/src/app
+
 # devpi-server用
 ARG PIP_TRUSTED_HOST=""
 ARG PIP_INDEX_URL=""
 
-COPY /requirements.txt /
 RUN --mount=type=cache,target=/root/.cache,sharing=private \
     set -x \
     && pip3 install --no-cache-dir --upgrade pip \
-    && pip3 install --no-cache-dir --requirement /requirements.txt
+    && pip3 install --no-cache-dir --requirement docker/requirements.txt
+
+COPY --from=build /app/app/static/dist /usr/src/app/app/static/dist
 
 ARG RUN_UID=1000
 RUN useradd --no-create-home --no-user-group --uid=$RUN_UID user

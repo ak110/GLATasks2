@@ -2,7 +2,8 @@
 services:
   app:
     build:
-      context: ./docker
+      context: ./
+      dockerfile: docker/Dockerfile
     restart: always
     volumes:
       - ${PWD}:/usr/src/app
@@ -32,7 +33,7 @@ services:
         corepack enable --install-directory ${PWD}/.cache/bin &&\
         export PATH=${PWD}/.cache/bin:${PWD}/node_modules/.bin:$$PATH &&\
         pnpm store path &&\
-        pnpm install &&\
+        pnpm install --frozen-lockfile &&\
         exec pnpm run build:watch
       '
     user: ${UID}:${GID}
