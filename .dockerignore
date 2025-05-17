@@ -1,5 +1,12 @@
-.cache
-.pnpm-store
-.venv
-node_modules
-app/static/dist
+/.cache
+/.clinerules
+/.env
+/.git
+/.github
+/.pnpm-store
+/.venv
+/compose.override.yaml
+/app/static/dist
+/node_modules
+/web/openssl.cnf
+/web/ssl

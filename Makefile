@@ -34,19 +34,10 @@ sync:  # 最新化＆諸々更新
 	git show --oneline --no-patch
 	git status --verbose
 
-update:
-	$(call RUN_NODE, pnpm update)
-	uv sync --upgrade
-	uv export --no-hashes --no-annotate > docker/requirements.txt
-	$(MAKE) test
-
-format:
-	-$(call RUN_NODE, pnpm run format)
-	-uv run pyfltr --exit-zero-even-if-formatted --commands=fast app
-
-test:
-	$(call RUN_NODE, pnpm run format && pnpm run test && pnpm run build)
-	uv run pyfltr --exit-zero-even-if-formatted app
+deploy:
+	$(MAKE) build
+	$(MAKE) stop
+	$(MAKE) start
 
 build:
 	docker compose pull
@@ -57,8 +48,7 @@ endif
 build-ts:
 	$(call RUN_NODE, pnpm run test && pnpm run build)
 
-deploy: build
-	docker compose down
+start:
 	docker compose up -d
 
 stop:
@@ -88,5 +78,19 @@ shell:
 
 node-shell:
 	$(call RUN_NODE, bash, --interactive --tty)
+
+update:
+	$(call RUN_NODE, pnpm update)
+	uv sync --upgrade
+	uv export --no-hashes --no-annotate > docker/requirements.txt
+	$(MAKE) test
+
+format:
+	-$(call RUN_NODE, pnpm run format)
+	-uv run pyfltr --exit-zero-even-if-formatted --commands=fast app
+
+test:
+	$(call RUN_NODE, pnpm run format && pnpm run test && pnpm run build)
+	uv run pyfltr --exit-zero-even-if-formatted app
 
 .PHONY: help sync update format test build deploy stop hup logs ps start-devserver logs-devserver sql shell node-shell

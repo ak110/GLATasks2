@@ -17,8 +17,8 @@ RUN rm -f /etc/apt/apt.conf.d/docker-clean; \
     echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
 
 ARG DEBIAN_FRONTEND=noninteractive
-RUN --mount=type=cache,target=/var/lib/apt/lists,sharing=private \
-    --mount=type=cache,target=/var/cache/apt/archives,sharing=private \
+RUN --mount=type=cache,target=/var/lib/apt/lists \
+    --mount=type=cache,target=/var/cache/apt/archives \
     set -x \
     && apt-get update \
     && apt-get install --yes --no-install-recommends \
@@ -28,19 +28,19 @@ RUN --mount=type=cache,target=/var/lib/apt/lists,sharing=private \
     && localedef -f UTF-8 -i ja_JP ja_JP.utf8 \
     && update-locale LANG=ja_JP.UTF-8 LANGUAGE='ja_JP:ja'
 
-COPY . /usr/src/app
-WORKDIR /usr/src/app
-
 # devpi-server用
 ARG PIP_TRUSTED_HOST=""
 ARG PIP_INDEX_URL=""
 
-RUN --mount=type=cache,target=/root/.cache,sharing=private \
+COPY ./docker/requirements.txt /
+RUN --mount=type=cache,target=/root/.cache \
     set -x \
     && pip3 install --no-cache-dir --upgrade pip \
-    && pip3 install --no-cache-dir --requirement docker/requirements.txt
+    && pip3 install --no-cache-dir --requirement /requirements.txt
 
+COPY . /usr/src/app
 COPY --from=build /app/app/static/dist /usr/src/app/app/static/dist
+WORKDIR /usr/src/app
 
 ARG RUN_UID=1000
 RUN useradd --no-create-home --no-user-group --uid=$RUN_UID user

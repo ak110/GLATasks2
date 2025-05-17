@@ -7,8 +7,8 @@
 /.venv
 /compose.override.yaml
 /data
-/dist  # 廃止済み
+/dist
 /app/static/dist
 /node_modules
 /web/openssl.cnf
-/web/ssl/*
+/web/ssl
