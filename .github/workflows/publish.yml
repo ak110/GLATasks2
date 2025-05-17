@@ -29,8 +29,8 @@ jobs:
       - name: Build and push Docker image to GHCR
         uses: docker/build-push-action@v6
         with:
-          context: ./docker
-          file: ./docker/Dockerfile
+          context: ./
+          file: docker/Dockerfile
           push: true
           tags: ghcr.io/ak110/glatasks2:latest
 

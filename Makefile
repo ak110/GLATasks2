@@ -58,7 +58,6 @@ build-ts:
 	$(call RUN_NODE, pnpm run test && pnpm run build)
 
 deploy: build
-	mkdir -p data
 	docker compose down
 	docker compose up -d
 
