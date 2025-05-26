@@ -1,10 +1,11 @@
-/** @jest-environment node */
-
 import { webcrypto } from "node:crypto"
+import { describe, it, expect } from "vitest"
 import { createKey, decryptText, encryptData, fromBase64, toArrayBuffer, toBase64 } from "./crypto.js"
 
-// Jsdomで動かないので対応
-globalThis.crypto = webcrypto as Crypto
+// Node.js環境でWebCrypto APIを使用するための設定
+if (globalThis.crypto === undefined) {
+  globalThis.crypto = webcrypto as Crypto
+}
 
 describe("Crypto Utils", () => {
   it("should correctly encrypt and decrypt data", async () => {

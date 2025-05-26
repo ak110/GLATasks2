@@ -2,7 +2,7 @@
 #    uv export --no-hashes --no-annotate
 aiofiles==24.1.0
 aiosqlite==0.21.0
-alembic==1.15.2
+alembic==1.16.1
 annotated-types==0.7.0
 anyio==4.9.0
 astroid==3.3.10
@@ -17,7 +17,7 @@ bleach==6.2.0
 blinker==1.9.0
 certifi==2025.4.26
 charset-normalizer==3.4.2
-click==8.2.0
+click==8.2.1
 colorama==0.4.6 ; sys_platform == 'win32'
 dill==0.4.0
 distro==1.9.0
@@ -40,16 +40,16 @@ iniconfig==2.1.0
 isort==6.0.1
 itsdangerous==2.2.0
 jinja2==3.1.6
-jiter==0.9.0
-joblib==1.5.0
+jiter==0.10.0
+joblib==1.5.1
 mako==1.3.10
 markdown==3.8
 markupsafe==3.0.2
 mccabe==0.7.0
 mypy==1.15.0
 mypy-extensions==1.1.0
-numpy==2.2.5
-openai==1.78.1
+numpy==2.2.6
+openai==1.82.0
 packaging==25.0
 pandas==2.2.3
 pathspec==0.12.1
@@ -58,8 +58,8 @@ platformdirs==4.3.8
 pluggy==1.6.0
 priority==2.0.0
 pycodestyle==2.11.1
-pycryptodome==3.22.0
-pydantic==2.11.4
+pycryptodome==3.23.0
+pydantic==2.11.5
 pydantic-core==2.33.2
 pyflakes==3.2.0
 pyfltr==1.8.0
@@ -67,12 +67,12 @@ pyhumps==3.8.0
 pylint==3.3.7
 pyproject-flake8==7.0.0
 pytest==8.3.5
-pytest-asyncio==0.26.0
+pytest-asyncio==1.0.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.1.0
-pytilpack @ git+https://github.com/ak110/pytilpack.git@fa5f0168b25cfefb0ca76c541632f32a8cd2320c
+pytilpack @ git+https://github.com/ak110/pytilpack.git@deaf64b4d09a2cf4b4f4c60557759982b8a43ce1
 pytz==2025.2
-pyupgrade==3.19.1
+pyupgrade==3.20.0
 pyyaml==6.0.2
 quart==0.20.0
 quart-auth==0.11.0
@@ -88,14 +88,14 @@ starlette==0.46.2
 tabulate==0.9.0
 tiktoken==0.9.0
 tinycss2==1.4.0
-tokenize-rt==6.1.0
+tokenize-rt==6.2.0
 tomli==2.2.1
 tomlkit==0.13.2
 tqdm==4.67.1
-types-pyyaml==6.0.12.20250402
+types-pyyaml==6.0.12.20250516
 types-requests==2.32.0.20250515
 typing-extensions==4.13.2
-typing-inspection==0.4.0
+typing-inspection==0.4.1
 tzdata==2025.2
 urllib3==2.4.0
 wcwidth==0.2.13

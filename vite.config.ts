@@ -28,4 +28,10 @@ export default defineConfig({
     },
   },
   plugins: [tsconfigPaths(), tailwindcss()],
+  test: {
+    environment: "happy-dom",
+    globals: true,
+    setupFiles: ["./appjs/vitest.setup.ts"],
+    include: ["**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
+  },
 })
