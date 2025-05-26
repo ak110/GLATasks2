@@ -45,9 +45,6 @@ ifeq ($(COMPOSE_PROFILE), development)
 	docker compose --progress=plain build --pull
 endif
 
-build-ts:
-	$(call RUN_NODE, pnpm run test && pnpm run build)
-
 start:
 	docker compose up -d
 
@@ -90,7 +87,7 @@ format:
 	-uv run pyfltr --exit-zero-even-if-formatted --commands=fast app
 
 test:
-	$(call RUN_NODE, pnpm run format && pnpm run test && pnpm run build)
+	$(call RUN_NODE, pnpm run test && pnpm run build)
 	uv run pyfltr --exit-zero-even-if-formatted app
 
 .PHONY: help sync update format test build deploy stop hup logs ps start-devserver logs-devserver sql shell node-shell

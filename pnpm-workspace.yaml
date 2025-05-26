@@ -2,3 +2,4 @@ storeDir: ./.pnpm-store
 ignoredBuiltDependencies:
   - "@tailwindcss/oxide"
   - esbuild
+  - unrs-resolver
