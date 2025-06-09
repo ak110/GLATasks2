@@ -13,6 +13,10 @@ dotenv.load_dotenv(BASE_DIR / ".env", verbose=True)
 
 COMPOSE_PROFILE = os.environ.get("COMPOSE_PROFILE", "production")
 
+# asyncioのデバッグモードを有効にする
+if COMPOSE_PROFILE != "production":
+    os.environ["PYTHONASYNCIODEBUG"] = "1"
+
 DATA_DIR = pathlib.Path(os.environ.get("DATA_DIR", str(BASE_DIR / "data")))
 
 DEV_SERVER_URL = os.environ.get("DEV_SERVER_URL", "http://devserver:5173")
