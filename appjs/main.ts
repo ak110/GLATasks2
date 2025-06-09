@@ -17,14 +17,12 @@ async function initializeApp(config: AppConfig): Promise<void> {
 
   // サービスワーカーの登録
   if ("serviceWorker" in navigator) {
-    navigator.serviceWorker
-      .register(config.urls._swjs)
-      .then((registration) => {
-        console.log("ServiceWorker registration successful with scope:", registration.scope)
-      })
-      .catch((error: unknown) => {
-        console.log("ServiceWorker registration failed:", error)
-      })
+    try {
+      const registration = await navigator.serviceWorker.register(config.urls._swjs)
+      console.log("ServiceWorker registration successful with scope:", registration.scope)
+    } catch (error: unknown) {
+      console.log("ServiceWorker registration failed:", error)
+    }
   }
 
   // Alpine.jsの初期化
@@ -33,8 +31,8 @@ async function initializeApp(config: AppConfig): Promise<void> {
 
 // 復号
 async function decryptObject<T>(crypted: string): Promise<T> {
-  const key = globalThis.encrypt_key as CryptoKey
-  const iv = globalThis.encrypt_iv as Uint8Array
+  const key = globalThis.encrypt_key
+  const iv = globalThis.encrypt_iv
   const decrypted = await decryptText(crypted, key, iv)
   return JSON.parse(decrypted) as T
 }

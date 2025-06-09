@@ -1,3 +1,4 @@
+import bootstrap from "bootstrap"
 import { encryptData } from "./crypto.js"
 
 type TaskPatchResponse = {
@@ -19,7 +20,7 @@ function setupTaskEditHandler(config: AppConfig): void {
     if (!taskItem) return
 
     const taskId = taskItem.id
-    const listId = taskItem.dataset.listId
+    const { listId } = taskItem.dataset
 
     if (!taskId || !listId) return
 
@@ -39,7 +40,7 @@ function setupTaskEditHandler(config: AppConfig): void {
 
     const modalElement = form.querySelector<HTMLElement>(".modal")
     if (!modalElement) return
-    const modal = new globalThis.bootstrap.Modal(modalElement)
+    const modal = new bootstrap.Modal(modalElement)
     modal.show()
     form.querySelector<HTMLTextAreaElement>('[name="text"]')?.focus()
   })
@@ -55,10 +56,10 @@ function setupTaskCompletionHandler(config: AppConfig): void {
     if (!taskItem) return
 
     const taskId = taskItem.id
-    const listId = taskItem.dataset.listId
+    const { listId } = taskItem.dataset
     if (!taskId || !listId) return
 
-    const checked = checkbox.checked
+    const { checked } = checkbox
     event.preventDefault()
     checkbox.disabled = true
 
@@ -82,8 +83,8 @@ function setupTaskEditFormHandler(config: AppConfig): void {
   form.addEventListener("submit", async (event) => {
     event.preventDefault()
     const formElement = event.target as HTMLFormElement
-    const listId = formElement.dataset.listId
-    const taskId = formElement.dataset.taskId
+    const { listId } = formElement.dataset
+    const { taskId } = formElement.dataset
     if (!listId || !taskId) return
 
     const textArea = formElement.querySelector<HTMLTextAreaElement>('[name="text"]')
@@ -104,8 +105,8 @@ function setupTaskEditFormHandler(config: AppConfig): void {
 
 async function updateTaskStatus(config: AppConfig, listId: string, taskId: string, completed: boolean): Promise<void> {
   const data = completed ? { status: "completed" } : { status: "needsAction", completed: null }
-  const key = globalThis.encrypt_key as CryptoKey
-  const iv = globalThis.encrypt_iv as Uint8Array
+  const key = globalThis.encrypt_key
+  const iv = globalThis.encrypt_iv
   const encrypted = await encryptData(JSON.stringify(data), key, iv)
   const url = config.urls["tasks.patch_api"].replace(":list_id:", listId).replace(":task_id:", taskId)
   const response = await fetch(url, {
@@ -132,8 +133,8 @@ async function updateTask(config: AppConfig, listId: string, taskId: string, tex
     move_to: moveTo,
   }
 
-  const key = globalThis.encrypt_key as CryptoKey
-  const iv = globalThis.encrypt_iv as Uint8Array
+  const key = globalThis.encrypt_key
+  const iv = globalThis.encrypt_iv
   const encrypted = await encryptData(JSON.stringify(data), key, iv)
   const url = config.urls["tasks.patch_api"].replace(":list_id:", listId).replace(":task_id:", taskId)
   const response = await fetch(url, {

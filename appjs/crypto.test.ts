@@ -1,11 +1,9 @@
 import { webcrypto } from "node:crypto"
-import { describe, it, expect } from "vitest"
+import { describe, expect, it } from "vitest"
 import { createKey, decryptText, encryptData, fromBase64, toArrayBuffer, toBase64 } from "./crypto.js"
 
 // Node.js環境でWebCrypto APIを使用するための設定
-if (globalThis.crypto === undefined) {
-  globalThis.crypto = webcrypto as Crypto
-}
+globalThis.crypto ??= webcrypto as Crypto
 
 describe("Crypto Utils", () => {
   it("should correctly encrypt and decrypt data", async () => {

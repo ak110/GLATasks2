@@ -1,5 +1,4 @@
 import type AlpineJS from "alpinejs"
-import type * as bootstrap from "bootstrap"
 
 declare global {
   type AppConfig = {
@@ -11,13 +10,12 @@ declare global {
       _swjs: string
     }
   }
-  /* eslint-disable-next-line @typescript-eslint/consistent-type-definitions */
-  interface GlobalThis {
-    encrypt_key: CryptoKey
-    encrypt_iv: Uint8Array
-    Alpine: typeof AlpineJS
-    bootstrap: typeof bootstrap
-  }
+  /* eslint-disable no-var */
+  var encrypt_key: CryptoKey
+  var encrypt_iv: Uint8Array
+  var Alpine: typeof AlpineJS
+  var bootstrap: any
+  /* eslint-enable no-var */
 }
 
 export {}

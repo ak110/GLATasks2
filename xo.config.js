@@ -15,10 +15,10 @@ const xoConfig = {
   prettier: true,
   space: 2,
   semicolon: false,
-  envs: ["browser"],
   rules: {
-    "@typescript-eslint/naming-convention": "off",
     "@stylistic/quotes": "off",
+    "@typescript-eslint/naming-convention": "off",
+    "@typescript-eslint/no-empty-function": "off",
     camelcase: "off",
     "import/no-cycle": "off",
     "no-alert": "off",

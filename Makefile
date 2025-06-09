@@ -87,7 +87,7 @@ format:
 	-uv run pyfltr --exit-zero-even-if-formatted --commands=fast app
 
 test:
-	$(call RUN_NODE, pnpm run test && pnpm run build, --rm)
+	$(call RUN_NODE, pnpm run format && pnpm run test && pnpm run build, --rm)
 	uv run pyfltr --exit-zero-even-if-formatted app
 
 .PHONY: help sync update format test build deploy stop hup logs ps start-devserver logs-devserver sql shell node-shell
