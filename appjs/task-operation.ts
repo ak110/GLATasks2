@@ -1,4 +1,4 @@
-import bootstrap from "bootstrap"
+import { Modal } from "bootstrap"
 import { encryptData } from "./crypto.js"
 
 type TaskPatchResponse = {
@@ -40,7 +40,7 @@ function setupTaskEditHandler(config: AppConfig): void {
 
     const modalElement = form.querySelector<HTMLElement>(".modal")
     if (!modalElement) return
-    const modal = new bootstrap.Modal(modalElement)
+    const modal = new Modal(modalElement)
     modal.show()
     form.querySelector<HTMLTextAreaElement>('[name="text"]')?.focus()
   })
