@@ -9,7 +9,7 @@ export DOCKER_BUILDKIT=1
 export BETTER_EXCEPTIONS=1
 
 # pnpm実行用の共通コマンド
-RUN_NODE = docker run --rm $(2) \
+RUN_NODE = docker run $(2) \
     --env=HOME=${PWD}/.cache \
 	--env=COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
 	--volume=${PWD}:${PWD} \
@@ -74,20 +74,20 @@ shell:
 	docker compose exec app bash
 
 node-shell:
-	$(call RUN_NODE, bash, --interactive --tty)
+	$(call RUN_NODE, bash, --rm --interactive --tty)
 
 update:
-	$(call RUN_NODE, pnpm update)
+	$(call RUN_NODE, pnpm update, --rm)
 	uv sync --upgrade
 	uv export --no-hashes --no-annotate > docker/requirements.txt
 	$(MAKE) test
 
 format:
-	-$(call RUN_NODE, pnpm run format)
+	-$(call RUN_NODE, pnpm run format, --rm)
 	-uv run pyfltr --exit-zero-even-if-formatted --commands=fast app
 
 test:
-	$(call RUN_NODE, pnpm run test && pnpm run build)
+	$(call RUN_NODE, pnpm run test && pnpm run build, --rm)
 	uv run pyfltr --exit-zero-even-if-formatted app
 
 .PHONY: help sync update format test build deploy stop hup logs ps start-devserver logs-devserver sql shell node-shell
