@@ -1,24 +1,34 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
+    "target": "esnext",
+    "lib": ["ESNext", "DOM", "DOM.Iterable", "DOM.AsyncIterable"],
+    "useDefineForClassFields": true,
+    "moduleDetection": "force",
+
+    /* Modules */
     "module": "Preserve",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
-    "esModuleInterop": true,
-    "useDefineForClassFields": true,
+
+    /* Emit */
     "noEmit": true,
-    "lib": ["ESNext", "DOM", "DOM.Iterable", "DOM.AsyncIterable"],
-    "skipLibCheck": true,
+
+    /* Interop Constraints */
     "isolatedModules": true,
-    "moduleDetection": "force",
-    "checkJs": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+
+    /* Type Checking */
     "strictNullChecks": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "allowUnusedLabels": true,
-    "allowUnreachableCode": true
+    "allowUnreachableCode": true,
+
+    /* Completeness */
+    "skipLibCheck": true
   },
-  "include": ["appjs"],
-  "exclude": ["node_modules"]
+  "include": ["appjs", "*.ts"],
+  "exclude": ["node_modules", ".pnpm-store"]
 }
