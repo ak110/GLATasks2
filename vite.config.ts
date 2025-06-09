@@ -15,23 +15,20 @@ export default defineConfig({
   },
   build: {
     outDir: "app/static/dist",
-    emptyOutDir: true, // ビルド前に出力ディレクトリを空にする
+    emptyOutDir: false, // デプロイ時の影響を最小限にするため
     sourcemap: true,
+    manifest: true,
     rollupOptions: {
       input: {
         main: resolve(__dirname, "appjs/main.ts"),
       },
       output: {
+        // ファイル名は固定にする (デプロイ時の影響を最小限にするため)
         entryFileNames: "[name].mjs",
+        chunkFileNames: "[name].mjs",
         assetFileNames: "[name].[ext]",
       },
     },
   },
   plugins: [tsconfigPaths(), tailwindcss()],
-  test: {
-    environment: "happy-dom",
-    globals: true,
-    setupFiles: ["./appjs/vitest.setup.ts"],
-    include: ["**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
-  },
 })

@@ -1,7 +1,7 @@
 {
   "type": "module",
   "scripts": {
-    "clean": "pnpm prune && pnpm dedupe",
+    "clean": "pnpm prune && pnpm dedupe && pnpm audit && pnpm store prune",
     "format": "prettier --write *.json app/templates/*.html && xo --fix *.js *.ts appjs && tsc",
     "lint": "prettier --check *.json app/templates/*.html && xo *.js *.ts appjs && tsc",
     "test": "vitest --run",
@@ -12,28 +12,29 @@
   },
   "dependencies": {
     "@popperjs/core": "^2.11.8",
-    "@tailwindcss/vite": "^4.1.7",
+    "@tailwindcss/vite": "^4.1.8",
     "alpinejs": "^3.14.9",
     "bootstrap": "^5.3.6",
-    "tailwindcss": "^4.1.7",
+    "tailwindcss": "^4.1.8",
     "uint8array-extras": "^1.4.0"
   },
   "devDependencies": {
     "@testing-library/dom": "^10.4.0",
     "@types/alpinejs": "^3.13.11",
     "@types/bootstrap": "^5.2.10",
-    "@types/node": "^22.15.21",
+    "@types/node": "^22.15.30",
     "@types/xo": "^0.39.9",
-    "@vitest/ui": "^3.1.4",
-    "happy-dom": "^17.4.7",
+    "@vitest/ui": "^3.2.3",
+    "happy-dom": "^17.6.3",
     "prettier": "^3.5.3",
     "prettier-plugin-jinja-template": "^2.1.0",
+    "prettier-plugin-tailwindcss": "^0.6.12",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3",
     "vite": "^6.3.5",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^3.1.4",
-    "xo": "^1.0.0"
+    "vitest": "^3.2.3",
+    "xo": "^1.1.0"
   },
   "packageManager": "pnpm@10.12.1+sha512.f0dda8580f0ee9481c5c79a1d927b9164f2c478e90992ad268bbb2465a736984391d6333d2c327913578b2804af33474ca554ba29c04a8b13060a717675ae3ac"
 }

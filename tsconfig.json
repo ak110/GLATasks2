@@ -29,6 +29,6 @@
     /* Completeness */
     "skipLibCheck": true
   },
-  "include": ["appjs", "*.ts"],
+  "include": ["appjs", "*.ts", "xo.config.js", "prettier.config.js"],
   "exclude": ["node_modules", ".cache", ".venv"]
 }
