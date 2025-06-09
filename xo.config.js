@@ -4,7 +4,6 @@ const xoConfig = {
   ignores: [
     "./.cache/**",
     "./.local/**",
-    "./.pnpm-store/**",
     "./.venv/**",
     "./app/static/**",
     "./app/template/**",

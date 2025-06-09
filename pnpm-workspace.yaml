@@ -1,4 +1,4 @@
-storeDir: ./.pnpm-store
+storeDir: ./.cache/.pnpm-store
 ignoredBuiltDependencies:
   - "@tailwindcss/oxide"
   - esbuild

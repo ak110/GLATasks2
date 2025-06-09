@@ -3,7 +3,6 @@
 /.env
 /.local
 /.npm
-/.pnpm-store
 /.venv
 /compose.override.yaml
 /data

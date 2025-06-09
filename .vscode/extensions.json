@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "esbenp.prettier-vscode",
+    "ms-azuretools.vscode-docker",
+    "samverschueren.linter-xo",
+    "DavidAnson.vscode-markdownlint",
+    "ms-python.black-formatter",
+    "ms-python.python"
+  ]
+}

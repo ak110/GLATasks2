@@ -3,7 +3,6 @@
 /.env
 /.git
 /.github
-/.pnpm-store
 /.venv
 /compose.override.yaml
 /app/static/dist

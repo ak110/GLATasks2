@@ -1,0 +1,58 @@
+{
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[dockercompose]": {
+    "editor.defaultFormatter": "ms-azuretools.vscode-docker"
+  },
+  "[dockerfile]": {
+    "editor.defaultFormatter": "ms-azuretools.vscode-docker"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "samverschueren.linter-xo"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[makefile]": {
+    "editor.insertSpaces": false
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
+  },
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "samverschueren.linter-xo"
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "explorer.fileNesting.patterns": {
+    "package.json": "pnpm-lock.yaml, pnpm-workspace.yaml",
+    "pyproject.toml": "uv.lock"
+  },
+  "files.exclude": {
+    "**/.cache": true
+  },
+  "npm.enableRunFromFolder": true,
+  "npm.packageManager": "pnpm",
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python3",
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "search.exclude": {
+    "**/.cache": true,
+    "**/.local": true,
+    "**/.venv": true,
+    "**/node_modules": true,
+    "**/pnpm-lock.yaml": true,
+    "**/uv.lock": true
+  }
+}
