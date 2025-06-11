@@ -11,8 +11,8 @@ services:
     working_dir: /usr/src/app/app
     environment:
       - SQLALCHEMY_DATABASE_URI=mysql+asyncmy://glatasks:glatasks@db/glatasks?charset=utf8mb4
-      - DATA_DIR=${DATA_DIR}
-      - PYTHONDEVMODE=1
+      - DATA_DIR
+      - PYTHONDEVMODE
     networks:
       - network
     logging:
