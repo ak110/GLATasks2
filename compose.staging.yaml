@@ -4,7 +4,6 @@ services:
     image: ghcr.io/ak110/glatasks2:latest
     restart: always
     volumes:
-      - ${PWD}:/usr/src/app
       - ${DATA_DIR}:${DATA_DIR}
     working_dir: /usr/src/app/app
     environment:

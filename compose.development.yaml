@@ -12,6 +12,7 @@ services:
     environment:
       - SQLALCHEMY_DATABASE_URI=mysql+asyncmy://glatasks:glatasks@db/glatasks?charset=utf8mb4
       - DATA_DIR=${DATA_DIR}
+      - PYTHONDEVMODE=1
     networks:
       - network
     logging:
