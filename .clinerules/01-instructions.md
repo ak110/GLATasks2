@@ -11,7 +11,7 @@
 - テーブルデータの処理には`polars`を使う (`pandas`は使わない)
 - パッケージ管理にはuvを使う
 - .venvの更新には`make update`を使う
-- `make format`でコードの整形を行う
+- `make format`でコードを整形する
 - `make test`でmypy, pytestなどをまとめて実行できる
 
 ## テストコード
