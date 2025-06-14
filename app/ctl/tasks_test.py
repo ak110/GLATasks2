@@ -56,10 +56,9 @@ async def test_task_operations(user_client: quart.typing.TestClientProtocol):
     assert response.status_code == 302
 
     # タスクIDの取得
-    async with models.Base.session_scope():
-        list_ = await models.List.get_by_id(list_id)
+    with models.Base.session_scope():
+        list_ = models.List.get_by_id(list_id)
         assert list_ is not None
-        await list_.awaitable_attrs.tasks
         task_id = list_.tasks[0].id
 
     # タスクのAPIを使用した更新

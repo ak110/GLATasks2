@@ -28,7 +28,7 @@ class List(Base):
     # タスクの参照
     tasks = sqlalchemy.orm.relationship(Task, order_by=Task.updated.desc())
 
-    async def to_dict_(self) -> dict[str, typing.Any]:
+    def to_dict_(self) -> dict[str, typing.Any]:
         """dictへ変換。"""
-        tasks = [await task.to_dict_() for task in await self.awaitable_attrs.tasks]
+        tasks = [task.to_dict_() for task in self.tasks]
         return {"id": self.id, "title": self.title, "tasks": tasks}

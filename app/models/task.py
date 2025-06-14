@@ -51,7 +51,7 @@ class Task(Base):
         s = self.text.split("\n", 1)
         return s[1].strip() if len(s) == 2 else ""
 
-    async def to_dict_(self) -> dict[str, typing.Any]:
+    def to_dict_(self) -> dict[str, typing.Any]:
         """dictへ変換。"""
         return {
             "id": self.id,

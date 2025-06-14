@@ -37,7 +37,7 @@ async def acreate_app():
     app.asgi_app = pytilpack.quart_.ProxyFix(app)  # type: ignore
 
     assert config.SQLALCHEMY_DATABASE_URI is not None
-    await pytilpack.sqlalchemy_.await_for_connection(config.SQLALCHEMY_DATABASE_URI)
+    pytilpack.sqlalchemy_.wait_for_connection(config.SQLALCHEMY_DATABASE_URI)
     models.Base.init(config.SQLALCHEMY_DATABASE_URI)
 
     app.register_blueprint(ctl.auth.app)
@@ -67,7 +67,7 @@ async def acreate_app():
     async def _http_error_handler(e: werkzeug.exceptions.HTTPException):
         """HTTPエラー"""
         app.logger.error(f"HTTPエラー: {quart.request.full_path}", exc_info=True)
-        await pytilpack.sqlalchemy_.asafe_close(models.Base.session())
+        pytilpack.sqlalchemy_.safe_close(models.Base.session())
         return (
             await quart.render_template(
                 "error.html", name="HTTP Error", desc=e.description
@@ -80,7 +80,7 @@ async def acreate_app():
         """サーバーエラー"""
         del e  # noqa
         app.logger.error(f"サーバーエラー: {quart.request.full_path}", exc_info=True)
-        await pytilpack.sqlalchemy_.asafe_close(models.Base.session())
+        pytilpack.sqlalchemy_.safe_close(models.Base.session())
         return (
             await quart.render_template("error.html", name="Server Error", desc=None),
             500,
@@ -92,13 +92,13 @@ async def acreate_app():
         # nonceの生成。
         quart.g.script_nonce = secrets.token_hex(4)
         # DBセッションの開始。
-        quart.g.db_session_token = await models.Base.start_session()
+        quart.g.db_session_token = models.Base.start_session()
 
     @app.after_request
     async def _after_request(r: quart.Response):
         """リクエストの後処理。"""
         # DBセッションのクローズ。
-        await models.Base.close_session(quart.g.db_session_token)
+        models.Base.close_session(quart.g.db_session_token)
 
         # レスポンスヘッダを適当に設定。
         try:
@@ -132,7 +132,7 @@ async def acreate_app():
     async def _load_user(auth_id: str) -> models.User | None:
         """ユーザの読み込み。"""
         user = (
-            await models.Base.session().execute(
+            models.Base.session().execute(
                 models.User.select().filter(models.User.user == auth_id)
             )
         ).scalar_one_or_none()
@@ -140,7 +140,7 @@ async def acreate_app():
             return None
         # 最終ログイン日時の更新
         user.last_login = datetime.datetime.now(datetime.UTC)
-        await models.Base.session().commit()
+        models.Base.session().commit()
         return user
 
     web_utils.register_csrf_token(app)

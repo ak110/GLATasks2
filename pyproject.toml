@@ -4,7 +4,7 @@ dynamic = ["version"]
 requires-python = ">=3.13,<4.0"
 dependencies = [
     "alembic",
-    "asyncmy",
+    "pymysql",
     "bcrypt",
     "better-exceptions",
     "hypercorn",
@@ -21,7 +21,6 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "aiosqlite",
     "pyfltr",
     "pytest-asyncio",
     "types-pyyaml",

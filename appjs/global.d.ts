@@ -10,12 +10,11 @@ declare global {
       _swjs: string
     }
   }
-  /* eslint-disable no-var */
+
   var encrypt_key: CryptoKey
   var encrypt_iv: Uint8Array
   var Alpine: typeof AlpineJS
   var bootstrap: any
-  /* eslint-enable no-var */
 }
 
 export {}

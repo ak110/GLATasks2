@@ -12,17 +12,17 @@
   },
   "dependencies": {
     "@popperjs/core": "^2.11.8",
-    "@tailwindcss/vite": "^4.1.8",
+    "@tailwindcss/vite": "^4.1.10",
     "alpinejs": "^3.14.9",
     "bootstrap": "^5.3.6",
-    "tailwindcss": "^4.1.8",
+    "tailwindcss": "^4.1.10",
     "uint8array-extras": "^1.4.0"
   },
   "devDependencies": {
     "@testing-library/dom": "^10.4.0",
     "@types/alpinejs": "^3.13.11",
     "@types/bootstrap": "^5.2.10",
-    "@types/node": "^22.15.30",
+    "@types/node": "^22.15.31",
     "@types/xo": "^0.39.9",
     "@vitest/ui": "^3.2.3",
     "happy-dom": "^17.6.3",

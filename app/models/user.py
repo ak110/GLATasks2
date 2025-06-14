@@ -54,17 +54,17 @@ class User(Base, pytilpack.quart_auth_.UserMixin):
         )
 
     @staticmethod
-    async def add(user_id, password):
+    def add(user_id, password):
         """ユーザー追加。"""
         if not re.match(r"^[a-zA-Z0-9]{4,32}$", user_id):
             raise ValueError("ユーザーIDは4～32文字の英数字としてください。")
         if len(password) <= 0:
             raise ValueError("パスワードは必須です。")
         stmt = User.select().filter(User.user == user_id)
-        result = await Base.session().execute(stmt)
+        result = Base.session().execute(stmt)
         if result.scalar_one_or_none() is not None:
             raise ValueError("既に存在するユーザーIDです。")
         user = User(user=user_id, joined=datetime.datetime.now(datetime.UTC))
         user.set_password(password)
         Base.session().add(user)
-        await Base.session().commit()
+        Base.session().commit()

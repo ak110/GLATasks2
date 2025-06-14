@@ -25,7 +25,7 @@ async def post(list_id):
     form = await quart.request.form
     text = form.get("text", "").strip()
     models.Base.session().add(models.Task(list_id=list_.id, text=text))
-    await models.Base.session().commit()
+    models.Base.session().commit()
     return quart.redirect(quart.url_for("main.index"))
 
 
@@ -56,7 +56,7 @@ async def patch_api(list_id, task_id):
         move_to = data["move_to"]
         if move_to != list_id:
             list2 = (
-                await models.Base.session().execute(
+                models.Base.session().execute(
                     models.List.select().filter(models.List.id == move_to)
                 )
             ).scalar_one()
@@ -65,7 +65,7 @@ async def patch_api(list_id, task_id):
                 quart.abort(403)
             task.list_id = move_to
 
-    await models.Base.session().commit()
+    models.Base.session().commit()
     return quart.jsonify(
         {
             "status": task.status,
@@ -77,7 +77,7 @@ async def patch_api(list_id, task_id):
 
 async def get_owned(list_id, task_id) -> tuple[models.List, models.Task]:
     list_ = await ctl.lists.get_owned(list_id)
-    task = await models.Task.get_by_id(task_id)
+    task = models.Task.get_by_id(task_id)
     if task is None:
         quart.abort(404)
     if task.list_id != list_.id:

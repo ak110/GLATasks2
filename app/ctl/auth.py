@@ -25,7 +25,7 @@ async def login_auth():
     form = await quart.request.form
     user_id = form["user"]
     user = (
-        await models.Base.session().execute(
+        models.Base.session().execute(
             models.User.select().filter(models.User.user == user_id)
         )
     ).scalar_one_or_none()
@@ -34,7 +34,7 @@ async def login_auth():
         return quart.redirect(quart.url_for("auth.login"))
 
     user.last_login = datetime.datetime.now(datetime.UTC)
-    await models.Base.session().commit()
+    models.Base.session().commit()
 
     pytilpack.quart_auth_.login_user(user.user)
     quart.session.permanent = True
@@ -62,7 +62,7 @@ async def regist_user_do():
         await quart.flash("パスワードとパスワード(確認)が一致していません。", "error")
         return await quart.render_template("regist_user.html", user_id=user_id)
 
-    error = await models.User.add(user_id, form["pass"])
+    error = models.User.add(user_id, form["pass"])
     if error:
         await quart.flash(error, "error")
         return await quart.render_template("regist_user.html", user_id=user_id)

@@ -77,7 +77,7 @@ node-shell:
 	$(call RUN_NODE, bash, --rm --interactive --tty)
 
 update:
-	$(call RUN_NODE, pnpm update, --rm)
+	$(call RUN_NODE, corepack prepare pnpm@latest --activate && pnpm update, --rm)
 	uv sync --upgrade
 	uv export --no-hashes --no-annotate > docker/requirements.txt
 	$(MAKE) test

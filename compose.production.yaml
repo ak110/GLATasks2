@@ -7,7 +7,7 @@ services:
       - ${DATA_DIR}:${DATA_DIR}
     working_dir: /usr/src/app/app
     environment:
-      - SQLALCHEMY_DATABASE_URI=mysql+asyncmy://glatasks:glatasks@db/glatasks?charset=utf8mb4
+      - SQLALCHEMY_DATABASE_URI=mysql+pymysql://glatasks:glatasks@db/glatasks?charset=utf8mb4
       - DATA_DIR=${DATA_DIR}
     networks:
       - network

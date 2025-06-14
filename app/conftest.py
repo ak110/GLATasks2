@@ -18,35 +18,35 @@ async def _base_app(tmp_path_factory) -> typing.AsyncGenerator[quart.Quart]:
     """テスト用のアプリケーションを生成する。"""
     data_dir = tmp_path_factory.mktemp("data_dir")
     config.DATA_DIR = data_dir
-    config.SQLALCHEMY_DATABASE_URI = f"sqlite+aiosqlite:///{data_dir}/testdb.sqlite"
+    config.SQLALCHEMY_DATABASE_URI = f"sqlite:///{data_dir}/testdb.sqlite"
 
     import asgi
 
     _app = await asgi.acreate_app()
     async with _app.app_context():
-        async with models.Base.connect() as conn:
-            await conn.run_sync(models.Base.metadata.create_all)
-            token = await models.Base.start_session()
+        with models.Base.connect() as conn:
+            models.Base.metadata.create_all(conn)
+            token = models.Base.start_session()
             try:
                 # テスト用のデータを作成する。
-                await models.User.add("user", "user")
-                await models.Base.session().commit()
+                models.User.add("user", "user")
+                models.Base.session().commit()
 
                 yield _app
             finally:
-                await models.Base.close_session(token)
-                await conn.run_sync(models.Base.metadata.drop_all)
+                models.Base.close_session(token)
+                models.Base.metadata.drop_all(conn)
 
 
 @pytest_asyncio.fixture(name="app", scope="function", autouse=True)
 async def _app(base_app: quart.Quart) -> typing.AsyncGenerator[quart.Quart]:
     # テストの実行
     async with base_app.app_context():
-        token = await models.Base.start_session()
+        token = models.Base.start_session()
         try:
             yield base_app
         finally:
-            await models.Base.close_session(token)
+            models.Base.close_session(token)
 
 
 @pytest_asyncio.fixture(name="client", scope="function")
