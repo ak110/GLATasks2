@@ -2,18 +2,22 @@
 
 import base64
 import json
-import secrets
 import typing
 
+import config
 import Crypto.Cipher.AES
-import Crypto.Random
 import Crypto.Util.Padding
 import models
 import pytilpack.quart_
 import pytilpack.quart_auth_
+import pytilpack.secrets_
 
-encrypt_key = secrets.token_bytes(16)
-encrypt_iv = Crypto.Random.get_random_bytes(16)
+encrypt_key = pytilpack.secrets_.generate_secret_key(
+    config.DATA_DIR / ".encrypt_key", nbytes=32
+)
+encrypt_iv = pytilpack.secrets_.generate_secret_key(
+    config.DATA_DIR / ".encrypt_iv", nbytes=16
+)
 
 
 def get_logged_in_user() -> models.User:
