@@ -55,4 +55,4 @@ ENV TZ='Asia/Tokyo' \
     MPLBACKEND=Agg \
     BETTER_EXCEPTIONS=1
 
-CMD ["hypercorn", "--reload", "--bind=0.0.0.0:8000", "--workers=4", "--error-logfile=-", "asgi:create_app()"]
+CMD ["hypercorn", "--reload", "--bind=0.0.0.0:8000", "--workers=1", "--error-logfile=-", "asgi:create_app()"]
