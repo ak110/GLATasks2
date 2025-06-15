@@ -60,8 +60,10 @@ async def acreate_app():
 
     @app.errorhandler(quart_auth.Unauthorized)
     async def _redirect_to_login(_: quart_auth.Unauthorized):
-        next_url = quart.request.full_path
-        return quart.redirect(quart.url_for("auth.login", next=next_url))
+        """認証が必要なページに未ログイン状態でアクセスした場合の処理。"""
+        return quart.redirect(
+            quart.url_for("auth.login", next=pytilpack.quart_.get_next_url())
+        )
 
     @app.errorhandler(werkzeug.exceptions.HTTPException)
     async def _http_error_handler(e: werkzeug.exceptions.HTTPException):

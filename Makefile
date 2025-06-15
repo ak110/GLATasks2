@@ -77,17 +77,35 @@ node-shell:
 	$(call RUN_NODE, bash, --rm --interactive --tty)
 
 update:
-	$(call RUN_NODE, corepack prepare pnpm@latest --activate && pnpm update, --rm)
-	uv sync --upgrade
-	uv export --no-hashes --no-annotate > docker/requirements.txt
+	$(MAKE) update-ts
+	$(MAKE) update-py
 	$(MAKE) test
 
+update-ts:
+	$(call RUN_NODE, corepack prepare pnpm@latest --activate && pnpm update, --rm)
+
+update-py:
+	uv sync --upgrade
+	uv export --no-hashes --no-annotate > docker/requirements.txt
+
 format:
+	$(MAKE) format-ts
+	$(MAKE) format-py
+
+format-ts:
 	-$(call RUN_NODE, pnpm run format, --rm)
+
+format-py:
 	-uv run pyfltr --exit-zero-even-if-formatted --commands=fast app
 
 test:
+	$(MAKE) test-ts
+	$(MAKE) test-py
+
+test-ts:
 	$(call RUN_NODE, pnpm run format && pnpm run test && pnpm run build, --rm)
+
+test-py:
 	uv run pyfltr --exit-zero-even-if-formatted app
 
 .PHONY: help sync update format test build deploy stop hup logs ps start-devserver logs-devserver sql shell node-shell

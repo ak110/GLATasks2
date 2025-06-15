@@ -15,7 +15,7 @@ better-exceptions==0.3.3
 black==25.1.0
 bleach==6.2.0
 blinker==1.9.0
-certifi==2025.4.26
+certifi==2025.6.15
 cffi==1.17.1 ; platform_python_implementation != 'PyPy'
 charset-normalizer==3.4.2
 click==8.2.1
@@ -64,7 +64,7 @@ priority==2.0.0
 pycodestyle==2.11.1
 pycparser==2.22 ; platform_python_implementation != 'PyPy'
 pycryptodome==3.23.0
-pydantic==2.11.6
+pydantic==2.11.7
 pydantic-core==2.33.2
 pyflakes==3.2.0
 pyfltr==1.9.0
@@ -78,7 +78,7 @@ pytest==8.4.0
 pytest-asyncio==1.0.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.1.0
-pytilpack @ git+https://github.com/ak110/pytilpack.git@6eefe6245b7d7c5a18e74bb69df8422fdad5d956
+pytilpack @ git+https://github.com/ak110/pytilpack.git@c8c287564c0659855b7de70dc2fc818db8e0ee0c
 pytz==2025.2
 pyupgrade==3.20.0
 pyyaml==6.0.2
