@@ -131,7 +131,7 @@ async def acreate_app():
     auth_manager.init_app(app)
 
     @auth_manager.user_loader
-    async def _load_user(auth_id: str) -> models.User | None:
+    def _load_user(auth_id: str) -> models.User | None:
         """ユーザの読み込み。"""
         user = (
             models.Base.session().execute(

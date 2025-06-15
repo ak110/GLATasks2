@@ -78,7 +78,7 @@ pytest==8.4.0
 pytest-asyncio==1.0.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.1.0
-pytilpack @ git+https://github.com/ak110/pytilpack.git@c8c287564c0659855b7de70dc2fc818db8e0ee0c
+pytilpack @ git+https://github.com/ak110/pytilpack.git@1e3445e642a61f0dfbe50f4e0d4635491328ed01
 pytz==2025.2
 pyupgrade==3.20.0
 pyyaml==6.0.2
