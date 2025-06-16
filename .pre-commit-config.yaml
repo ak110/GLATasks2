@@ -26,8 +26,8 @@ repos:
   - repo: local
     hooks:
       - id: pnpm-format
-        name: pnpm format
-        entry: pnpm format
+        name: pnpm-format
+        entry: pnpm run format
         types: [javascript, json]
         require_serial: true
         language: system
@@ -36,8 +36,8 @@ repos:
     hooks:
       - id: pyfltr
         name: pyfltr
-        entry: uv run pyfltr --exit-zero-even-if-formatted --commands=fast
+        entry: pyfltr --exit-zero-even-if-formatted --commands=fast
         types: [python]
         require_serial: true
         language: system
-        include: ^app/
+        files: ^app/
