@@ -1,7 +1,7 @@
 {
   "type": "module",
   "scripts": {
-    "clean": "pnpm prune && pnpm dedupe && pnpm audit && pnpm store prune",
+    "clean": "pnpm prune && pnpm dedupe && pnpm audit --fix && pnpm store prune",
     "format": "prettier --write *.json app/templates/*.html && xo --fix *.js *.ts appjs && tsc",
     "lint": "prettier --check *.json app/templates/*.html && xo *.js *.ts appjs && tsc",
     "test": "vitest --run",
