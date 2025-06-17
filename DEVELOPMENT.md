@@ -4,7 +4,7 @@
 
 1. 本リポジトリをcloneする。
 2. [uvをインストール](https://docs.astral.sh/uv/getting-started/installation/)する。
-3. pre-commitフックをインストールする。
+3. [pre-commit](https://pre-commit.com/)フックをインストールする。
 
     ```bash
     uv run pre-commit install

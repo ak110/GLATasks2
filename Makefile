@@ -85,6 +85,7 @@ update-ts:
 	$(call RUN_NODE, corepack prepare pnpm@latest --activate && pnpm update, --rm)
 
 update-py:
+	uv run pre-commit autoupdate
 	uv sync --upgrade
 
 format:
