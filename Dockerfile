@@ -40,7 +40,7 @@ RUN --mount=type=cache,target=/root/.cache \
     set -x \
     && pip3 install --no-cache-dir --upgrade pip \
     && pip3 install --no-cache-dir uv \
-    && UV_PROJECT_ENVIRONMENT=/usr/local uv sync --frozen
+    && UV_PROJECT_ENVIRONMENT=/usr/local uv sync --frozen --no-group=dev
 
 COPY . /usr/src/app
 WORKDIR /usr/src/app
