@@ -34,15 +34,18 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
 ARG PIP_TRUSTED_HOST=""
 ARG PIP_INDEX_URL=""
 
-COPY ./docker/requirements.txt /
 RUN --mount=type=cache,target=/root/.cache \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
     set -x \
     && pip3 install --no-cache-dir --upgrade pip \
-    && pip3 install --no-cache-dir --requirement /requirements.txt
+    && pip3 install --no-cache-dir uv \
+    && UV_PROJECT_ENVIRONMENT=/usr/local uv sync --frozen
 
 COPY . /usr/src/app
-COPY --from=build /app/app/static/dist /usr/src/app/app/static/dist
 WORKDIR /usr/src/app
+
+COPY --from=build /app/app/static/dist /usr/src/app/app/static/dist
 
 ARG RUN_UID=1000
 RUN useradd --no-create-home --no-user-group --uid=$RUN_UID user

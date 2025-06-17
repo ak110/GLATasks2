@@ -22,7 +22,7 @@
     "@testing-library/dom": "^10.4.0",
     "@types/alpinejs": "^3.13.11",
     "@types/bootstrap": "^5.2.10",
-    "@types/node": "^22.15.31",
+    "@types/node": "^22.15.32",
     "@types/xo": "^0.39.9",
     "@vitest/ui": "^3.2.3",
     "happy-dom": "^17.6.3",

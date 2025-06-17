@@ -86,7 +86,6 @@ update-ts:
 
 update-py:
 	uv sync --upgrade
-	uv export --no-hashes --no-annotate > docker/requirements.txt
 
 format:
 	$(MAKE) format-ts
