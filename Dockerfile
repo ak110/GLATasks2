@@ -38,8 +38,7 @@ RUN --mount=type=cache,target=/root/.cache \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     set -x \
-    && pip3 install --no-cache-dir --upgrade pip \
-    && pip3 install --no-cache-dir uv \
+    && pip install --upgrade pip pip_system_certs uv \
     && UV_PROJECT_ENVIRONMENT=/usr/local uv sync --frozen --no-group=dev
 
 COPY . /usr/src/app
