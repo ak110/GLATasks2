@@ -40,6 +40,24 @@ async def acreate_app():
     pytilpack.sqlalchemy_.wait_for_connection(config.SQLALCHEMY_DATABASE_URI)
     models.Base.init(config.SQLALCHEMY_DATABASE_URI)
 
+    auth_manager = pytilpack.quart_auth_.QuartAuth[models.User]()
+    auth_manager.init_app(app)
+
+    @auth_manager.user_loader
+    def _load_user(auth_id: str) -> models.User | None:
+        """ユーザの読み込み。"""
+        user = (
+            models.Base.session().execute(
+                models.User.select().filter(models.User.user == auth_id)
+            )
+        ).scalar_one_or_none()
+        if user is None:
+            return None
+        # 最終ログイン日時の更新
+        user.last_login = datetime.datetime.now(datetime.UTC)
+        models.Base.session().commit()
+        return user
+
     app.register_blueprint(ctl.auth.app)
     app.register_blueprint(ctl.lists.app)
     app.register_blueprint(ctl.main.app)
@@ -57,6 +75,14 @@ async def acreate_app():
         )
         response.headers["Content-Type"] = "application/javascript"
         return response
+
+    @app.before_request
+    async def _before_request():
+        """リクエストの前処理。"""
+        # nonceの生成。
+        quart.g.script_nonce = secrets.token_hex(4)
+        # DBセッションの開始。
+        quart.g.db_session_token = models.Base.start_session()
 
     @app.errorhandler(quart_auth.Unauthorized)
     async def _redirect_to_login(_: quart_auth.Unauthorized):
@@ -88,19 +114,13 @@ async def acreate_app():
             500,
         )
 
-    @app.before_request
-    async def _before_request():
-        """リクエストの前処理。"""
-        # nonceの生成。
-        quart.g.script_nonce = secrets.token_hex(4)
-        # DBセッションの開始。
-        quart.g.db_session_token = models.Base.start_session()
-
     @app.after_request
     async def _after_request(r: quart.Response):
         """リクエストの後処理。"""
-        # DBセッションのクローズ。
-        models.Base.close_session(quart.g.db_session_token)
+
+        # 動的コンテンツのみprivate指定
+        if "Cache-Control" not in r.headers:
+            r.cache_control.private = True
 
         # レスポンスヘッダを適当に設定。
         try:
@@ -108,10 +128,6 @@ async def acreate_app():
         except AttributeError:  # 念のため
             script_nonce = secrets.token_hex(4)
             quart.g.script_nonce = script_nonce
-
-        # 動的コンテンツのみprivate指定
-        if "Cache-Control" not in r.headers:
-            r.cache_control.private = True
 
         if r.content_type is not None and "text/html" in r.content_type:
             r.headers["Content-Security-Policy"] = (
@@ -126,24 +142,9 @@ async def acreate_app():
 
         return r
 
-    # app.before_requestの順番問題があるのでここで初期化..
-    auth_manager = pytilpack.quart_auth_.QuartAuth[models.User]()
-    auth_manager.init_app(app)
-
-    @auth_manager.user_loader
-    def _load_user(auth_id: str) -> models.User | None:
-        """ユーザの読み込み。"""
-        user = (
-            models.Base.session().execute(
-                models.User.select().filter(models.User.user == auth_id)
-            )
-        ).scalar_one_or_none()
-        if user is None:
-            return None
-        # 最終ログイン日時の更新
-        user.last_login = datetime.datetime.now(datetime.UTC)
-        models.Base.session().commit()
-        return user
+    @app.teardown_request
+    async def _teardown_request(_: BaseException | None) -> None:
+        models.Base.close_session(quart.g.db_session_token)
 
     web_utils.register_csrf_token(app)
 

@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 @pytest_asyncio.fixture(name="base_app", scope="session", autouse=True)
-async def _base_app(tmp_path_factory) -> typing.AsyncGenerator[quart.Quart]:
+async def _base_app(tmp_path_factory) -> quart.Quart:
     """テスト用のアプリケーションを生成する。"""
     data_dir = tmp_path_factory.mktemp("data_dir")
     config.DATA_DIR = data_dir
@@ -24,29 +24,21 @@ async def _base_app(tmp_path_factory) -> typing.AsyncGenerator[quart.Quart]:
 
     _app = await asgi.acreate_app()
     async with _app.app_context():
+        # テスト用のデータを作成する。
         with models.Base.connect() as conn:
             models.Base.metadata.create_all(conn)
-            token = models.Base.start_session()
-            try:
-                # テスト用のデータを作成する。
-                models.User.add("user", "user")
-                models.Base.session().commit()
+        with models.Base.session_scope():
+            models.User.add("user", "user")
+            models.Base.session().commit()
 
-                yield _app
-            finally:
-                models.Base.close_session(token)
-                models.Base.metadata.drop_all(conn)
+    return _app
 
 
 @pytest_asyncio.fixture(name="app", scope="function", autouse=True)
 async def _app(base_app: quart.Quart) -> typing.AsyncGenerator[quart.Quart]:
     # テストの実行
     async with base_app.app_context():
-        token = models.Base.start_session()
-        try:
-            yield base_app
-        finally:
-            models.Base.close_session(token)
+        yield base_app
 
 
 @pytest_asyncio.fixture(name="client", scope="function")
