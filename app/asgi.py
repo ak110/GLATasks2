@@ -6,18 +6,18 @@ import secrets
 import time
 
 import config
-import ctl.auth
-import ctl.lists
-import ctl.main
-import ctl.tasks
 import helpers
 import models
-import pytilpack.json_
 import pytilpack.quart_
 import pytilpack.quart_auth_
 import pytilpack.sqlalchemy_
 import quart
 import quart_auth
+import views.auth
+import views.lists
+import views.main
+import views.sandbox
+import views.tasks
 import web_utils
 import werkzeug.exceptions
 
@@ -37,7 +37,9 @@ async def acreate_app():
     app.asgi_app = pytilpack.quart_.ProxyFix(app)  # type: ignore
 
     assert config.SQLALCHEMY_DATABASE_URI is not None
-    pytilpack.sqlalchemy_.wait_for_connection(config.SQLALCHEMY_DATABASE_URI)
+    await quart.utils.run_sync(pytilpack.sqlalchemy_.wait_for_connection)(
+        config.SQLALCHEMY_DATABASE_URI
+    )
     models.Base.init(config.SQLALCHEMY_DATABASE_URI)
 
     auth_manager = pytilpack.quart_auth_.QuartAuth[models.User]()
@@ -58,10 +60,11 @@ async def acreate_app():
         models.Base.session().commit()
         return user
 
-    app.register_blueprint(ctl.auth.app)
-    app.register_blueprint(ctl.lists.app)
-    app.register_blueprint(ctl.main.app)
-    app.register_blueprint(ctl.tasks.app)
+    app.register_blueprint(views.auth.app)
+    app.register_blueprint(views.lists.app)
+    app.register_blueprint(views.main.app)
+    app.register_blueprint(views.tasks.app)
+    app.register_blueprint(views.sandbox.app)
 
     @app.route("/health")
     async def _healthcheck():
@@ -117,7 +120,6 @@ async def acreate_app():
     @app.after_request
     async def _after_request(r: quart.Response):
         """リクエストの後処理。"""
-
         # 動的コンテンツのみprivate指定
         if "Cache-Control" not in r.headers:
             r.cache_control.private = True
@@ -144,7 +146,10 @@ async def acreate_app():
 
     @app.teardown_request
     async def _teardown_request(_: BaseException | None) -> None:
-        models.Base.close_session(quart.g.db_session_token)
+        """リクエスト終了時の処理。"""
+        if hasattr(quart.g, "db_session_token"):
+            models.Base.close_session(quart.g.db_session_token)
+            del quart.g.db_session_token
 
     web_utils.register_csrf_token(app)
 

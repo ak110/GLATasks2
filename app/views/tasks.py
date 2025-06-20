@@ -3,11 +3,11 @@
 import datetime
 import json
 
-import ctl.lists
 import helpers
 import models
 import quart
 import quart_auth
+import views.lists
 
 app = quart.Blueprint("tasks", __name__, url_prefix="/tasks")
 
@@ -21,7 +21,7 @@ async def _before_request():
 @app.route("/<list_id>", methods=["POST"])
 async def post(list_id):
     """タスクの追加。"""
-    list_ = await ctl.lists.get_owned(list_id)
+    list_ = await views.lists.get_owned(list_id)
     form = await quart.request.form
     text = form.get("text", "").strip()
     models.Base.session().add(models.Task(list_id=list_.id, text=text))
@@ -76,7 +76,7 @@ async def patch_api(list_id, task_id):
 
 
 async def get_owned(list_id, task_id) -> tuple[models.List, models.Task]:
-    list_ = await ctl.lists.get_owned(list_id)
+    list_ = await views.lists.get_owned(list_id)
     task = models.Task.get_by_id(task_id)
     if task is None:
         quart.abort(404)
