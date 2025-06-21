@@ -3,12 +3,16 @@ services:
   app:
     image: ghcr.io/ak110/glatasks2:latest
     restart: always
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/healthcheck" ]
+      start_period: 30s
+      start_interval: 1s
     volumes:
       - ${DATA_DIR}:${DATA_DIR}
     working_dir: /usr/src/app/app
     environment:
       - SQLALCHEMY_DATABASE_URI=mysql+pymysql://glatasks:glatasks@db/glatasks?charset=utf8mb4
-      - DATA_DIR=${DATA_DIR}
+      - DATA_DIR
     networks:
       - network
     logging:

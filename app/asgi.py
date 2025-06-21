@@ -66,7 +66,7 @@ async def acreate_app():
     app.register_blueprint(views.tasks.app)
     app.register_blueprint(views.sandbox.app)
 
-    @app.route("/health")
+    @app.route("/healthcheck")
     async def _healthcheck():
         """ヘルスチェック。"""
         return quart.jsonify({"status": "ok"})
