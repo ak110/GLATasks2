@@ -26,7 +26,7 @@
     "@types/xo": "^0.39.9",
     "@vitest/ui": "^3.2.4",
     "happy-dom": "^17.6.3",
-    "prettier": "^3.5.3",
+    "prettier": "^3.6.0",
     "prettier-plugin-jinja-template": "^2.1.0",
     "prettier-plugin-tailwindcss": "^0.6.13",
     "ts-node": "^10.9.2",

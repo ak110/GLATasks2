@@ -39,7 +39,7 @@ RUN --mount=type=cache,target=/root/.cache \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     set -x \
     && pip install --upgrade pip pip_system_certs uv \
-    && UV_PROJECT_ENVIRONMENT=/usr/local uv sync --frozen --no-group=dev
+    && UV_PROJECT_ENVIRONMENT=/usr/local uv sync --frozen --link-mode=copy --no-group=dev
 
 COPY . /usr/src/app
 WORKDIR /usr/src/app
@@ -57,4 +57,7 @@ ENV TZ='Asia/Tokyo' \
     MPLBACKEND=Agg \
     BETTER_EXCEPTIONS=1
 
-CMD ["hypercorn", "--reload", "--bind=0.0.0.0:8000", "--workers=1", "--error-logfile=-", "asgi:create_app()"]
+CMD ["gunicorn", "--bind=0.0.0.0:8000", "--timeout=3600", \
+    "--error-logfile=-", "--capture-output", \
+    "--workers=1", "--worker-class=uvicorn.workers.UvicornWorker", \
+    "asgi:create_app()"]

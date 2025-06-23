@@ -7,7 +7,6 @@ dependencies = [
     "pymysql",
     "bcrypt",
     "better-exceptions",
-    "hypercorn",
     "pandas",
     "pycryptodome",
     "python-dotenv>=1.1.0",
@@ -17,6 +16,8 @@ dependencies = [
     "quart-flask-patch",
     "quart-schema",
     "sqlalchemy[asyncio]",
+    "uvicorn[standard]>=0.34.3",
+    "uvicorn-worker>=0.3.0",
 ]
 
 [dependency-groups]
