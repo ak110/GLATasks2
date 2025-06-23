@@ -99,6 +99,7 @@ format-py:
 	-uv run pyfltr --exit-zero-even-if-formatted --commands=fast app
 
 test:
+	SKIP=pnpm-format,pyfltr uv run pre-commit run --all-files
 	$(MAKE) test-ts
 	$(MAKE) test-py
 
