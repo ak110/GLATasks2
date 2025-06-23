@@ -4,11 +4,11 @@ dynamic = ["version"]
 requires-python = ">=3.13,<4.0"
 dependencies = [
     "alembic",
-    "pymysql",
     "bcrypt",
     "better-exceptions",
     "pandas",
     "pycryptodome",
+    "pymysql",
     "python-dotenv>=1.1.0",
     "pytilpack[all]>=1.20.0",
     "quart",
@@ -16,8 +16,8 @@ dependencies = [
     "quart-flask-patch",
     "quart-schema",
     "sqlalchemy[asyncio]",
-    "uvicorn[standard]>=0.34.3",
     "uvicorn-worker>=0.3.0",
+    "uvicorn[standard]>=0.34.3",
 ]
 
 [dependency-groups]
@@ -27,6 +27,7 @@ dev = [
     "pytest-asyncio",
     "types-pyyaml",
     "types-requests",
+    "uv-sort>=0.6.0",
 ]
 
 [tool.uv]

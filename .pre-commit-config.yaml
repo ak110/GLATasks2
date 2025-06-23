@@ -23,6 +23,11 @@ repos:
       - id: trailing-whitespace
         exclude: ^dist/.*$
 
+  - repo: https://github.com/ninoseki/uv-sort
+    rev: v0.6.0
+    hooks:
+      - id: uv-sort
+
   - repo: local
     hooks:
       - id: pnpm-format
