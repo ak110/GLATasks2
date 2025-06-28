@@ -1,6 +1,6 @@
 import { webcrypto } from "node:crypto"
 import { describe, expect, it } from "vitest"
-import { createKey, decryptText, encryptData, fromBase64, toArrayBuffer, toBase64 } from "./crypto.js"
+import { decrypt, encrypt, toArrayBuffer, toBase64 } from "./crypto.js"
 
 // Node.js環境でWebCrypto APIを使用するための設定
 globalThis.crypto ??= webcrypto as Crypto
@@ -13,15 +13,14 @@ describe("Crypto Utils", () => {
     expect(globalThis.crypto.subtle.encrypt).toBeDefined()
     expect(globalThis.crypto.subtle.decrypt).toBeDefined()
     // テストデータ
-    const originalText = "Hello, World!"
-    const key = await createKey(toBase64(toArrayBuffer("1234567890123456"))) // 16バイトのキー
-    const iv = fromBase64(toBase64(toArrayBuffer("1234567890123456"))) // 16バイトのIV
+    const originalText = "こんちは世界!"
+    const key = toBase64(toArrayBuffer("1234567890123456")) // 16バイトのキー
 
     // 暗号化
-    const encrypted = await encryptData(originalText, key, iv)
+    const encrypted = await encrypt(originalText, key)
 
     // 復号
-    const decrypted = await decryptText(encrypted, key, iv)
+    const decrypted = await decrypt(encrypted, key)
 
     // 元のテキストと一致することを確認
     expect(decrypted).toBe(originalText)

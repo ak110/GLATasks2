@@ -1,15 +1,14 @@
 import AlpineJS from "alpinejs"
 import * as bootstrap from "bootstrap"
 import "bootstrap/dist/css/bootstrap.min.css"
-import { createKey, decryptText, fromBase64 } from "./crypto.js"
+import { decrypt } from "./crypto.js"
 import "./tailwind.css"
 import { setupTaskFormHandlers } from "./task-form.js"
 import { setupTaskOperationHandlers } from "./task-operation.js"
 
 // アプリケーションの初期化
 async function initializeApp(config: AppConfig): Promise<void> {
-  globalThis.encrypt_key = await createKey(config.encrypt_key)
-  globalThis.encrypt_iv = fromBase64(config.encrypt_iv)
+  globalThis.encrypt_key = config.encrypt_key
 
   // フォームハンドラの設定
   setupTaskFormHandlers()
@@ -31,9 +30,7 @@ async function initializeApp(config: AppConfig): Promise<void> {
 
 // 復号
 async function decryptObject<T>(crypted: string): Promise<T> {
-  const key = globalThis.encrypt_key
-  const iv = globalThis.encrypt_iv
-  const decrypted = await decryptText(crypted, key, iv)
+  const decrypted = await decrypt(crypted, globalThis.encrypt_key)
   return JSON.parse(decrypted) as T
 }
 

@@ -16,7 +16,6 @@
           _swjs: "{{ url_for('_swjs') }}",
         },
         encrypt_key: "{{ helpers.base64encode(helpers.encrypt_key) }}",
-        encrypt_iv: "{{ helpers.base64encode(helpers.encrypt_iv) }}",
       }
       await globalThis.initializeApp(config)
     </script>

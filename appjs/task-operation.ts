@@ -1,5 +1,5 @@
 import { Modal } from "bootstrap"
-import { encryptData } from "./crypto.js"
+import { encrypt } from "./crypto.js"
 
 type TaskPatchResponse = {
   status: "completed" | "needsAction"
@@ -105,9 +105,7 @@ function setupTaskEditFormHandler(config: AppConfig): void {
 
 async function updateTaskStatus(config: AppConfig, listId: string, taskId: string, completed: boolean): Promise<void> {
   const data = completed ? { status: "completed" } : { status: "needsAction", completed: null }
-  const key = globalThis.encrypt_key
-  const iv = globalThis.encrypt_iv
-  const encrypted = await encryptData(JSON.stringify(data), key, iv)
+  const encrypted = await encrypt(JSON.stringify(data), globalThis.encrypt_key)
   const url = config.urls["tasks.patch_api"].replace(":list_id:", listId).replace(":task_id:", taskId)
   const response = await fetch(url, {
     method: "PATCH",
@@ -133,9 +131,7 @@ async function updateTask(config: AppConfig, listId: string, taskId: string, tex
     move_to: moveTo,
   }
 
-  const key = globalThis.encrypt_key
-  const iv = globalThis.encrypt_iv
-  const encrypted = await encryptData(JSON.stringify(data), key, iv)
+  const encrypted = await encrypt(JSON.stringify(data), globalThis.encrypt_key)
   const url = config.urls["tasks.patch_api"].replace(":list_id:", listId).replace(":task_id:", taskId)
   const response = await fetch(url, {
     method: "PATCH",

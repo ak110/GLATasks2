@@ -5,15 +5,13 @@ import json
 import typing
 
 import config
-import Crypto.Cipher.AES
-import Crypto.Util.Padding
 import models
+import pytilpack.pycrypto
 import pytilpack.quart
 import pytilpack.quart_auth
 import pytilpack.secrets
 
 encrypt_key = pytilpack.secrets.generate_secret_key(config.DATA_DIR / ".encrypt_key", nbytes=32)
-encrypt_iv = pytilpack.secrets.generate_secret_key(config.DATA_DIR / ".encrypt_iv", nbytes=16)
 
 
 def get_logged_in_user() -> models.User:
@@ -50,17 +48,11 @@ def encryptObject(obj: typing.Any) -> str:
     return encrypt(json.dumps(obj))
 
 
-def encrypt(s: str) -> str:
-    """諸事情による難読化。"""
-    s = s.encode("utf-8")
-    cipher = Crypto.Cipher.AES.new(encrypt_key, Crypto.Cipher.AES.MODE_CBC, iv=encrypt_iv)
-    encrypted = cipher.encrypt(Crypto.Util.Padding.pad(s, Crypto.Cipher.AES.block_size))
-    return base64.b64encode(encrypted).decode("utf-8")
+def encrypt(plaintext: str) -> str:
+    """難読化。"""
+    return pytilpack.pycrypto.encrypt(plaintext, encrypt_key)
 
 
-def decrypt(s: str) -> str:
-    """暗号化されたデータを復号。"""
-    encrypted = base64.b64decode(s)
-    cipher = Crypto.Cipher.AES.new(encrypt_key, Crypto.Cipher.AES.MODE_CBC, iv=encrypt_iv)
-    decrypted = Crypto.Util.Padding.unpad(cipher.decrypt(encrypted), Crypto.Cipher.AES.block_size)
-    return decrypted.decode("utf-8")
+def decrypt(ciphertext: str) -> str:
+    """難読化解除。"""
+    return pytilpack.pycrypto.decrypt(ciphertext, encrypt_key)

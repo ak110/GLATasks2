@@ -1353,8 +1353,8 @@ wheels = [
 
 [[package]]
 name = "pytilpack"
-version = "1.29.1.dev13+gaf3704d"
-source = { git = "https://github.com/ak110/pytilpack.git#af3704d259d080d5d9996edcad5e17499344da72" }
+version = "1.29.1.dev14+g7a30e2b"
+source = { git = "https://github.com/ak110/pytilpack.git#7a30e2b0137fac69f572d4f779201eb6b755c974" }
 dependencies = [
     { name = "typing-extensions" },
 ]
