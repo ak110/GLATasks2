@@ -15,12 +15,8 @@ class Task(Base):
     __tablename__ = "task"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    list_id: Mapped[int] = mapped_column(
-        sqlalchemy.ForeignKey("list.id"), nullable=False, comment="親のリストID"
-    )
-    status_id: Mapped[int] = mapped_column(
-        nullable=False, default=0, comment="ステータス"
-    )
+    list_id: Mapped[int] = mapped_column(sqlalchemy.ForeignKey("list.id"), nullable=False, comment="親のリストID")
+    status_id: Mapped[int] = mapped_column(nullable=False, default=0, comment="ステータス")
     text: Mapped[str] = mapped_column(sqlalchemy.Text, nullable=False, comment="内容")
     created: Mapped[datetime.datetime] = mapped_column(
         nullable=False,

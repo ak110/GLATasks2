@@ -5,7 +5,7 @@ import json
 import re
 
 import pytest
-import pytilpack.quart_
+import pytilpack.quart
 import quart.typing
 
 
@@ -23,7 +23,7 @@ async def test_anonymous(client: quart.typing.TestClientProtocol):
 async def test_api(user_client: quart.typing.TestClientProtocol):
     """APIのテスト。"""
     response = await user_client.get("/lists/api")
-    await pytilpack.quart_.assert_json(response)
+    await pytilpack.quart.assert_json(response)
     data = json.loads(await response.get_data())
     assert "data" in data
     decoded_data = json.loads(base64.b64decode(data["data"]).decode("utf-8"))
@@ -35,7 +35,7 @@ async def test_post(user_client: quart.typing.TestClientProtocol):
     """リスト作成のテスト。"""
     # nonceの取得
     response = await user_client.get("/auth/login")
-    page_data = await pytilpack.quart_.assert_html(response)
+    page_data = await pytilpack.quart.assert_html(response)
     nonce_match = re.search(r'name="nonce" value="(\w+)"', page_data)
     assert nonce_match is not None
     nonce = nonce_match.group(1)
@@ -46,15 +46,13 @@ async def test_post(user_client: quart.typing.TestClientProtocol):
 
     # 新しいnonceを取得
     response = await user_client.get("/auth/login")
-    page_data = await pytilpack.quart_.assert_html(response)
+    page_data = await pytilpack.quart.assert_html(response)
     nonce_match = re.search(r'name="nonce" value="(\w+)"', page_data)
     assert nonce_match is not None
     nonce = nonce_match.group(1)
 
     # 正常なリスト作成
-    response = await user_client.post(
-        "/lists/post", form={"title": "テストリスト", "nonce": nonce}
-    )
+    response = await user_client.post("/lists/post", form={"title": "テストリスト", "nonce": nonce})
     assert response.status_code == 302
 
 
@@ -63,15 +61,13 @@ async def test_list_operations(user_client: quart.typing.TestClientProtocol):
     """リスト操作のテスト。"""
     # nonceの取得
     response = await user_client.get("/auth/login")
-    page_data = await pytilpack.quart_.assert_html(response)
+    page_data = await pytilpack.quart.assert_html(response)
     nonce_match = re.search(r'name="nonce" value="(\w+)"', page_data)
     assert nonce_match is not None
     nonce = nonce_match.group(1)
 
     # テスト用リストの作成
-    response = await user_client.post(
-        "/lists/post", form={"title": "テストリスト", "nonce": nonce}
-    )
+    response = await user_client.post("/lists/post", form={"title": "テストリスト", "nonce": nonce})
     assert response.status_code == 302
 
     # 作成されたリストのIDを取得
@@ -82,32 +78,28 @@ async def test_list_operations(user_client: quart.typing.TestClientProtocol):
 
     # 新しいnonceを取得
     response = await user_client.get("/auth/login")
-    page_data = await pytilpack.quart_.assert_html(response)
+    page_data = await pytilpack.quart.assert_html(response)
     nonce_match = re.search(r'name="nonce" value="(\w+)"', page_data)
     assert nonce_match is not None
     nonce = nonce_match.group(1)
 
     # リネーム
-    response = await user_client.post(
-        f"/lists/{list_id}/rename/", form={"title": "新しいタイトル", "nonce": nonce}
-    )
+    response = await user_client.post(f"/lists/{list_id}/rename/", form={"title": "新しいタイトル", "nonce": nonce})
     assert response.status_code == 302
 
     # 新しいnonceを取得
     response = await user_client.get("/auth/login")
-    page_data = await pytilpack.quart_.assert_html(response)
+    page_data = await pytilpack.quart.assert_html(response)
     nonce_match = re.search(r'name="nonce" value="(\w+)"', page_data)
     assert nonce_match is not None
     nonce = nonce_match.group(1)
 
-    response = await user_client.post(
-        f"/lists/{list_id}/rename/", form={"title": "", "nonce": nonce}
-    )
+    response = await user_client.post(f"/lists/{list_id}/rename/", form={"title": "", "nonce": nonce})
     assert response.status_code == 400
 
     # 新しいnonceを取得してから非表示化
     response = await user_client.get("/auth/login")
-    page_data = await pytilpack.quart_.assert_html(response)
+    page_data = await pytilpack.quart.assert_html(response)
     nonce_match = re.search(r'name="nonce" value="(\w+)"', page_data)
     assert nonce_match is not None
     nonce = nonce_match.group(1)
@@ -117,7 +109,7 @@ async def test_list_operations(user_client: quart.typing.TestClientProtocol):
 
     # 新しいnonceを取得してから再表示
     response = await user_client.get("/auth/login")
-    page_data = await pytilpack.quart_.assert_html(response)
+    page_data = await pytilpack.quart.assert_html(response)
     nonce_match = re.search(r'name="nonce" value="(\w+)"', page_data)
     assert nonce_match is not None
     nonce = nonce_match.group(1)
@@ -127,7 +119,7 @@ async def test_list_operations(user_client: quart.typing.TestClientProtocol):
 
     # 新しいnonceを取得してからクリア
     response = await user_client.get("/auth/login")
-    page_data = await pytilpack.quart_.assert_html(response)
+    page_data = await pytilpack.quart.assert_html(response)
     nonce_match = re.search(r'name="nonce" value="(\w+)"', page_data)
     assert nonce_match is not None
     nonce = nonce_match.group(1)
@@ -137,14 +129,12 @@ async def test_list_operations(user_client: quart.typing.TestClientProtocol):
 
     # 新しいnonceを取得してから削除
     response = await user_client.get("/auth/login")
-    page_data = await pytilpack.quart_.assert_html(response)
+    page_data = await pytilpack.quart.assert_html(response)
     nonce_match = re.search(r'name="nonce" value="(\w+)"', page_data)
     assert nonce_match is not None
     nonce = nonce_match.group(1)
 
-    response = await user_client.post(
-        f"/lists/{list_id}/delete/", form={"nonce": nonce}
-    )
+    response = await user_client.post(f"/lists/{list_id}/delete/", form={"nonce": nonce})
     assert response.status_code == 302
 
     # 存在しないリストへのアクセス

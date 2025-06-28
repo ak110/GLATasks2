@@ -3,7 +3,7 @@
 import datetime
 
 import models
-import pytilpack.quart_auth_
+import pytilpack.quart_auth
 import pytilpack.web
 import quart
 import quart_auth
@@ -14,9 +14,7 @@ app = quart.Blueprint("auth", __name__, url_prefix="/auth")
 @app.route("/login", methods=["GET"])
 async def login():
     """ログインページ"""
-    return await quart.render_template(
-        "login.html", next=quart.request.args.get("next")
-    )
+    return await quart.render_template("login.html", next=quart.request.args.get("next"))
 
 
 @app.route("/login", methods=["POST"])
@@ -24,11 +22,7 @@ async def login_auth():
     """ログイン"""
     form = await quart.request.form
     user_id = form["user"]
-    user = (
-        models.Base.session().execute(
-            models.User.select().filter(models.User.user == user_id)
-        )
-    ).scalar_one_or_none()
+    user = (models.Base.session().execute(models.User.select().filter(models.User.user == user_id))).scalar_one_or_none()
     if user is None or not user.password_is_ok(form["pass"]):
         await quart.flash("ユーザーIDまたはパスワードが異なります。", "error")
         return quart.redirect(quart.url_for("auth.login"))
@@ -36,7 +30,7 @@ async def login_auth():
     user.last_login = datetime.datetime.now(datetime.UTC)
     models.Base.session().commit()
 
-    pytilpack.quart_auth_.login_user(user.user)
+    pytilpack.quart_auth.login_user(user.user)
     quart.session.permanent = True
     next_url = pytilpack.web.get_safe_url(
         quart.request.args.get("next"),
@@ -75,5 +69,5 @@ async def regist_user_do():
 @quart_auth.login_required
 async def logout():
     """ログアウト"""
-    pytilpack.quart_auth_.logout_user()
+    pytilpack.quart_auth.logout_user()
     return quart.redirect(quart.url_for("auth.login"))

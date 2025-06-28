@@ -23,15 +23,15 @@ async def sse():
         """SSEイベントを送信するジェネレーター関数。"""
         # print(f"1 {models.Base.session()}")
         await asyncio.sleep(0.01)
-        yield f"data: foo {getattr(quart.g, "sse_test", "novalue")} {quart.request.path=}\n\n"
+        yield f"data: foo {getattr(quart.g, 'sse_test', 'novalue')} {quart.request.path=}\n\n"
 
         # print(f"2 {models.Base.session()}")
         await asyncio.sleep(0.01)
-        yield f"data: bar {getattr(quart.g, "sse_test", "novalue")} {quart.request.remote_addr=}\n\n"
+        yield f"data: bar {getattr(quart.g, 'sse_test', 'novalue')} {quart.request.remote_addr=}\n\n"
 
         # print(f"3 {models.Base.session()}")
         await asyncio.sleep(0.01)
-        yield f"data: baz {getattr(quart.g, "sse_test", "novalue")} {quart.request.script_root=}\n\n"
+        yield f"data: baz {getattr(quart.g, 'sse_test', 'novalue')} {quart.request.script_root=}\n\n"
 
         # print(f"4 {models.Base.session()}")
         await asyncio.sleep(0.01)

@@ -24,7 +24,6 @@ dependencies = [
 dev = [
     "pre-commit>=4.2.0",
     "pyfltr",
-    "pytest-asyncio",
     "types-pyyaml",
     "types-requests",
     "uv-sort>=0.6.0",
@@ -34,6 +33,7 @@ dev = [
 package = false
 
 [tool.uv.sources]
+pyfltr = { git = "https://github.com/ak110/pyfltr.git" }
 pytilpack = { git = "https://github.com/ak110/pytilpack.git" }
 
 [build-system]
@@ -44,9 +44,37 @@ build-backend = "hatchling.build"
 source = "vcs"
 
 [tool.pyfltr]
+isort = false  # ruffとの競合を避けるためfalse
+black = false  # ruffとの競合を避けるためfalse
+ruff-format = true  # ruffを使用する
+ruff-check = true  # ruffを使用する
 pyupgrade-args = ["--py313-plus"]
 pylint-args = ["--jobs=4"]
 extend-exclude = ["data"]
+
+[tool.ruff]
+line-length = 128
+
+[tool.ruff.lint]
+# https://docs.astral.sh/ruff/linter/#rule-selection
+select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+]
+ignore = []
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
 
 [tool.isort]
 # https://black.readthedocs.io/en/stable/guides/using_black_with_other_tools.html#isort
@@ -55,7 +83,6 @@ profile = "black"
 
 [tool.black]
 # https://black.readthedocs.io/en/stable/usage_and_configuration/the_basics.html
-target-version = ['py313']
 skip-magic-trailing-comma = true
 
 [tool.flake8]
@@ -79,6 +106,9 @@ plugins = ["sqlalchemy.ext.mypy.plugin"]
 
 [tool.pytest.ini_options]
 # https://docs.pytest.org/en/latest/reference/reference.html#ini-options-ref
-addopts = "--showlocals -p no:cacheprovider"
+addopts = "--showlocals -p no:cacheprovider --maxfail=5 --durations=30 --durations-min=0.5"
+log_level = "DEBUG"
+xfail_strict = true
 asyncio_mode = "strict"
 asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"

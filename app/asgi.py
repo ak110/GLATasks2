@@ -8,9 +8,9 @@ import time
 import config
 import helpers
 import models
-import pytilpack.quart_
-import pytilpack.quart_auth_
-import pytilpack.sqlalchemy_
+import pytilpack.quart
+import pytilpack.quart_auth
+import pytilpack.sqlalchemy
 import quart
 import quart_auth
 import views.auth
@@ -34,25 +34,19 @@ async def acreate_app():
     app.secret_key = config.FLASK_CONFIG["SECRET_KEY"]
 
     app.config.from_mapping(config.FLASK_CONFIG)
-    app.asgi_app = pytilpack.quart_.ProxyFix(app)  # type: ignore
+    app.asgi_app = pytilpack.quart.ProxyFix(app)  # type: ignore
 
     assert config.SQLALCHEMY_DATABASE_URI is not None
-    await quart.utils.run_sync(pytilpack.sqlalchemy_.wait_for_connection)(
-        config.SQLALCHEMY_DATABASE_URI
-    )
+    await quart.utils.run_sync(pytilpack.sqlalchemy.wait_for_connection)(config.SQLALCHEMY_DATABASE_URI)
     models.Base.init(config.SQLALCHEMY_DATABASE_URI)
 
-    auth_manager = pytilpack.quart_auth_.QuartAuth[models.User]()
+    auth_manager = pytilpack.quart_auth.QuartAuth[models.User]()
     auth_manager.init_app(app)
 
     @auth_manager.user_loader
     def _load_user(auth_id: str) -> models.User | None:
         """ユーザの読み込み。"""
-        user = (
-            models.Base.session().execute(
-                models.User.select().filter(models.User.user == auth_id)
-            )
-        ).scalar_one_or_none()
+        user = (models.Base.session().execute(models.User.select().filter(models.User.user == auth_id))).scalar_one_or_none()
         if user is None:
             return None
         # 最終ログイン日時の更新
@@ -73,9 +67,7 @@ async def acreate_app():
 
     @app.route("/sw.js")
     async def _swjs():
-        response = await quart.make_response(
-            await quart.send_file(config.BASE_DIR / "templates" / "sw.js")
-        )
+        response = await quart.make_response(await quart.send_file(config.BASE_DIR / "templates" / "sw.js"))
         response.headers["Content-Type"] = "application/javascript"
         return response
 
@@ -90,19 +82,15 @@ async def acreate_app():
     @app.errorhandler(quart_auth.Unauthorized)
     async def _redirect_to_login(_: quart_auth.Unauthorized):
         """認証が必要なページに未ログイン状態でアクセスした場合の処理。"""
-        return quart.redirect(
-            quart.url_for("auth.login", next=pytilpack.quart_.get_next_url())
-        )
+        return quart.redirect(quart.url_for("auth.login", next=pytilpack.quart.get_next_url()))
 
     @app.errorhandler(werkzeug.exceptions.HTTPException)
     async def _http_error_handler(e: werkzeug.exceptions.HTTPException):
         """HTTPエラー"""
         app.logger.error(f"HTTPエラー: {quart.request.full_path}", exc_info=True)
-        pytilpack.sqlalchemy_.safe_close(models.Base.session())
+        pytilpack.sqlalchemy.safe_close(models.Base.session())
         return (
-            await quart.render_template(
-                "error.html", name="HTTP Error", desc=e.description
-            ),
+            await quart.render_template("error.html", name="HTTP Error", desc=e.description),
             e.code or 500,
         )
 
@@ -111,7 +99,7 @@ async def acreate_app():
         """サーバーエラー"""
         del e  # noqa
         app.logger.error(f"サーバーエラー: {quart.request.full_path}", exc_info=True)
-        pytilpack.sqlalchemy_.safe_close(models.Base.session())
+        pytilpack.sqlalchemy.safe_close(models.Base.session())
         return (
             await quart.render_template("error.html", name="Server Error", desc=None),
             500,
@@ -133,9 +121,7 @@ async def acreate_app():
 
         if r.content_type is not None and "text/html" in r.content_type:
             r.headers["Content-Security-Policy"] = (
-                "default-src * data: blob:;"
-                f" script-src * 'nonce-{script_nonce}' 'unsafe-eval';"
-                " style-src * 'unsafe-inline';"
+                f"default-src * data: blob:; script-src * 'nonce-{script_nonce}' 'unsafe-eval'; style-src * 'unsafe-inline';"
             )
             r.headers["X-XSS-Protection"] = "1; mode=block"
 

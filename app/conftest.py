@@ -7,7 +7,7 @@ import typing
 import config
 import models
 import pytest_asyncio
-import pytilpack.quart_
+import pytilpack.quart
 import quart.typing
 
 logger = logging.getLogger(__name__)
@@ -54,20 +54,16 @@ async def _client(
 async def _nonce(client: quart.typing.TestClientProtocol) -> str:
     """nonce取得。"""
     response = await client.get("/auth/login")
-    page_data = await pytilpack.quart_.assert_html(response)
+    page_data = await pytilpack.quart.assert_html(response)
     nonce_match = re.search(r'name="nonce" value="(\w+)"', page_data)
     assert nonce_match is not None
     return nonce_match.group(1)
 
 
 @pytest_asyncio.fixture(name="user_client", scope="function")
-async def _user_client(
-    client: quart.typing.TestClientProtocol, nonce: str
-) -> quart.typing.TestClientProtocol:
+async def _user_client(client: quart.typing.TestClientProtocol, nonce: str) -> quart.typing.TestClientProtocol:
     # ログインボタン押下
-    response = await client.post(
-        "/auth/login", form={"user": "user", "pass": "user", "nonce": nonce}
-    )
-    await pytilpack.quart_.assert_html(response, status_code=302)
+    response = await client.post("/auth/login", form={"user": "user", "pass": "user", "nonce": nonce})
+    await pytilpack.quart.assert_html(response, status_code=302)
     logger.info(f"user_client: logged in ({nonce=}")
     return client

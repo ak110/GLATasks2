@@ -1,7 +1,7 @@
 """ASGIアプリケーションのテスト。"""
 
 import pytest
-import pytilpack.quart_
+import pytilpack.quart
 import quart.typing
 
 
@@ -10,7 +10,7 @@ async def test_anonymous(client: quart.typing.TestClientProtocol):
     """未ログインのテスト"""
     # ヘルスチェック
     response = await client.get("/healthcheck")
-    assert (await pytilpack.quart_.assert_json(response)) == {"status": "ok"}
+    assert (await pytilpack.quart.assert_json(response)) == {"status": "ok"}
 
     # サービスワーカー
     response = await client.get("/sw.js")

@@ -7,6 +7,7 @@ import helpers
 import models
 import quart
 import quart_auth
+
 import views.lists
 
 app = quart.Blueprint("tasks", __name__, url_prefix="/tasks")
@@ -35,11 +36,9 @@ async def patch_api(list_id, task_id):
     _, task = await get_owned(list_id, task_id)
 
     json_data = await quart.request.get_json()  # type: ignore
-    if "data" in json_data:
-        # 難読化されたデータを復号
-        data = json.loads(helpers.decrypt(json_data["data"]))
-    else:
-        data = json_data  # 後方互換性のため、難読化されていない場合もサポート
+    # 難読化されたデータを復号
+    # 後方互換性のため、難読化されていない場合もサポート
+    data = json.loads(helpers.decrypt(json_data["data"])) if "data" in json_data else json_data
     if "text" in data:
         task.text = data["text"]
         task.updated = datetime.datetime.now(datetime.UTC)
@@ -55,11 +54,7 @@ async def patch_api(list_id, task_id):
     if "move_to" in data:
         move_to = data["move_to"]
         if move_to != list_id:
-            list2 = (
-                models.Base.session().execute(
-                    models.List.select().filter(models.List.id == move_to)
-                )
-            ).scalar_one()
+            list2 = (models.Base.session().execute(models.List.select().filter(models.List.id == move_to))).scalar_one()
             current_user = helpers.get_logged_in_user()
             if list2.user_id != current_user.id:
                 quart.abort(403)

@@ -23,9 +23,7 @@ async def api():
     """リストの取得。"""
     current_user = helpers.get_logged_in_user()
     data = json.dumps([list_.to_dict_() for list_ in current_user.lists])
-    return quart.jsonify(
-        {"data": base64.b64encode(data.encode("utf-8")).decode("utf-8")}
-    )
+    return quart.jsonify({"data": base64.b64encode(data.encode("utf-8")).decode("utf-8")})
 
 
 @app.route("/post", methods=["POST"])
@@ -82,9 +80,7 @@ async def delete(list_id: int):
     list_ = await get_owned(list_id)
 
     # 関連するタスクも削除
-    models.Base.session().execute(
-        models.Task.delete().where(models.Task.list_id == list_.id)
-    )
+    models.Base.session().execute(models.Task.delete().where(models.Task.list_id == list_.id))
 
     models.Base.session().delete(list_)
     models.Base.session().commit()

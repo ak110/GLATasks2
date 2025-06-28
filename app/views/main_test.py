@@ -1,7 +1,7 @@
 """メインコントローラーのテストコード。"""
 
 import pytest
-import pytilpack.quart_
+import pytilpack.quart
 import quart.typing
 
 
@@ -21,12 +21,12 @@ async def test_index(user_client: quart.typing.TestClientProtocol):
     """インデックスページのテスト。"""
     # デフォルトのshow_type
     response = await user_client.get("/")
-    await pytilpack.quart_.assert_html(response)
+    await pytilpack.quart.assert_html(response)
     assert "Service-Worker-Allowed" in response.headers
 
     # show_typeの指定
     response = await user_client.get("/?show_type=task")
-    await pytilpack.quart_.assert_html(response)
+    await pytilpack.quart.assert_html(response)
 
     # サービスワーカー
     response = await user_client.get("/sw.js")
@@ -38,4 +38,4 @@ async def test_index(user_client: quart.typing.TestClientProtocol):
 async def test_add(user_client: quart.typing.TestClientProtocol):
     """追加ページのテスト。"""
     response = await user_client.get("/add")
-    await pytilpack.quart_.assert_html(response)
+    await pytilpack.quart.assert_html(response)

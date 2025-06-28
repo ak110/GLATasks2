@@ -1,7 +1,7 @@
 """テストコード。"""
 
 import pytest
-import pytilpack.quart_
+import pytilpack.quart
 import quart.typing
 
 
@@ -9,5 +9,5 @@ import quart.typing
 async def test_user(user_client: quart.typing.TestClientProtocol):
     """インデックスページのテスト。"""
     # デフォルトのshow_type
-    data = await pytilpack.quart_.assert_bytes(user_client.get("/sandbox/sse"))
+    data = await pytilpack.quart.assert_bytes(user_client.get("/sandbox/sse"))
     assert b"data: [DONE]" in data

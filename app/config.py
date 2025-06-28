@@ -5,7 +5,7 @@ import os
 import pathlib
 
 import dotenv
-import pytilpack.secrets_
+import pytilpack.secrets
 
 BASE_DIR = pathlib.Path(__file__).parent
 
@@ -24,7 +24,7 @@ DEV_SERVER_URL = os.environ.get("DEV_SERVER_URL", "http://devserver:5173")
 SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI")
 
 FLASK_CONFIG = {
-    "SECRET_KEY": pytilpack.secrets_.generate_secret_key(DATA_DIR / ".secret_key"),
+    "SECRET_KEY": pytilpack.secrets.generate_secret_key(DATA_DIR / ".secret_key"),
     "SESSION_COOKIE_NAME": "gla-session",
     "SESSION_COOKIE_HTTPONLY": True,
     "SESSION_COOKIE_SECURE": True,
