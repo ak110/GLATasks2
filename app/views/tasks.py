@@ -25,6 +25,7 @@ async def post(list_id):
     list_ = await views.lists.get_owned(list_id)
     form = await quart.request.form
     text = form.get("text", "").strip()
+    text = helpers.decrypt(text)
     models.Base.session().add(models.Task(list_id=list_.id, text=text))
     models.Base.session().commit()
     return quart.redirect(quart.url_for("main.index"))

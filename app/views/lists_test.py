@@ -4,6 +4,7 @@ import base64
 import json
 import re
 
+import helpers
 import pytest
 import pytilpack.quart
 import quart.typing
@@ -41,7 +42,7 @@ async def test_post(user_client: quart.typing.TestClientProtocol):
     nonce = nonce_match.group(1)
 
     # 空のタイトルは400エラー
-    response = await user_client.post("/lists/post", form={"title": "", "nonce": nonce})
+    response = await user_client.post("/lists/post", form={"title": helpers.encrypt(""), "nonce": nonce})
     assert response.status_code == 400
 
     # 新しいnonceを取得
@@ -52,7 +53,7 @@ async def test_post(user_client: quart.typing.TestClientProtocol):
     nonce = nonce_match.group(1)
 
     # 正常なリスト作成
-    response = await user_client.post("/lists/post", form={"title": "テストリスト", "nonce": nonce})
+    response = await user_client.post("/lists/post", form={"title": helpers.encrypt("テストリスト"), "nonce": nonce})
     assert response.status_code == 302
 
 
@@ -67,7 +68,7 @@ async def test_list_operations(user_client: quart.typing.TestClientProtocol):
     nonce = nonce_match.group(1)
 
     # テスト用リストの作成
-    response = await user_client.post("/lists/post", form={"title": "テストリスト", "nonce": nonce})
+    response = await user_client.post("/lists/post", form={"title": helpers.encrypt("テストリスト"), "nonce": nonce})
     assert response.status_code == 302
 
     # 作成されたリストのIDを取得
@@ -84,7 +85,9 @@ async def test_list_operations(user_client: quart.typing.TestClientProtocol):
     nonce = nonce_match.group(1)
 
     # リネーム
-    response = await user_client.post(f"/lists/{list_id}/rename/", form={"title": "新しいタイトル", "nonce": nonce})
+    response = await user_client.post(
+        f"/lists/{list_id}/rename/", form={"title": helpers.encrypt("新しいタイトル"), "nonce": nonce}
+    )
     assert response.status_code == 302
 
     # 新しいnonceを取得
@@ -94,7 +97,7 @@ async def test_list_operations(user_client: quart.typing.TestClientProtocol):
     assert nonce_match is not None
     nonce = nonce_match.group(1)
 
-    response = await user_client.post(f"/lists/{list_id}/rename/", form={"title": "", "nonce": nonce})
+    response = await user_client.post(f"/lists/{list_id}/rename/", form={"title": helpers.encrypt(""), "nonce": nonce})
     assert response.status_code == 400
 
     # 新しいnonceを取得してから非表示化

@@ -31,6 +31,7 @@ async def post():
     """リストの追加。"""
     form = await quart.request.form
     title = typing.cast(str, form.get("title"))
+    title = helpers.decrypt(title)
     if len(title) <= 0:
         quart.abort(400)
     current_user = helpers.get_logged_in_user()
@@ -66,6 +67,7 @@ async def rename(list_id: int):
 
     form = await quart.request.form
     title = typing.cast(str, form.get("title"))
+    title = helpers.decrypt(title)
     if len(title) <= 0:
         quart.abort(400)
     list_.title = title

@@ -4,6 +4,7 @@ import base64
 import json
 import re
 
+import helpers
 import models
 import pytest
 import pytilpack.quart
@@ -37,7 +38,7 @@ async def test_task_operations(user_client: quart.typing.TestClientProtocol):
     """タスク操作のテスト。"""
     # テスト用リストの作成
     nonce = await get_nonce(user_client)
-    response = await user_client.post("/lists/post", form={"title": "テストリスト", "nonce": nonce})
+    response = await user_client.post("/lists/post", form={"title": helpers.encrypt("テストリスト"), "nonce": nonce})
     assert response.status_code == 302
 
     # リストIDの取得
@@ -48,7 +49,7 @@ async def test_task_operations(user_client: quart.typing.TestClientProtocol):
 
     # タスクの追加
     nonce = await get_nonce(user_client)
-    response = await user_client.post(f"/tasks/{list_id}", form={"text": "テストタスク", "nonce": nonce})
+    response = await user_client.post(f"/tasks/{list_id}", form={"text": helpers.encrypt("テストタスク"), "nonce": nonce})
     assert response.status_code == 302
 
     # タスクIDの取得
@@ -82,12 +83,12 @@ async def test_access_control(user_client: quart.typing.TestClientProtocol):
     """アクセス制御のテスト。"""
     # 存在しないリストへのアクセス
     nonce = await get_nonce(user_client)
-    response = await user_client.post("/tasks/99999", form={"text": "テスト", "nonce": nonce})
+    response = await user_client.post("/tasks/99999", form={"text": helpers.encrypt("テスト"), "nonce": nonce})
     assert response.status_code == 404
 
     # 存在しないタスクへのアクセス
     nonce = await get_nonce(user_client)
-    response = await user_client.post("/tasks/patch/1/99999", form={"text": "テスト", "nonce": nonce})
+    response = await user_client.post("/tasks/patch/1/99999", form={"text": helpers.encrypt("テスト"), "nonce": nonce})
     assert response.status_code == 404
 
     response = await user_client.patch("/tasks/api/1/99999", json={"status": "completed"})
