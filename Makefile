@@ -43,6 +43,9 @@ build:
 	docker compose pull
 ifeq ($(COMPOSE_PROFILE), development)
 	docker compose --progress=plain build --pull
+else
+	@# NGINX用にコピー
+	docker compose cp app:/usr/src/app/app/static/dist app/static/
 endif
 
 start:

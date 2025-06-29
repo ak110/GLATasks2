@@ -49,4 +49,4 @@ jobs:
           ssh-keyscan -p 22 aws.tqzh.tk >> ~/.ssh/known_hosts
 
       - name: Deploy to aws.tqzh.tk
-        run: ssh ubuntu@aws.tqzh.tk "cd glatasks && make sync deploy"
+        run: ssh ubuntu@aws.tqzh.tk "cd glatasks && make sync deploy && docker system prune --all --volumes --force"
