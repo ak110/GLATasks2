@@ -12,6 +12,7 @@ declare global {
 
   var Alpine: typeof AlpineJS
   var bootstrap: any
+  var encrypt_key: string
 }
 
 export {}

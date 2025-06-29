@@ -1,3 +1,5 @@
+import { encrypt } from "./crypto.js"
+
 type SubmitButtonDisplayHandler = (form: HTMLFormElement) => void
 
 export function setupTaskFormHandlers(): void {
@@ -50,9 +52,18 @@ export function setupTaskFormHandlers(): void {
     if (!form) return
 
     try {
+      const formData = new FormData(form)
+      for (const key of ["title", "text"]) {
+        if (formData.has(key)) {
+          const value = formData.get(key)
+          // eslint-disable-next-line no-await-in-loop
+          formData.set(key, await encrypt(value as string, globalThis.encrypt_key))
+        }
+      }
+
       const response = await fetch(form.action, {
         method: form.method,
-        body: new FormData(form),
+        body: formData,
       })
 
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
