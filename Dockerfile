@@ -24,8 +24,8 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
     set -x \
     && apt-get update \
     && apt-get install --yes --no-install-recommends \
-        locales \
-        task-japanese \
+    locales \
+    task-japanese \
     && locale-gen ja_JP.UTF-8 \
     && localedef -f UTF-8 -i ja_JP ja_JP.utf8 \
     && update-locale LANG=ja_JP.UTF-8 LANGUAGE='ja_JP:ja'

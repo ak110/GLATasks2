@@ -3,7 +3,7 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[dockercompose]": {
-    "editor.defaultFormatter": "ms-azuretools.vscode-docker"
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[dockerfile]": {
     "editor.defaultFormatter": "ms-azuretools.vscode-docker"
@@ -43,10 +43,7 @@
     "**/.ruff_cache": true,
     "**/.cache": true
   },
-  "flake8.enabled": true,
-  "flake8.importStrategy": "fromEnvironment",
-  "flake8.path": ["pflake8"],
-  "isort.importStrategy": "fromEnvironment",
+  "flake8.enabled": false,
   "mypy-type-checker.importStrategy": "fromEnvironment",
   "npm.enableRunFromFolder": true,
   "npm.packageManager": "pnpm",
