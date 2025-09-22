@@ -69,10 +69,10 @@ export function setupTaskFormHandlers(): void {
 
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
 
-      // "data-next" が設定されてたらそこに飛ぶ
-      const { next } = form.dataset
-      if (next) {
-        globalThis.location.href = next
+      // "data-next-url" が設定されてたらそこに飛ぶ
+      const { nextUrl } = form.dataset
+      if (nextUrl) {
+        globalThis.location.href = nextUrl
       } else {
         // なければリロード
         globalThis.location.reload()
