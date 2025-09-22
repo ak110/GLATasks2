@@ -40,12 +40,12 @@ class Task(Base):
 
     @property
     def title(self):
-        return self.text.split("\n", 1)[0].strip()
+        return self.text.split("\n", 1)[0].lstrip("\r\n").rstrip()
 
     @property
     def notes(self):
         s = self.text.split("\n", 1)
-        return s[1].strip() if len(s) == 2 else ""
+        return s[1].lstrip("\r\n").rstrip() if len(s) == 2 else ""
 
     def to_dict_(self) -> dict[str, typing.Any]:
         """dictへ変換。"""
