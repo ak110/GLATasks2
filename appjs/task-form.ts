@@ -72,7 +72,8 @@ export function setupTaskFormHandlers(): void {
       // "data-next-url" が設定されてたらそこに飛ぶ
       const { nextUrl } = form.dataset
       if (nextUrl) {
-        globalThis.location.href = nextUrl
+        // ここは今のところadd.htmlからなので履歴残したくない。確認はしにくくなるが…
+        globalThis.location.replace(nextUrl)
       } else {
         // なければリロード
         globalThis.location.reload()
