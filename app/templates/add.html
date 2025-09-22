@@ -9,6 +9,7 @@
 
 {% block body %}
   <span id="lists-data" class="d-none">{{ helpers.encryptObject(lists) }}</span>
+  <span id="shared-text" class="d-none">{{ shared_text if shared_text else '' }}</span>
   <div
     class="row mt-3 mb-3"
     x-data="{
@@ -50,6 +51,12 @@
       const intent = window.intent || window.webkitIntent
       if (intent && intent.data) {
         $('.taskPostForm [name="text"]').val(intent.data)
+      }
+
+      // 共有データがある場合は事前入力
+      const sharedText = document.querySelector("#shared-text").innerText
+      if (sharedText) {
+        $('.taskPostForm [name="text"]').val(sharedText)
       }
     })
   </script>

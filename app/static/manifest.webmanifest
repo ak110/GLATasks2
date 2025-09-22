@@ -22,5 +22,14 @@
   "scope": "../",
   "display": "standalone",
   "background_color": "#f8f9fa",
-  "orientation": "portrait"
+  "orientation": "portrait",
+  "share_target": {
+    "action": "/share/ingest",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
 }

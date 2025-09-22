@@ -17,6 +17,7 @@ import views.auth
 import views.lists
 import views.main
 import views.sandbox
+import views.share
 import views.tasks
 import web_utils
 import werkzeug.exceptions
@@ -57,6 +58,7 @@ async def acreate_app():
     app.register_blueprint(views.auth.app)
     app.register_blueprint(views.lists.app)
     app.register_blueprint(views.main.app)
+    app.register_blueprint(views.share.app)
     app.register_blueprint(views.tasks.app)
     app.register_blueprint(views.sandbox.app)
 
