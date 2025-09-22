@@ -1,6 +1,6 @@
 export function toArrayBuffer(string_: string): ArrayBuffer {
   const encoder = new TextEncoder() // UTF-8でエンコード
-  return encoder.encode(string_).buffer as ArrayBuffer
+  return encoder.encode(string_).buffer
 }
 
 // Base64 を Uint8Array に変換
