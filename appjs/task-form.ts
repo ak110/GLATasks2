@@ -39,6 +39,7 @@ export function setupTaskFormHandlers(): void {
   )
 
   // フォーム送信処理
+  // submitButtonクラスがついてるボタンがclickされたら全部発火
   document.addEventListener("click", async (event) => {
     const target = event.target as HTMLElement
     if (!target.matches(".submitButton")) return
@@ -67,7 +68,15 @@ export function setupTaskFormHandlers(): void {
       })
 
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
-      location.reload()
+
+      // "data-next" が設定されてたらそこに飛ぶ
+      const { next } = form.dataset
+      if (next) {
+        globalThis.location.href = next
+      } else {
+        // なければリロード
+        globalThis.location.reload()
+      }
     } catch (error) {
       if (error instanceof Error) {
         globalThis.alert(`エラーが発生しました。${error.message}`)

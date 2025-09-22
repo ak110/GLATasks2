@@ -1,6 +1,7 @@
 """共有機能のコントローラー。"""
 
 import helpers
+import models
 import quart
 import quart_auth
 
@@ -38,8 +39,5 @@ async def ingest():
         # 共有データが空の場合はメインページにリダイレクト
         return quart.redirect(quart.url_for("main.index"))
 
-    # 表示されているリストのみを取得
-    lists = [list_.to_dict_() for list_ in current_user.lists if list_.status == "show"]
-
-    # add.htmlテンプレートを表示（共有データを事前入力）
+    lists = models.get_lists(current_user)
     return await quart.render_template("add.html", lists=lists, shared_text=task_text)
