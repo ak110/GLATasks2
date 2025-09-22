@@ -1,1 +1,1 @@
-.clinerules/01-instructions.md
+@AGENTS.md

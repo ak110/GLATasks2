@@ -48,4 +48,4 @@ def test_yyy(tmp_path: pathlib.Path, x: str, expected: str) -> None:
 
 ## リリース手順
 
-- DEVELOPMENT.mdを参照
+- @DEVELOPMENT.md を参照
