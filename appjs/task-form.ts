@@ -81,6 +81,8 @@ export function setupTaskFormHandlers(): void {
     } catch (error) {
       if (error instanceof Error) {
         globalThis.alert(`エラーが発生しました。${error.message}`)
+      } else {
+        globalThis.alert(`エラーが発生しました。${error}`)
       }
     }
   })
