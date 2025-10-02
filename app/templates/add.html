@@ -26,7 +26,7 @@
       <form
         :action='`{{ url_for('tasks.post', list_id=-9999) }}`.replace("-9999", selectedList)'
         method="post"
-        class="taskPostForm mb-3"
+        class="taskPostForm mb-3 text-right"
         data-next-url="{{ url_for('main.index') }}"
       >
         <input type="hidden" name="nonce" value="{{ csrf_token() }}" />

@@ -90,13 +90,20 @@
             </div>
 
             <form
+              x-data="{ onFocus: false }"
               :action="`{{ url_for('tasks.post', list_id=-9999) }}`.replace('-9999', list_.id)"
               method="post"
-              class="taskPostForm mb-3 text-end"
+              class="taskPostForm mb-3 text-right"
             >
               <input type="hidden" name="nonce" value="{{ csrf_token() }}" />
-              <textarea name="text" class="form-control form-control-sm" rows="1"></textarea>
-              <button type="button" class="submitButton btn btn-sm btn-primary" style="display: none;">追加</button>
+              <textarea
+                name="text"
+                class="form-control form-control-sm"
+                :rows="onFocus ? 5 : 1"
+                @focus="onFocus = true"
+                @blur="onFocus = false"
+              ></textarea>
+              <button type="button" class="submitButton btn btn-sm btn-primary" x-show="onFocus">追加</button>
             </form>
 
             <ul class="list-group mb-3">
