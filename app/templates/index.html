@@ -90,7 +90,7 @@
             </div>
 
             <form
-              x-data="{ onFocus: false }"
+              x-data="{ isEditing: false }"
               :action="`{{ url_for('tasks.post', list_id=-9999) }}`.replace('-9999', list_.id)"
               method="post"
               class="taskPostForm mb-3 text-right"
@@ -99,11 +99,11 @@
               <textarea
                 name="text"
                 class="form-control form-control-sm"
-                :rows="onFocus ? 5 : 1"
-                @focus="onFocus = true"
-                @blur="onFocus = false"
+                :rows="isEditing ? 5 : 1"
+                @focus="isEditing = true"
+                @blur='if ($el.value === "") { isEditing = false }'
               ></textarea>
-              <button type="button" class="submitButton btn btn-sm btn-primary" x-show="onFocus">追加</button>
+              <button type="button" class="submitButton btn btn-sm btn-primary" x-show="isEditing">追加</button>
             </form>
 
             <ul class="list-group mb-3">
