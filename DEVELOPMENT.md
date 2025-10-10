@@ -20,11 +20,11 @@
 
 ```bash
 docker compose up --detach db
-docker compose run --rm app alembic init -t async migrations
+# docker compose run --rm app alembic init -t async migrations
 docker compose run --rm app alembic revision --autogenerate --message=""
-docker compose run --rm app alembic upgrade head
-docker compose run --rm app alembic downgrade -1
-docker compose run --rm app alembic history
+make db-up  # docker compose run --rm app alembic upgrade head
+make db-down  # docker compose run --rm app alembic downgrade -1
+make db-history  # docker compose run --rm app alembic history
 ```
 
 ## GitHub Actionsのデプロイ用SSHキー作成手順

@@ -1,7 +1,6 @@
 """コントローラー。"""
 
-import base64
-import json
+import datetime
 import typing
 
 import helpers
@@ -20,10 +19,57 @@ async def _before_request():
 
 @app.route("/api", methods=["GET"])
 async def api():
-    """リストの取得。"""
+    """リスト一覧の取得（タスクなし）。"""
     current_user = helpers.get_logged_in_user()
-    data = json.dumps([list_.to_dict_() for list_ in current_user.lists])
-    return quart.jsonify({"data": base64.b64encode(data.encode("utf-8")).decode("utf-8")})
+
+    # リスト情報のみ（タスクなし）
+    list_data = []
+    for list_ in current_user.lists:
+        list_data.append({"id": list_.id, "title": list_.title, "last_updated": list_.last_updated.isoformat()})
+
+    encrypted_data = helpers.encryptObject(list_data)
+    response = quart.jsonify({"data": encrypted_data})
+
+    # 最新のリストの最終更新時刻をヘッダーに設定
+    if current_user.lists:
+        latest_update = max(list_.last_updated for list_ in current_user.lists)
+        response.headers["Last-Modified"] = latest_update.isoformat()
+
+    return response
+
+
+@app.route("/api/<int:list_id>/tasks", methods=["GET"])
+async def api_tasks(list_id: int):
+    """リストのタスク一覧取得（キャッシュ対応）。"""
+    list_ = await get_owned(list_id)
+
+    # If-Modified-Since ヘッダーをチェック
+    if_modified_since = quart.request.headers.get("If-Modified-Since")
+    if if_modified_since:
+        try:
+            client_last_updated = datetime.datetime.fromisoformat(if_modified_since.replace("Z", "+00:00"))
+            # タイムゾーン情報を統一（UTCに変換）
+            if list_.last_updated.tzinfo is None:
+                list_last_updated = list_.last_updated.replace(tzinfo=datetime.UTC)
+            else:
+                list_last_updated = list_.last_updated.astimezone(datetime.UTC)
+
+            if client_last_updated.tzinfo is None:
+                client_last_updated = client_last_updated.replace(tzinfo=datetime.UTC)
+            else:
+                client_last_updated = client_last_updated.astimezone(datetime.UTC)
+
+            if list_last_updated <= client_last_updated:
+                return quart.Response(status=304)
+        except (ValueError, TypeError):
+            pass  # パースに失敗した場合は通常のレスポンスを返す
+
+    # タスクデータのみを暗号化して返す
+    tasks_data = [task.to_dict_() for task in list_.tasks]
+    encrypted_data = helpers.encryptObject(tasks_data)
+    response = quart.jsonify({"data": encrypted_data})
+    response.headers["Last-Modified"] = list_.last_updated.isoformat()
+    return response
 
 
 @app.route("/post", methods=["POST"])
@@ -55,6 +101,7 @@ async def clear(list_id: int):
     ).scalars()
     for task in tasks:
         task.status = "hidden"
+    list_.last_updated = datetime.datetime.now()
     models.Base.session().commit()
 
     return quart.redirect(quart.url_for("main.index"))
@@ -71,6 +118,7 @@ async def rename(list_id: int):
     if len(title) <= 0:
         quart.abort(400)
     list_.title = title
+    list_.last_updated = datetime.datetime.now()
     models.Base.session().commit()
 
     return quart.redirect(quart.url_for("main.index"))

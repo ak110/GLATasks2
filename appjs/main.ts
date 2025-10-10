@@ -5,6 +5,7 @@ import { decrypt } from "./crypto.js"
 import "./tailwind.css"
 import { setupTaskFormHandlers } from "./task-form.js"
 import { setupTaskOperationHandlers } from "./task-operation.js"
+import { setupListCacheHandlers, listCache } from "./list-cache.js"
 
 // アプリケーションの初期化
 async function initializeApp(config: AppConfig): Promise<void> {
@@ -13,6 +14,7 @@ async function initializeApp(config: AppConfig): Promise<void> {
   // フォームハンドラの設定
   setupTaskFormHandlers()
   setupTaskOperationHandlers(config)
+  setupListCacheHandlers()
 
   // サービスワーカーの登録
   if ("serviceWorker" in navigator) {
@@ -38,3 +40,4 @@ globalThis.Alpine = AlpineJS
 globalThis.bootstrap = bootstrap
 globalThis.initializeApp = initializeApp
 globalThis.decryptObject = decryptObject
+globalThis.listCache = listCache

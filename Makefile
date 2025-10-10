@@ -54,6 +54,15 @@ start:
 stop:
 	docker compose down
 
+db-up:
+	docker compose run --rm app alembic upgrade head
+
+db-down:
+	docker compose run --rm app alembic downgrade -1
+
+db-history:
+	docker compose run --rm app alembic history
+
 hup:
 	docker compose kill -s HUP
 

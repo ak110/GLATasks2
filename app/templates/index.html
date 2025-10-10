@@ -8,19 +8,39 @@
 {% endblock %}
 
 {% block body %}
-  <span id="lists-data" class="d-none">{{ helpers.encryptObject(lists) }}</span>
   <div
     x-data='{
       lists: [],
       show_type: {{ show_type | tojson }},
       selectedList: null,
+      listCache: null,
       __dummy_for_prettier: "",
     }'
     x-init='
-      lists = await globalThis.decryptObject(document.querySelector("#lists-data").innerText)
+      listCache = window.listCache
+
+      // 初期状態では空、fetchでデータを取得
       const savedList = localStorage.getItem("selectedList")
-      selectedList = savedList ? parseInt(savedList) : (lists.length > 0 ? lists[0].id : null)
-      $watch("selectedList", value => localStorage.setItem("selectedList", value))
+
+      // リスト一覧を取得
+      const listsData = await listCache.fetchLists()
+      if (listsData) {
+        lists = listsData
+        selectedList = savedList ? parseInt(savedList) : (lists.length > 0 ? lists[0].id : null)
+      }
+
+      $watch("selectedList", async (value) => {
+        if (value) {
+          localStorage.setItem("selectedList", value)
+          // 選択されたリストのタスクを取得
+          await listCache.fetchTasks(value)
+        }
+      })
+
+      // 初期選択リストのタスクを取得
+      if (selectedList) {
+        await listCache.fetchTasks(selectedList)
+      }
     '
   >
     <div class="row mt-3 mb-3">

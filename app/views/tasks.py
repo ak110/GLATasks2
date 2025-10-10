@@ -28,6 +28,7 @@ async def post(list_id):
     text = helpers.decrypt(text)
     text = text.lstrip("\r\n").rstrip()  # 左側は改行のみstrip(インデント維持のため)
     models.Base.session().add(models.Task(list_id=list_.id, text=text))
+    list_.last_updated = datetime.datetime.now()
     models.Base.session().commit()
     return quart.redirect(quart.url_for("main.index"))
 
@@ -35,7 +36,7 @@ async def post(list_id):
 @app.route("/api/<list_id>/<task_id>", methods=["PATCH"])
 async def patch_api(list_id, task_id):
     """タスクの更新。"""
-    _, task = await get_owned(list_id, task_id)
+    list_, task = await get_owned(list_id, task_id)
 
     json_data = await quart.request.get_json()  # type: ignore
     # 難読化されたデータを復号
@@ -61,7 +62,9 @@ async def patch_api(list_id, task_id):
             if list2.user_id != current_user.id:
                 quart.abort(403)
             task.list_id = move_to
+            list2.last_updated = datetime.datetime.now()
 
+    list_.last_updated = datetime.datetime.now()
     models.Base.session().commit()
     return quart.jsonify(
         {
