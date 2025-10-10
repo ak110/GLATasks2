@@ -1,9 +1,18 @@
+/**
+ * @fileoverview 暗号化関連
+ */
+
+/**
+ * stringからArrayBufferへの変換
+ */
 export function toArrayBuffer(string_: string): ArrayBuffer {
   const encoder = new TextEncoder() // UTF-8でエンコード
   return encoder.encode(string_).buffer
 }
 
-// Base64 を Uint8Array に変換
+/**
+ * Base64からUint8Arrayへの変換
+ */
 export function fromBase64(base64: string): Uint8Array {
   const binaryString = globalThis.atob(base64)
   const bytes = new Uint8Array(binaryString.length)
@@ -19,7 +28,9 @@ export function fromBase64(base64: string): Uint8Array {
   return bytes
 }
 
-// Uint8Array を Base64 に変換
+/**
+ * Uint8ArrayからBase64への変換
+ */
 export function toBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer)
   let binaryString = ""
@@ -30,6 +41,9 @@ export function toBase64(buffer: ArrayBuffer): string {
   return globalThis.btoa(binaryString)
 }
 
+/**
+ * 暗号化
+ */
 export async function encrypt(plaintext: string, keyString: string): Promise<string> {
   const keyBuffer = Uint8Array.from(globalThis.atob(keyString), (c) => c.codePointAt(0)!)
   const key = await globalThis.crypto.subtle.importKey("raw", keyBuffer, { name: "AES-GCM" }, false, ["encrypt"])
@@ -47,6 +61,9 @@ export async function encrypt(plaintext: string, keyString: string): Promise<str
   return globalThis.btoa(binaryString)
 }
 
+/**
+ * 復号
+ */
 export async function decrypt(ciphertext: string, keyString: string): Promise<string> {
   const keyBuffer = Uint8Array.from(globalThis.atob(keyString), (c) => c.codePointAt(0)!)
   const key = await globalThis.crypto.subtle.importKey("raw", keyBuffer, { name: "AES-GCM" }, false, ["decrypt"])

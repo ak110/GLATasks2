@@ -3,23 +3,17 @@ import * as bootstrap from "bootstrap"
 import "bootstrap/dist/css/bootstrap.min.css"
 import { decrypt } from "./crypto.js"
 import "./tailwind.css"
-import { setupTaskFormHandlers } from "./task-form.js"
-import { setupTaskOperationHandlers } from "./task-operation.js"
-import { setupListCacheHandlers, listCache } from "./list-cache.js"
+import { initializeLists } from "./lists.js"
+import { initializeTasks } from "./tasks.js"
 
 // アプリケーションの初期化
-async function initializeApp(config: AppConfig): Promise<void> {
-  globalThis.encrypt_key = config.encrypt_key
-
-  // フォームハンドラの設定
-  setupTaskFormHandlers()
-  setupTaskOperationHandlers(config)
-  setupListCacheHandlers()
+async function initializeApp(): Promise<void> {
+  globalThis.encrypt_key = globalThis.appConfig.encrypt_key
 
   // サービスワーカーの登録
   if ("serviceWorker" in navigator) {
     try {
-      const registration = await navigator.serviceWorker.register(config.urls._swjs)
+      const registration = await navigator.serviceWorker.register(globalThis.appConfig.urls._swjs)
       console.log("ServiceWorker registration successful with scope:", registration.scope)
     } catch (error: unknown) {
       console.log("ServiceWorker registration failed:", error)
@@ -40,4 +34,5 @@ globalThis.Alpine = AlpineJS
 globalThis.bootstrap = bootstrap
 globalThis.initializeApp = initializeApp
 globalThis.decryptObject = decryptObject
-globalThis.listCache = listCache
+globalThis.initializeLists = initializeLists
+globalThis.initializeTasks = initializeTasks

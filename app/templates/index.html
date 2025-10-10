@@ -13,34 +13,28 @@
       lists: [],
       show_type: {{ show_type | tojson }},
       selectedList: null,
-      listCache: null,
+      listsHandler: null,
+      tasksHandler: null,
       __dummy_for_prettier: "",
     }'
     x-init='
-      listCache = window.listCache
+      listsHandler = window.initializeLists(this)
+      tasksHandler = window.initializeTasks()
 
-      // 初期状態では空、fetchでデータを取得
+      await listsHandler.fetchLists()
+
       const savedList = localStorage.getItem("selectedList")
+      selectedList = savedList ? parseInt(savedList) : (lists.length > 0 ? lists[0].id : null)
 
-      // リスト一覧を取得
-      const listsData = await listCache.fetchLists()
-      if (listsData) {
-        lists = listsData
-        selectedList = savedList ? parseInt(savedList) : (lists.length > 0 ? lists[0].id : null)
+      if (selectedList) {
+        await listsHandler.selectList(selectedList)
       }
 
       $watch("selectedList", async (value) => {
         if (value) {
-          localStorage.setItem("selectedList", value)
-          // 選択されたリストのタスクを取得
-          await listCache.fetchTasks(value)
+          await listsHandler.selectList(value)
         }
       })
-
-      // 初期選択リストのタスクを取得
-      if (selectedList) {
-        await listCache.fetchTasks(selectedList)
-      }
     '
   >
     <div class="row mt-3 mb-3">
@@ -63,7 +57,9 @@
             <form action="{{ url_for('lists.post') }}" method="post" class="input-group">
               <input type="hidden" name="nonce" value="{{ csrf_token() }}" />
               <input type="text" name="title" class="form-control form-control-sm" required />
-              <button type="button" class="submitButton btn btn-sm btn-primary">追加</button>
+              <button type="button" class="btn btn-sm btn-primary" @click="await listsHandler.submitForm($el.closest('form'))">
+                追加
+              </button>
             </form>
           </div>
         </div>
@@ -86,7 +82,13 @@
                 <div class="btn-group">
                   <form :action="`{{ url_for('lists.clear', list_id=-9999) }}`.replace('-9999', list_.id)" method="post">
                     <input type="hidden" name="nonce" value="{{ csrf_token() }}" />
-                    <button type="button" class="submitButton btn btn-sm btn-outline-warning">完了済みを非表示化</button>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-warning"
+                      @click="await listsHandler.submitForm($el.closest('form'))"
+                    >
+                      完了済みを非表示化
+                    </button>
                   </form>
                 </div>
                 <div class="btn-group">
@@ -123,7 +125,14 @@
                 @focus="isEditing = true"
                 @blur='if ($el.value === "") { isEditing = false }'
               ></textarea>
-              <button type="button" class="submitButton btn btn-sm btn-primary" x-show="isEditing">追加</button>
+              <button
+                type="button"
+                class="btn btn-sm btn-primary"
+                x-show="isEditing"
+                @click="await tasksHandler.submitTaskForm($el.closest('form'))"
+              >
+                追加
+              </button>
             </form>
 
             <ul class="list-group mb-3">
@@ -137,8 +146,12 @@
                     class="list-group-item taskItem"
                     :class="task.status == 'needsAction' ? '' : 'taskCompleted'"
                   >
-                    <input type="checkbox" :checked="task.status !== 'needsAction'" />
-                    <span class="editButton">編集</span>
+                    <input
+                      type="checkbox"
+                      :checked="task.status !== 'needsAction'"
+                      @click.prevent="await tasksHandler.toggleTaskCompletion($el)"
+                    />
+                    <span class="editButton" @click="tasksHandler.editTask($el.closest('.taskItem'))">編集</span>
 
                     <span class="title" x-text="task.title"></span><br />
                     <small class="notes text-muted" style="white-space: pre-wrap;" x-text="task.notes.trim()"></small>
@@ -159,8 +172,9 @@
                 <input type="text" name="title" :value="list_.title" class="form-control form-control-sm" required />
                 <button
                   type="button"
-                  class="submitButton btn btn-sm btn-primary"
+                  class="btn btn-sm btn-primary"
                   data-confirm="リストの名前を変更します。よろしいですか?"
+                  @click="await listsHandler.submitForm($el.closest('form'))"
                 >
                   リネーム
                 </button>
@@ -171,8 +185,9 @@
                 <div class="text-end">
                   <button
                     type="button"
-                    class="submitButton btn btn-sm btn-danger"
+                    class="btn btn-sm btn-danger"
                     data-confirm="リストを非表示化します。よろしいですか?"
+                    @click="await listsHandler.submitForm($el.closest('form'))"
                   >
                     非表示化
                   </button>
@@ -184,8 +199,9 @@
                 <div class="text-end">
                   <button
                     type="button"
-                    class="submitButton btn btn-sm btn-danger"
+                    class="btn btn-sm btn-danger"
                     data-confirm="リストと関連するタスクを全て削除します。よろしいですか?"
+                    @click="await listsHandler.submitForm($el.closest('form'))"
                   >
                     削除
                   </button>
@@ -221,7 +237,9 @@
               </div>
             </div>
             <div class="modal-footer">
-              <button type="submit" class="btn btn-primary">保存</button>
+              <button type="button" class="btn btn-primary" @click="await tasksHandler.submitTaskEdit($el.closest('form'))">
+                保存
+              </button>
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
             </div>
           </div>

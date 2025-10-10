@@ -65,6 +65,10 @@ def test_yyy(tmp_path: pathlib.Path, x: str, expected: str) -> None:
 ## TypeScriptコーディングスタイル
 
 - TypeScript側でaddEventListenerは極力使わず、Alpine.jsから呼び出す形にする
+- TypeScript内にURLを直書きせず、`window.appConfig`から取得する
+  - URLの設定は`app/templates/_layout.html`でのみ行い、`url_for`を使用してFlaskのルーティングと連携
+  - 例：`fetch("/api/lists")` ではなく `fetch(window.appConfig.urls["lists.api"])`
+  - 各ページでURLを重複定義しない（_layout.htmlで一元管理）
 
 ### TypeScriptテストコード
 
