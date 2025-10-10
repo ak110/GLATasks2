@@ -1,3 +1,7 @@
+/**
+ * @fileoverview リスト管理関連
+ */
+
 import { encrypt, decrypt } from "./crypto.js"
 
 type ListInfo = {
@@ -14,16 +18,25 @@ type TaskInfo = {
   status: string
 }
 
+/**
+ * リスト管理クラス
+ */
 class ListsManager {
   private lists: ListInfo[] = []
   private listTimestamp: string | undefined
   private readonly taskTimestamps = new Map<number, string>()
   private config!: AppConfig
 
+  /**
+   * 設定を設定
+   */
   setConfig(config: AppConfig): void {
     this.config = config
   }
 
+  /**
+   * リスト一覧を取得
+   */
   async fetchLists(): Promise<ListInfo[]> {
     try {
       const headers: Record<string, string> = {}
@@ -48,7 +61,7 @@ class ListsManager {
       const responseData = (await response.json()) as { data: string }
       const lastModified = response.headers.get("Last-Modified") ?? new Date().toISOString()
 
-      const decrypted = await decrypt(responseData.data, globalThis.encrypt_key)
+      const decrypted = await decrypt(responseData.data, globalThis.appConfig.encrypt_key)
       const listsData: ListInfo[] = JSON.parse(decrypted) as ListInfo[]
 
       this.lists = listsData
@@ -61,6 +74,9 @@ class ListsManager {
     }
   }
 
+  /**
+   * 指定されたリストのタスクを取得
+   */
   async fetchTasksForList(listId: number): Promise<TaskInfo[]> {
     try {
       const headers: Record<string, string> = {}
@@ -89,7 +105,7 @@ class ListsManager {
       const responseData = (await response.json()) as { data: string }
       const lastModified = response.headers.get("Last-Modified") ?? new Date().toISOString()
 
-      const decrypted = await decrypt(responseData.data, globalThis.encrypt_key)
+      const decrypted = await decrypt(responseData.data, globalThis.appConfig.encrypt_key)
       const tasksData: TaskInfo[] = JSON.parse(decrypted) as TaskInfo[]
 
       const listIndex = this.lists.findIndex((l) => l.id === listId)
@@ -107,11 +123,14 @@ class ListsManager {
     }
   }
 
+  /**
+   * リストフォームを送信
+   */
   async submitListForm(form: HTMLFormElement): Promise<void> {
     const formData = new FormData(form)
     const title = formData.get("title") as string
     if (title) {
-      formData.set("title", await encrypt(title, globalThis.encrypt_key))
+      formData.set("title", await encrypt(title, globalThis.appConfig.encrypt_key))
     }
 
     const response = await fetch(form.action, {
@@ -122,10 +141,16 @@ class ListsManager {
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
   }
 
+  /**
+   * キャッシュされたリスト一覧を取得
+   */
   getCachedLists(): ListInfo[] {
     return this.lists
   }
 
+  /**
+   * キャッシュをクリア
+   */
   clearCache(): void {
     this.lists = []
     this.listTimestamp = undefined
@@ -135,6 +160,9 @@ class ListsManager {
 
 export const listsManager = new ListsManager()
 
+/**
+ * リスト管理機能を初期化
+ */
 export function initializeLists(alpineData: any): {
   fetchLists: () => Promise<void>
   selectList: (listId: number) => Promise<void>

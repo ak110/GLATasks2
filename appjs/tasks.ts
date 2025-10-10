@@ -1,3 +1,7 @@
+/**
+ * @fileoverview タスク管理関連
+ */
+
 import { Modal } from "bootstrap"
 import { encrypt } from "./crypto.js"
 
@@ -5,6 +9,9 @@ type TaskPatchResponse = {
   status: "completed" | "needsAction"
 }
 
+/**
+ * タスク管理機能を初期化
+ */
 export function initializeTasks(): {
   editTask: (taskElement: HTMLElement) => void
   toggleTaskCompletion: (checkbox: HTMLInputElement) => Promise<void>
@@ -67,7 +74,7 @@ export function initializeTasks(): {
       const formData = new FormData(form)
       const text = formData.get("text") as string
       if (text) {
-        formData.set("text", await encrypt(text, globalThis.encrypt_key))
+        formData.set("text", await encrypt(text, globalThis.appConfig.encrypt_key))
       }
 
       const response = await fetch(form.action, {
@@ -101,9 +108,12 @@ export function initializeTasks(): {
   }
 }
 
+/**
+ * タスクのステータスを更新
+ */
 async function updateTaskStatus(config: AppConfig, listId: string, taskId: string, completed: boolean): Promise<void> {
   const data = completed ? { status: "completed" } : { status: "needsAction", completed: null }
-  const encrypted = await encrypt(JSON.stringify(data), globalThis.encrypt_key)
+  const encrypted = await encrypt(JSON.stringify(data), globalThis.appConfig.encrypt_key)
   const url = config.urls["tasks.patch_api"].replace(":list_id:", listId).replace(":task_id:", taskId)
   const response = await fetch(url, {
     method: "PATCH",
@@ -123,13 +133,16 @@ async function updateTaskStatus(config: AppConfig, listId: string, taskId: strin
   }
 }
 
+/**
+ * タスク内容を更新
+ */
 async function updateTask(config: AppConfig, listId: string, taskId: string, text: string, moveTo: string): Promise<void> {
   const data = {
     text,
     move_to: moveTo,
   }
 
-  const encrypted = await encrypt(JSON.stringify(data), globalThis.encrypt_key)
+  const encrypted = await encrypt(JSON.stringify(data), globalThis.appConfig.encrypt_key)
   const url = config.urls["tasks.patch_api"].replace(":list_id:", listId).replace(":task_id:", taskId)
   const response = await fetch(url, {
     method: "PATCH",
@@ -144,6 +157,9 @@ async function updateTask(config: AppConfig, listId: string, taskId: string, tex
   }
 }
 
+/**
+ * 完了状態のUIを更新
+ */
 function updateCompletionStatus(taskItem: HTMLElement, checkbox: HTMLInputElement, completed: boolean): void {
   if (completed) {
     checkbox.checked = true

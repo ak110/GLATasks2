@@ -1,6 +1,5 @@
 """タスクコントローラーのテストコード。"""
 
-import base64
 import json
 import re
 
@@ -44,7 +43,7 @@ async def test_task_operations(user_client: quart.typing.TestClientProtocol):
     # リストIDの取得
     response = await user_client.get("/lists/api")
     data = json.loads(await response.get_data())
-    lists = json.loads(base64.b64decode(data["data"]).decode("utf-8"))
+    lists = json.loads(helpers.decrypt(data["data"]))
     list_id = lists[0]["id"]
 
     # タスクの追加

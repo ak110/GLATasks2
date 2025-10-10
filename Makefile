@@ -66,11 +66,17 @@ db-history:
 hup:
 	docker compose kill -s HUP
 
+restart-app:
+	docker compose restart app
+
 logs:
 	docker compose logs -ft
 
 ps:
 	docker compose ps
+
+healthcheck:
+	docker compose exec app curl --fail http://localhost:8000/healthcheck
 
 start-devserver:
 	docker compose down devserver
@@ -121,4 +127,4 @@ test-ts:
 test-py:
 	uv run pyfltr --exit-zero-even-if-formatted app
 
-.PHONY: help sync update format test build deploy stop hup logs ps start-devserver logs-devserver sql shell node-shell
+.PHONY: help sync deploy build start stop db-up db-down db-history hup restart-app logs ps healthcheck shell node-shell update update-ts update-py format format-ts format-py test test-ts test-py

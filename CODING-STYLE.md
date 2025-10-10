@@ -69,6 +69,10 @@ def test_yyy(tmp_path: pathlib.Path, x: str, expected: str) -> None:
   - URLの設定は`app/templates/_layout.html`でのみ行い、`url_for`を使用してFlaskのルーティングと連携
   - 例：`fetch("/api/lists")` ではなく `fetch(window.appConfig.urls["lists.api"])`
   - 各ページでURLを重複定義しない（_layout.htmlで一元管理）
+- JSDocコメントを記述する
+  - ファイルの先頭に`@fileoverview`で概要を記述
+  - 関数・クラス・メソッドには機能を説明するコメントを記述
+  - 自明な`@param`や`@returns`は省略する
 
 ### TypeScriptテストコード
 

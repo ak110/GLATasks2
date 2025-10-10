@@ -1,15 +1,18 @@
+/**
+ * @fileoverview メインアプリケーション
+ */
+
 import AlpineJS from "alpinejs"
 import * as bootstrap from "bootstrap"
 import "bootstrap/dist/css/bootstrap.min.css"
-import { decrypt } from "./crypto.js"
 import "./tailwind.css"
 import { initializeLists } from "./lists.js"
 import { initializeTasks } from "./tasks.js"
 
-// アプリケーションの初期化
+/**
+ * アプリケーションの初期化
+ */
 async function initializeApp(): Promise<void> {
-  globalThis.encrypt_key = globalThis.appConfig.encrypt_key
-
   // サービスワーカーの登録
   if ("serviceWorker" in navigator) {
     try {
@@ -24,15 +27,8 @@ async function initializeApp(): Promise<void> {
   AlpineJS.start()
 }
 
-// 復号
-async function decryptObject<T>(crypted: string): Promise<T> {
-  const decrypted = await decrypt(crypted, globalThis.encrypt_key)
-  return JSON.parse(decrypted) as T
-}
-
 globalThis.Alpine = AlpineJS
 globalThis.bootstrap = bootstrap
 globalThis.initializeApp = initializeApp
-globalThis.decryptObject = decryptObject
 globalThis.initializeLists = initializeLists
 globalThis.initializeTasks = initializeTasks

@@ -73,8 +73,10 @@ def do_run_migrations(connection: Connection) -> None:
 
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
+    url = config.get_main_option("sqlalchemy.url")
+    assert url is not None
     connectable = create_engine(
-        config.get_main_option("sqlalchemy.url"),
+        url=url,
         poolclass=pool.NullPool,
         future=True,
     )

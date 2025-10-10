@@ -1,6 +1,5 @@
 """リストコントローラーのテストコード。"""
 
-import base64
 import json
 import re
 
@@ -27,7 +26,7 @@ async def test_api(user_client: quart.typing.TestClientProtocol):
     await pytilpack.quart.assert_json(response)
     data = json.loads(await response.get_data())
     assert "data" in data
-    decoded_data = json.loads(base64.b64decode(data["data"]).decode("utf-8"))
+    decoded_data = json.loads(helpers.decrypt(data["data"]))
     assert isinstance(decoded_data, list)
 
 
@@ -74,7 +73,7 @@ async def test_list_operations(user_client: quart.typing.TestClientProtocol):
     # 作成されたリストのIDを取得
     response = await user_client.get("/lists/api")
     data = json.loads(await response.get_data())
-    lists = json.loads(base64.b64decode(data["data"]).decode("utf-8"))
+    lists = json.loads(helpers.decrypt(data["data"]))
     list_id = lists[0]["id"]
 
     # 新しいnonceを取得

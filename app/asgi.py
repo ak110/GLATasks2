@@ -12,6 +12,7 @@ import pytilpack.quart
 import pytilpack.quart_auth
 import pytilpack.sqlalchemy
 import quart
+import quart.json.provider
 import quart_auth
 import views.auth
 import views.lists
@@ -33,6 +34,12 @@ async def acreate_app():
     app = quart.Quart(__name__)
     # Flask extension compatibility is enabled by importing quart_flask_patch
     app.secret_key = config.FLASK_CONFIG["SECRET_KEY"]
+
+    # quart.jsonify()の設定
+    assert isinstance(app.json, quart.json.provider.DefaultJSONProvider)
+    app.json.ensure_ascii = False
+    app.json.sort_keys = False
+    app.json.compact = False
 
     app.config.from_mapping(config.FLASK_CONFIG)
     app.asgi_app = pytilpack.quart.ProxyFix(app)  # type: ignore
