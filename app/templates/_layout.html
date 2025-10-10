@@ -16,8 +16,10 @@
       globalThis.appConfig = {
         urls: {
           "lists.api": "{{ url_for('lists.api') }}",
-          "lists.api_tasks": "{{ url_for('lists.api') }}/:list_id:/tasks",
-          "tasks.patch_api": "{{ url_for('tasks.patch_api', list_id=':list_id:', task_id=':task_id:') }}",
+          "lists.api_tasks": "{{ url_for('lists.api_tasks', list_id=-999) }}".replace("/-999/", "/:list_id:/"),
+          "tasks.patch_api": "{{ url_for('tasks.patch_api', list_id=-999, task_id=-999) }}"
+            .replace("/-999/", "/:list_id:/")
+            .replace("/-999", "/:task_id:"),
           _swjs: "{{ url_for('_swjs') }}",
         },
         encrypt_key: "{{ helpers.base64encode(helpers.encrypt_key) }}",

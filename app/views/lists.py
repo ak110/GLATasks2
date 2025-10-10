@@ -20,12 +20,19 @@ async def _before_request():
 @app.route("/api", methods=["GET"])
 async def api():
     """リスト一覧の取得（タスクなし）。"""
+    import logging
+
+    logging.info("[DEBUG] lists.api: リスト一覧取得開始")
     current_user = helpers.get_logged_in_user()
+    logging.info(f"[DEBUG] lists.api: ユーザーID={current_user.id}")
 
     # リスト情報のみ（タスクなし）
     list_data = []
     for list_ in current_user.lists:
         list_data.append({"id": list_.id, "title": list_.title, "last_updated": list_.last_updated.isoformat()})
+
+    logging.info(f"[DEBUG] lists.api: リスト数={len(list_data)}")
+    logging.info(f"[DEBUG] lists.api: リストデータ={list_data}")
 
     encrypted_data = helpers.encryptObject(list_data)
     response = quart.jsonify({"data": encrypted_data})
@@ -34,7 +41,9 @@ async def api():
     if current_user.lists:
         latest_update = max(list_.last_updated for list_ in current_user.lists)
         response.headers["Last-Modified"] = latest_update.isoformat()
+        logging.info(f"[DEBUG] lists.api: Last-Modified={latest_update.isoformat()}")
 
+    logging.info("[DEBUG] lists.api: レスポンス送信")
     return response
 
 

@@ -17,3 +17,8 @@
 - @README.md
 - @DEVELOPMENT.md
 - @CODING-STYLE.md
+
+## その他のふるまい
+
+- バグを作りこみ、ユーザーの指摘で修正した場合、
+  修正完了後に同様の問題が再発しないようにDEVELOPMENT.md の「開発時の注意点」に追記する

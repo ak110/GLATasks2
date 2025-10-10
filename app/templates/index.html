@@ -18,23 +18,33 @@
       __dummy_for_prettier: "",
     }'
     x-init='
-      listsHandler = window.initializeLists(this)
+      console.debug("x-init: 開始")
+      listsHandler = window.initializeLists($data)
       tasksHandler = window.initializeTasks()
 
       await listsHandler.fetchLists()
+      console.debug("x-init: fetchLists完了後 lists =", lists, "lists.length =", lists.length)
 
       const savedList = localStorage.getItem("selectedList")
       selectedList = savedList ? parseInt(savedList) : (lists.length > 0 ? lists[0].id : null)
+      console.debug("x-init: selectedList =", selectedList)
 
       if (selectedList) {
         await listsHandler.selectList(selectedList)
+        console.debug("x-init: selectList完了後 lists =", lists)
+        console.debug("x-init: selectList完了後 lists[0] =", lists[0])
+        console.debug("x-init: selectList完了後 lists[1] =", lists[1])
+        console.debug("x-init: selectList完了後 lists[0].tasks =", lists[0]?.tasks)
+        console.debug("x-init: selectList完了後 lists[1].tasks =", lists[1]?.tasks)
       }
 
       $watch("selectedList", async (value) => {
+        console.debug("$watch: selectedList変更 =", value)
         if (value) {
           await listsHandler.selectList(value)
         }
       })
+      console.debug("x-init: 完了")
     '
   >
     <div class="row mt-3 mb-3">
@@ -68,9 +78,9 @@
         {# 右ペイン #}
         <template x-for="(list_, index) in lists" :key="list_.id">
           <div
+            x-show="selectedList === list_.id"
             :id="`list-${list_.id}`"
-            class="tab-pane fade"
-            :class="selectedList === list_.id ? 'show active' : ''"
+            class="tab-pane fade show active"
             role="tabpanel"
             :aria-labelledby="`list-${list_.id}-tab`"
           >
@@ -135,10 +145,13 @@
               </button>
             </form>
 
-            <ul class="list-group mb-3">
-              <template x-for="(task, index) in list_.tasks" :key="task.id">
+            <ul
+              class="list-group mb-3"
+              x-init="console.debug('タスクリスト表示:', list_.id, 'tasks:', list_.tasks, 'length:', list_.tasks?.length, 'list_:', list_)"
+            >
+              <template x-for="(task, index) in (list_.tasks || [])" :key="task.id">
                 <template
-                  x-if="['needsAction', 'completed'].includes(task.status) === (show_type == 'list') || show_type == 'all'"
+                  x-if="(show_type == 'list' && ['needsAction', 'completed'].includes(task.status)) || show_type == 'all'"
                 >
                   <li
                     :id="task.id"
