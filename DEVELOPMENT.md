@@ -82,3 +82,4 @@ GitHub に秘密鍵を登録:
   `git fetch --tags && git tag --sort=version:refname | tail -n1`
 3. GitHubでリリースを作成:
   `gh release create --target=master --generate-notes v2.x.x`
+4. <https://github.com/ak110/GLATasks2/actions> をブラウザで開き、デプロイ状況を確認する (手動で実施)
