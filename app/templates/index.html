@@ -15,6 +15,7 @@
       selectedList: null,
       listsHandler: null,
       tasksHandler: null,
+      loadingCount: 0,
       __dummy_for_prettier: "",
     }'
     x-init='
@@ -77,6 +78,15 @@
             >
               <div class="row mb-3">
                 <div class="col-12 text-end">
+                  {# ローディングスピナー #}
+                  <div
+                    x-cloak
+                    x-show="loadingCount > 0"
+                    class="spinner-border spinner-border-sm text-primary me-2"
+                    role="status"
+                  >
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
                   <div class="btn-group">
                     <a class="btn btn-sm btn-outline-primary" href="{{ url_for('main.index') }}">再読み込み</a>
                   </div>

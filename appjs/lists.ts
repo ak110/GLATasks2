@@ -32,24 +32,34 @@ export function initializeLists(): {
      * リスト一覧を取得
      */
     async fetchLists($data: any, showType: string) {
-      $data.lists = await listsManager.fetchLists(showType)
-      console.debug("fetchLists:", Alpine.raw($data.lists))
+      $data.loadingCount += 1
+      try {
+        $data.lists = await listsManager.fetchLists(showType)
+        console.debug("fetchLists:", Alpine.raw($data.lists))
+      } finally {
+        $data.loadingCount -= 1
+      }
     },
 
     /**
      * タスク一覧を取得
      */
     async fetchTasks($data: any, listId: number) {
-      const listIndex = ($data.lists as ListInfo[]).findIndex((l: ListInfo) => l.id === listId)
-      if (listIndex === -1) {
-        console.warn(`fetchTasks: リストが見つかりません (listId=${listId})`)
-      } else {
-        // ↓うまくreactiveに反映されるにはこうするといいっぽい(謎)
-        $data.lists[listIndex] = {
-          ...($data.$data.lists[listIndex] as TaskInfo),
-          tasks: await listsManager.fetchTasksForList(listId),
+      $data.loadingCount += 1
+      try {
+        const listIndex = ($data.lists as ListInfo[]).findIndex((l: ListInfo) => l.id === listId)
+        if (listIndex === -1) {
+          console.warn(`fetchTasks: リストが見つかりません (listId=${listId})`)
+        } else {
+          // ↓うまくreactiveに反映されるにはこうするといいっぽい(謎)
+          $data.lists[listIndex] = {
+            ...($data.$data.lists[listIndex] as TaskInfo),
+            tasks: await listsManager.fetchTasksForList(listId),
+          }
+          console.debug(`fetchTasks:`, Alpine.raw($data.lists[listIndex]))
         }
-        console.debug(`fetchTasks:`, Alpine.raw($data.lists[listIndex]))
+      } finally {
+        $data.loadingCount -= 1
       }
     },
 
