@@ -127,7 +127,7 @@
                   @focus="isEditing = true"
                   @blur='if ($el.value === "") { isEditing = false }'
                 ></textarea>
-                <div class="text-right">
+                <div class="text-right!">
                   <button
                     type="button"
                     class="btn btn-sm btn-primary"
@@ -142,23 +142,26 @@
               <ul class="list-group mb-3">
                 {# タスク一覧 #}
                 <template x-for="(task, index) in list_.tasks" :key="task.id">
-                  <li
-                    x-show="['needsAction', 'completed'].includes(task.status) === (show_type == 'list') || show_type == 'all'"
-                    :id="task.id"
-                    :data-list-id="list_.id"
-                    class="list-group-item taskItem"
-                    :class="task.status == 'needsAction' ? '' : 'taskCompleted'"
+                  <template
+                    x-if="['needsAction', 'completed'].includes(task.status) === (show_type == 'list') || show_type == 'all'"
                   >
-                    <input
-                      type="checkbox"
-                      :checked="task.status !== 'needsAction'"
-                      @click.prevent="await tasksHandler.toggleTaskCompletion($el)"
-                    />
-                    <span class="editButton" @click="tasksHandler.editTask($el.closest('.taskItem'))">編集</span>
+                    <li
+                      :id="task.id"
+                      :data-list-id="list_.id"
+                      class="list-group-item taskItem"
+                      :class="task.status == 'needsAction' ? '' : 'taskCompleted'"
+                    >
+                      <input
+                        type="checkbox"
+                        :checked="task.status !== 'needsAction'"
+                        @click.prevent="await tasksHandler.toggleTaskCompletion($el)"
+                      />
+                      <span class="editButton" @click="tasksHandler.editTask($el.closest('.taskItem'))">編集</span>
 
-                    <span class="title" x-text="task.title"></span><br />
-                    <small class="notes text-muted" style="white-space: pre-wrap;" x-text="task.notes.trim()"></small>
-                  </li>
+                      <span class="title" x-text="task.title"></span><br />
+                      <small class="notes text-muted" style="white-space: pre-wrap;" x-text="task.notes.trim()"></small>
+                    </li>
+                  </template>
                 </template>
               </ul>
 
