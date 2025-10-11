@@ -61,13 +61,14 @@ def test_yyy(tmp_path: pathlib.Path, x: str, expected: str) -> None:
 
 - URLは直接書かず、`{{ url_for("xxx") }}`を使用する
 - Alpine.jsであまり複雑な処理を実装せず、可能な限りTypeScriptで実装した関数を呼び出す形にする
+- windowではなくglobalThisを使用する
 
 ## TypeScriptコーディングスタイル
 
 - TypeScript側でaddEventListenerは極力使わず、Alpine.jsから呼び出す形にする
-- TypeScript内にURLを直書きせず、`window.appConfig`から取得する
+- TypeScript内にURLを直書きせず、`globalThis.appConfig`から取得する
   - URLの設定は`app/templates/_layout.html`でのみ行い、`url_for`を使用してFlaskのルーティングと連携
-  - 例：`fetch("/api/lists")` ではなく `fetch(window.appConfig.urls["lists.api"])`
+  - 例：`fetch("/api/lists")` ではなく `fetch(globalThis.appConfig.urls["lists.api"])`
   - 各ページでURLを重複定義しない（_layout.htmlで一元管理）
 - JSDocコメントを記述する
   - ファイルの先頭に`@fileoverview`で概要を記述

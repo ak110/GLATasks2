@@ -18,8 +18,8 @@
       __dummy_for_prettier: "",
     }'
     x-init='
-      listsHandler = window.initializeLists()
-      tasksHandler = window.initializeTasks()
+      listsHandler = globalThis.initializeLists()
+      tasksHandler = globalThis.initializeTasks()
 
       await listsHandler.fetchLists($data)
 

@@ -26,9 +26,9 @@
   - 例:
 
     ```typescript
-    // Alpine.jsからTypeScriptへのデータ受け渡し
-    window.initializeLists($data)  // ✅ $dataを使用
-    window.initializeLists(this)   // ❌ thisは使わない
+    // Alpine.jsとTypeScript間でのデータ受け渡し
+    globalThis.doSomething($data)  // ✅ $dataを使用
+    globalThis.doSomething(this)   // ❌ thisは使わない
 
     // TypeScript側でのデータ更新
     $data.lists = newLists           // ✅ 単純な代入でOK
