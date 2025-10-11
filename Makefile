@@ -101,7 +101,7 @@ update:
 	$(MAKE) test
 
 update-ts:
-	$(call RUN_NODE, corepack prepare pnpm@latest --activate && pnpm update, --rm)
+	$(call RUN_NODE, corepack prepare pnpm@latest --activate && corepack use pnpm@latest && pnpm run clean-update, --rm)
 
 update-py:
 	uv sync --upgrade

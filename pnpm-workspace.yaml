@@ -1,6 +1,7 @@
-storeDir: ./.cache/pnpm-store
 ignoredBuiltDependencies:
   - "@tailwindcss/oxide"
   - es5-ext
   - esbuild
   - unrs-resolver
+
+storeDir: ./.cache/pnpm-store

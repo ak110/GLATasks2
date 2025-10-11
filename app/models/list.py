@@ -2,6 +2,7 @@
 
 import datetime
 import typing
+import zoneinfo
 
 import sqlalchemy
 from sqlalchemy.orm import Mapped, mapped_column
@@ -29,4 +30,11 @@ class List(Base):
     def to_dict_(self) -> dict[str, typing.Any]:
         """dictへ変換。"""
         tasks = [task.to_dict_() for task in self.tasks]
-        return {"id": self.id, "title": self.title, "tasks": tasks, "last_updated": self.last_updated.isoformat()}
+        return {
+            "id": self.id,
+            "title": self.title,
+            "tasks": tasks,
+            "last_updated": self.last_updated.replace(tzinfo=zoneinfo.ZoneInfo("Asia/Tokyo"))
+            .astimezone(zoneinfo.ZoneInfo("UTC"))
+            .isoformat(),
+        }

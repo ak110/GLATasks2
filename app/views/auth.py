@@ -1,6 +1,7 @@
 """認証周りのコントローラー。"""
 
 import datetime
+import logging
 
 import models
 import pytilpack.quart_auth
@@ -8,16 +9,17 @@ import pytilpack.web
 import quart
 import quart_auth
 
-app = quart.Blueprint("auth", __name__, url_prefix="/auth")
+bp = quart.Blueprint("auth", __name__, url_prefix="/auth")
+logger = logging.getLogger(__name__)
 
 
-@app.route("/login", methods=["GET"])
+@bp.route("/login", methods=["GET"])
 async def login():
     """ログインページ"""
     return await quart.render_template("login.html", next=quart.request.args.get("next"))
 
 
-@app.route("/login", methods=["POST"])
+@bp.route("/login", methods=["POST"])
 async def login_auth():
     """ログイン"""
     form = await quart.request.form
@@ -40,13 +42,13 @@ async def login_auth():
     return quart.redirect(next_url)
 
 
-@app.route("/regist_user", methods=["GET"])
+@bp.route("/regist_user", methods=["GET"])
 async def regist_user():
     """ユーザー登録"""
     return await quart.render_template("regist_user.html", user_id="")
 
 
-@app.route("/regist_user", methods=["POST"])
+@bp.route("/regist_user", methods=["POST"])
 async def regist_user_do():
     """ユーザー登録(実行)"""
     form = await quart.request.form
@@ -65,7 +67,7 @@ async def regist_user_do():
     return quart.redirect(quart.url_for("auth.login"))
 
 
-@app.route("/logout", methods=["GET"])
+@bp.route("/logout", methods=["GET"])
 @quart_auth.login_required
 async def logout():
     """ログアウト"""

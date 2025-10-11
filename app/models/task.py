@@ -20,12 +20,12 @@ class Task(Base):
     text: Mapped[str] = mapped_column(sqlalchemy.Text, nullable=False, comment="内容")
     created: Mapped[datetime.datetime] = mapped_column(
         nullable=False,
-        default=lambda: datetime.datetime.now(datetime.UTC),
+        default=datetime.datetime.now,
         comment="作成日時",
     )
     updated: Mapped[datetime.datetime] = mapped_column(
         nullable=False,
-        default=lambda: datetime.datetime.now(datetime.UTC),
+        default=datetime.datetime.now,
         comment="最終更新日時",
     )
     completed: Mapped[datetime.datetime | None] = mapped_column(comment="完了日時")

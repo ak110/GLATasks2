@@ -1,24 +1,23 @@
 """共有機能のコントローラー。"""
 
-import helpers
-import models
+import logging
+
 import quart
 import quart_auth
 
-app = quart.Blueprint("share", __name__, url_prefix="/share")
+bp = quart.Blueprint("share", __name__, url_prefix="/share")
+logger = logging.getLogger(__name__)
 
 
-@app.before_request
+@bp.before_request
 @quart_auth.login_required
 async def _before_request():
     pass
 
 
-@app.route("/ingest", methods=["GET"])
+@bp.route("/ingest", methods=["GET"])
 async def ingest():
     """Android共有からのタスク追加。"""
-    current_user = helpers.get_logged_in_user()
-
     # クエリパラメータから共有データを取得
     title = quart.request.args.get("title", "")
     text = quart.request.args.get("text", "")
@@ -39,5 +38,4 @@ async def ingest():
         # 共有データが空の場合はメインページにリダイレクト
         return quart.redirect(quart.url_for("main.index"))
 
-    lists = models.get_lists(current_user)
-    return await quart.render_template("add.html", lists=lists, shared_text=task_text)
+    return await quart.render_template("add.html", shared_text=task_text)

@@ -2,6 +2,8 @@
 
 import datetime
 import json
+import logging
+import zoneinfo
 
 import helpers
 import models
@@ -10,16 +12,17 @@ import quart_auth
 
 import views.lists
 
-app = quart.Blueprint("tasks", __name__, url_prefix="/tasks")
+bp = quart.Blueprint("tasks", __name__, url_prefix="/tasks")
+logger = logging.getLogger(__name__)
 
 
-@app.before_request
+@bp.before_request
 @quart_auth.login_required
 async def _before_request():
     pass
 
 
-@app.route("/<list_id>", methods=["POST"])
+@bp.route("/<list_id>", methods=["POST"])
 async def post(list_id):
     """タスクの追加。"""
     list_ = await views.lists.get_owned(list_id)
@@ -33,7 +36,7 @@ async def post(list_id):
     return quart.redirect(quart.url_for("main.index"))
 
 
-@app.route("/api/<list_id>/<task_id>", methods=["PATCH"])
+@bp.route("/api/<list_id>/<task_id>", methods=["PATCH"])
 async def patch_api(list_id, task_id):
     """タスクの更新。"""
     list_, task = await get_owned(list_id, task_id)
@@ -44,16 +47,23 @@ async def patch_api(list_id, task_id):
     data = json.loads(helpers.decrypt(json_data["data"])) if "data" in json_data else json_data
     if "text" in data:
         task.text = data["text"]
-        task.updated = datetime.datetime.now(datetime.UTC)
+        task.updated = datetime.datetime.now()
     if "status" in data:
         if task.status == "needsAction" and data["status"] == "completed":
-            task.completed = datetime.datetime.now(datetime.UTC)
+            task.completed = datetime.datetime.now()
         task.status = data["status"]
     if "completed" in data:
         if data["completed"] is None:
             task.completed = None
         else:
-            task.completed = datetime.datetime.fromisoformat(data["completed"])
+            # クライアントから受け取った日時(UTC)をローカルタイム(Asia/Tokyo)に変換してDBに保存
+            completed_dt = datetime.datetime.fromisoformat(data["completed"])
+            if completed_dt.tzinfo is not None:
+                # タイムゾーン情報がある場合、Asia/Tokyoに変換してタイムゾーン情報を削除
+                task.completed = completed_dt.astimezone(zoneinfo.ZoneInfo("Asia/Tokyo")).replace(tzinfo=None)
+            else:
+                # タイムゾーン情報がない場合、そのまま保存
+                task.completed = completed_dt
     if "move_to" in data:
         move_to = data["move_to"]
         if move_to != list_id:
@@ -66,10 +76,15 @@ async def patch_api(list_id, task_id):
 
     list_.last_updated = datetime.datetime.now()
     models.Base.session().commit()
+
     return quart.jsonify(
         {
             "status": task.status,
-            "completed": task.completed.isoformat() if task.completed else None,
+            "completed": task.completed.replace(tzinfo=zoneinfo.ZoneInfo("Asia/Tokyo"))
+            .astimezone(zoneinfo.ZoneInfo("UTC"))
+            .isoformat()
+            if task.completed
+            else None,
             "list_id": task.list_id,
         }
     )

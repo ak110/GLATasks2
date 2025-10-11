@@ -2,7 +2,9 @@ FROM node:lts AS build
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 RUN corepack enable
+RUN pnpm --version
 COPY package.json pnpm-lock.yaml tsconfig.json vite.config.ts /app/
 COPY app /app/app
 COPY appjs /app/appjs
@@ -10,7 +12,7 @@ WORKDIR /app
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     set -x \
     && pnpm store path \
-    && pnpm install --frozen-lockfile \
+    && pnpm install --offline --frozen-lockfile \
     && pnpm build
 
 FROM python:3.13

@@ -1,53 +1,65 @@
 """コントローラー。"""
 
 import datetime
+import logging
 import typing
+import zoneinfo
 
 import helpers
 import models
+import pytilpack.datetime
 import quart
 import quart_auth
 
-app = quart.Blueprint("lists", __name__, url_prefix="/lists")
+bp = quart.Blueprint("lists", __name__, url_prefix="/lists")
+logger = logging.getLogger(__name__)
 
 
-@app.before_request
+@bp.before_request
 @quart_auth.login_required
 async def _before_request():
     pass
 
 
-@app.route("/api", methods=["GET"])
-async def api():
+@bp.route("/api/<show_type>", methods=["GET"])
+async def api(show_type: str):
     """リスト一覧の取得（タスクなし）。"""
-    import logging
+    if show_type not in ("list", "hidden", "all"):
+        quart.abort(400)
 
-    logging.info("[DEBUG] lists.api: リスト一覧取得開始")
     current_user = helpers.get_logged_in_user()
-    logging.info(f"[DEBUG] lists.api: ユーザーID={current_user.id}")
 
     # リスト情報のみ（タスクなし）
+    # show_typeに応じてフィルタリング
     list_data = []
     for list_ in current_user.lists:
-        list_data.append({"id": list_.id, "title": list_.title, "last_updated": list_.last_updated.isoformat()})
+        # show_typeに応じた表示判定
+        if show_type == "list" and list_.status == "hidden":
+            continue
+        # show_type == "hidden" / "all" の場合は全て表示 (hiddenはtaskだけhiddenの場合があるのでリストは全部表示)
 
-    logging.info(f"[DEBUG] lists.api: リスト数={len(list_data)}")
-    logging.info(f"[DEBUG] lists.api: リストデータ={list_data}")
+        list_data.append(
+            {
+                "id": list_.id,
+                "title": list_.title,
+                "last_updated": list_.last_updated.replace(tzinfo=zoneinfo.ZoneInfo("Asia/Tokyo"))
+                .astimezone(zoneinfo.ZoneInfo("UTC"))
+                .isoformat(),
+            }
+        )
 
     encrypted_data = helpers.encryptObject(list_data)
     response = quart.jsonify({"data": encrypted_data})
 
     # 最新のリストの最終更新時刻をヘッダーに設定
-    if current_user.lists:
-        latest_update = max(list_.last_updated for list_ in current_user.lists)
+    if list_data:
+        latest_update = max(list_.last_updated for list_ in current_user.lists if any(d["id"] == list_.id for d in list_data))
         response.headers["Last-Modified"] = latest_update.isoformat()
-        logging.info(f"[DEBUG] lists.api: Last-Modified={latest_update.isoformat()}")
 
-    logging.info("[DEBUG] lists.api: レスポンス送信")
     return response
 
 
-@app.route("/api/<int:list_id>/tasks", methods=["GET"])
+@bp.route("/api/<int:list_id>/tasks", methods=["GET"])
 async def api_tasks(list_id: int):
     """リストのタスク一覧取得（キャッシュ対応）。"""
     list_ = await get_owned(list_id)
@@ -56,32 +68,28 @@ async def api_tasks(list_id: int):
     if_modified_since = quart.request.headers.get("If-Modified-Since")
     if if_modified_since:
         try:
-            client_last_updated = datetime.datetime.fromisoformat(if_modified_since.replace("Z", "+00:00"))
+            client_last_updated = pytilpack.datetime.fromiso(if_modified_since)
             # タイムゾーン情報を統一（UTCに変換）
-            if list_.last_updated.tzinfo is None:
-                list_last_updated = list_.last_updated.replace(tzinfo=datetime.UTC)
-            else:
-                list_last_updated = list_.last_updated.astimezone(datetime.UTC)
-
-            if client_last_updated.tzinfo is None:
-                client_last_updated = client_last_updated.replace(tzinfo=datetime.UTC)
-            else:
-                client_last_updated = client_last_updated.astimezone(datetime.UTC)
-
-            if list_last_updated <= client_last_updated:
+            server_last_updated = pytilpack.datetime.toutc(list_.last_updated)
+            client_last_updated = pytilpack.datetime.toutc(client_last_updated)
+            # サーバー側のデータがクライアント側と同じか古い場合、304を返す
+            if server_last_updated <= client_last_updated:
                 return quart.Response(status=304)
         except (ValueError, TypeError):
-            pass  # パースに失敗した場合は通常のレスポンスを返す
+            # パースに失敗した場合は通常のレスポンスを返す
+            logger.warning("Invalid If-Modified-Since header: %s", if_modified_since, exc_info=True)
 
     # タスクデータのみを暗号化して返す
     tasks_data = [task.to_dict_() for task in list_.tasks]
     encrypted_data = helpers.encryptObject(tasks_data)
     response = quart.jsonify({"data": encrypted_data})
-    response.headers["Last-Modified"] = list_.last_updated.isoformat()
+    response.headers["Last-Modified"] = (
+        list_.last_updated.replace(tzinfo=zoneinfo.ZoneInfo("Asia/Tokyo")).astimezone(zoneinfo.ZoneInfo("UTC")).isoformat()
+    )
     return response
 
 
-@app.route("/post", methods=["POST"])
+@bp.route("/post", methods=["POST"])
 async def post():
     """リストの追加。"""
     form = await quart.request.form
@@ -95,7 +103,7 @@ async def post():
     return quart.redirect(quart.url_for("main.index"))
 
 
-@app.route("/<int:list_id>/clear/", methods=["POST"])
+@bp.route("/<int:list_id>/clear/", methods=["POST"])
 async def clear(list_id: int):
     """完了済みを非表示化。"""
     list_ = await get_owned(list_id)
@@ -116,7 +124,7 @@ async def clear(list_id: int):
     return quart.redirect(quart.url_for("main.index"))
 
 
-@app.route("/<int:list_id>/rename/", methods=["POST"])
+@bp.route("/<int:list_id>/rename/", methods=["POST"])
 async def rename(list_id: int):
     """リストの名前変更。"""
     list_ = await get_owned(list_id)
@@ -133,7 +141,7 @@ async def rename(list_id: int):
     return quart.redirect(quart.url_for("main.index"))
 
 
-@app.route("/<int:list_id>/delete/", methods=["POST"])
+@bp.route("/<int:list_id>/delete/", methods=["POST"])
 async def delete(list_id: int):
     """リストの削除。"""
     list_ = await get_owned(list_id)
@@ -147,7 +155,7 @@ async def delete(list_id: int):
     return quart.redirect(quart.url_for("main.index"))
 
 
-@app.route("/<int:list_id>/hide/", methods=["POST"])
+@bp.route("/<int:list_id>/hide/", methods=["POST"])
 async def hide(list_id: int):
     """リストの非表示化。"""
     list_ = await get_owned(list_id)
@@ -156,7 +164,7 @@ async def hide(list_id: int):
     return quart.redirect(quart.url_for("main.index"))
 
 
-@app.route("/<int:list_id>/show/", methods=["POST"])
+@bp.route("/<int:list_id>/show/", methods=["POST"])
 async def show(list_id: int):
     """リストの再表示。"""
     list_ = await get_owned(list_id)

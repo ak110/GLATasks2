@@ -15,7 +15,7 @@
     <script type="module" nonce="{{ g.script_nonce }}">
       globalThis.appConfig = {
         urls: {
-          "lists.api": "{{ url_for('lists.api') }}",
+          "lists.api": "{{ url_for('lists.api', show_type='__SHOW_TYPE__') }}".replace("/__SHOW_TYPE__", "/:show_type:"),
           "lists.api_tasks": "{{ url_for('lists.api_tasks', list_id=-999) }}".replace("/-999/", "/:list_id:/"),
           "tasks.patch_api": "{{ url_for('tasks.patch_api', list_id=-999, task_id=-999) }}"
             .replace("/-999/", "/:list_id:/")

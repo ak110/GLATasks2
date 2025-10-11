@@ -41,7 +41,7 @@ async def test_task_operations(user_client: quart.typing.TestClientProtocol):
     assert response.status_code == 302
 
     # リストIDの取得
-    response = await user_client.get("/lists/api")
+    response = await user_client.get("/lists/api/list")
     data = json.loads(await response.get_data())
     lists = json.loads(helpers.decrypt(data["data"]))
     list_id = lists[0]["id"]

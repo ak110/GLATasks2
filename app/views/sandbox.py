@@ -1,20 +1,22 @@
 """コントローラー。"""
 
 import asyncio
+import logging
 
 import models
 import quart
 
-app = quart.Blueprint("sandbox", __name__, url_prefix="/sandbox")
+bp = quart.Blueprint("sandbox", __name__, url_prefix="/sandbox")
+logger = logging.getLogger(__name__)
 
 
-@app.before_request
+@bp.before_request
 # @quart_auth.login_required
 async def _before_request():
     pass
 
 
-@app.route("/sse", methods=["GET"])
+@bp.route("/sse", methods=["GET"])
 async def sse():
     """SSEお試し。"""
     # https://quart.palletsprojects.com/en/latest/how_to_guides/server_sent_events/

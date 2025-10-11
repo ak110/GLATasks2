@@ -62,12 +62,12 @@ async def acreate_app():
         models.Base.session().commit()
         return user
 
-    app.register_blueprint(views.auth.app)
-    app.register_blueprint(views.lists.app)
-    app.register_blueprint(views.main.app)
-    app.register_blueprint(views.share.app)
-    app.register_blueprint(views.tasks.app)
-    app.register_blueprint(views.sandbox.app)
+    app.register_blueprint(views.auth.bp)
+    app.register_blueprint(views.lists.bp)
+    app.register_blueprint(views.main.bp)
+    app.register_blueprint(views.share.bp)
+    app.register_blueprint(views.tasks.bp)
+    app.register_blueprint(views.sandbox.bp)
 
     @app.route("/healthcheck")
     async def _healthcheck():

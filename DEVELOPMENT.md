@@ -39,6 +39,14 @@
     }
     ```
 
+- 日時の取り扱いについて:
+  - **DBに保存**: ローカルタイム(Asia/Tokyo)、タイムゾーン情報なしで保存
+    - 例: `datetime.datetime.now()` を使用
+  - **クライアントに送信**: ローカルタイムをUTC(GMT)に変換してから送信
+    - 例: `dt.replace(tzinfo=zoneinfo.ZoneInfo("Asia/Tokyo")).astimezone(zoneinfo.ZoneInfo("UTC")).isoformat()`
+  - **クライアントから受信**: UTC→ローカルタイムに変換してからDBに保存
+    - 例: `dt.astimezone(zoneinfo.ZoneInfo("Asia/Tokyo")).replace(tzinfo=None)`
+
 ## DB関連
 
 ```bash

@@ -3,6 +3,7 @@
  */
 
 import { encrypt, decrypt } from "./crypto.js"
+import { getCache, setCache } from "./cache.js"
 
 type ListInfo = {
   id: number
@@ -22,7 +23,7 @@ type TaskInfo = {
  * リスト管理機能を初期化
  */
 export function initializeLists(): {
-  fetchLists: ($data: any) => Promise<void>
+  fetchLists: ($data: any, showType: string) => Promise<void>
   fetchTasks: ($data: any, listId: number) => Promise<void>
   submitForm: (form: HTMLFormElement) => Promise<void>
 } {
@@ -30,8 +31,8 @@ export function initializeLists(): {
     /**
      * リスト一覧を取得
      */
-    async fetchLists($data: any) {
-      $data.lists = await listsManager.fetchLists()
+    async fetchLists($data: any, showType: string) {
+      $data.lists = await listsManager.fetchLists(showType)
       console.debug("fetchLists:", Alpine.raw($data.lists))
     },
 
@@ -76,32 +77,46 @@ export function initializeLists(): {
  * リスト管理クラス
  */
 class ListsManager {
-  private lists: ListInfo[] = []
-  private listTimestamp: string | undefined
+  // Show_type別にキャッシュを管理
+  private readonly listsCache = new Map<string, ListInfo[]>()
+  private readonly listTimestamps = new Map<string, string>()
+  private readonly tasksCache = new Map<number, TaskInfo[]>()
   private readonly taskTimestamps = new Map<number, string>()
 
   /**
    * リスト一覧を取得
    */
-  async fetchLists(): Promise<ListInfo[]> {
+  async fetchLists(showType: string): Promise<ListInfo[]> {
+    const cacheKey = `lists_${showType}`
+
     try {
-      const headers: Record<string, string> = {}
-      if (this.listTimestamp) {
-        headers["If-Modified-Since"] = this.listTimestamp
+      // IndexedDBからキャッシュを読み込み
+      const cached = await getCache<ListInfo[]>(cacheKey)
+      if (cached) {
+        this.listsCache.set(showType, cached.value)
+        this.listTimestamps.set(showType, cached.timestamp)
       }
 
-      const response = await fetch(globalThis.appConfig.urls["lists.api"], {
+      const headers: Record<string, string> = {}
+      const timestamp = this.listTimestamps.get(showType)
+      if (timestamp) {
+        headers["If-Modified-Since"] = timestamp
+      }
+
+      const url = globalThis.appConfig.urls["lists.api"].replace(":show_type:", showType)
+      const response = await fetch(url, {
         method: "GET",
         headers,
       })
 
       if (response.status === 304) {
-        return this.lists
+        // キャッシュが有効
+        return this.listsCache.get(showType) ?? []
       }
 
       if (!response.ok) {
         console.error("Failed to fetch lists:", response.status)
-        return this.lists
+        return this.listsCache.get(showType) ?? []
       }
 
       const responseData = (await response.json()) as { data: string }
@@ -114,13 +129,15 @@ class ListsManager {
         list.tasks = []
       }
 
-      this.lists = listsData
-      this.listTimestamp = lastModified
+      // メモリとIndexedDBにキャッシュを保存
+      this.listsCache.set(showType, listsData)
+      this.listTimestamps.set(showType, lastModified)
+      await setCache(cacheKey, listsData, lastModified)
 
-      return this.lists
+      return listsData
     } catch (error) {
       console.error("Error fetching lists:", error)
-      return this.lists
+      return this.listsCache.get(showType) ?? []
     }
   }
 
@@ -128,7 +145,16 @@ class ListsManager {
    * 指定されたリストのタスクを取得
    */
   async fetchTasksForList(listId: number): Promise<TaskInfo[]> {
+    const cacheKey = `tasks_${listId}`
+
     try {
+      // IndexedDBからキャッシュを読み込み
+      const cached = await getCache<TaskInfo[]>(cacheKey)
+      if (cached) {
+        this.tasksCache.set(listId, cached.value)
+        this.taskTimestamps.set(listId, cached.timestamp)
+      }
+
       const headers: Record<string, string> = {}
       const cachedTimestamp = this.taskTimestamps.get(listId)
       if (cachedTimestamp) {
@@ -142,14 +168,13 @@ class ListsManager {
       })
 
       if (response.status === 304) {
-        const list = this.lists.find((l) => l.id === listId)
-        return list?.tasks ?? []
+        // キャッシュが有効
+        return this.tasksCache.get(listId) ?? []
       }
 
       if (!response.ok) {
         console.error(`Failed to fetch tasks for list ${listId}:`, response.status)
-        const list = this.lists.find((l) => l.id === listId)
-        return list?.tasks ?? []
+        return this.tasksCache.get(listId) ?? []
       }
 
       const responseData = (await response.json()) as { data: string }
@@ -157,18 +182,15 @@ class ListsManager {
       const decrypted = await decrypt(responseData.data, globalThis.appConfig.encrypt_key)
       const tasksData: TaskInfo[] = JSON.parse(decrypted) as TaskInfo[]
 
-      const listIndex = this.lists.findIndex((l) => l.id === listId)
-      if (listIndex !== -1) {
-        this.lists[listIndex]!.tasks = tasksData
-      }
-
+      // メモリとIndexedDBにキャッシュを保存
+      this.tasksCache.set(listId, tasksData)
       this.taskTimestamps.set(listId, lastModified)
+      await setCache(cacheKey, tasksData, lastModified)
 
       return tasksData
     } catch (error) {
       console.error(`Error fetching tasks for list ${listId}:`, error)
-      const list = this.lists.find((l) => l.id === listId)
-      return list?.tasks ?? []
+      return this.tasksCache.get(listId) ?? []
     }
   }
 

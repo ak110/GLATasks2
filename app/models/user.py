@@ -58,8 +58,3 @@ class User(Base, pytilpack.quart_auth.UserMixin):
         user.set_password(password)
         Base.session().add(user)
         Base.session().commit()
-
-
-def get_lists(current_user: User, show_type: str = "list") -> list[dict]:
-    """リストをロードする"""
-    return [list_.to_dict_() for list_ in current_user.lists if list_.status != "hidden" or show_type in ("hidden", "all")]

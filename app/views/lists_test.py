@@ -12,7 +12,7 @@ import quart.typing
 @pytest.mark.asyncio
 async def test_anonymous(client: quart.typing.TestClientProtocol):
     """未ログインのテスト。"""
-    response = await client.get("/lists/api")
+    response = await client.get("/lists/api/list")
     assert response.status_code == 302
 
     response = await client.post("/lists/post")
@@ -22,7 +22,7 @@ async def test_anonymous(client: quart.typing.TestClientProtocol):
 @pytest.mark.asyncio
 async def test_api(user_client: quart.typing.TestClientProtocol):
     """APIのテスト。"""
-    response = await user_client.get("/lists/api")
+    response = await user_client.get("/lists/api/list")
     await pytilpack.quart.assert_json(response)
     data = json.loads(await response.get_data())
     assert "data" in data
@@ -71,7 +71,7 @@ async def test_list_operations(user_client: quart.typing.TestClientProtocol):
     assert response.status_code == 302
 
     # 作成されたリストのIDを取得
-    response = await user_client.get("/lists/api")
+    response = await user_client.get("/lists/api/list")
     data = json.loads(await response.get_data())
     lists = json.loads(helpers.decrypt(data["data"]))
     list_id = lists[0]["id"]
