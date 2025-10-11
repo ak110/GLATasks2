@@ -36,6 +36,7 @@ sync:  # 最新化＆諸々更新
 
 deploy:
 	$(MAKE) build
+	$(MAKE) db-up
 	$(MAKE) stop
 	$(MAKE) start
 
