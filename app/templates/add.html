@@ -41,7 +41,7 @@
             <option :value="list_.id" x-text="list_.title"></option>
           </template>
         </select>
-        <div class="text-right!">
+        <div class="text-end">
           <button type="button" class="btn btn-sm btn-primary" @click="await tasksHandler.submitTaskForm($el.closest('form'))">
             追加
           </button>
