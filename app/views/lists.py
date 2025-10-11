@@ -21,7 +21,7 @@ async def _before_request():
     pass
 
 
-@bp.route("/api/<show_type>", methods=["GET"])
+@bp.route("/api/<show_type>", methods=["GET"], defaults={"show_type": "list"})
 async def api(show_type: str):
     """リスト一覧の取得（タスクなし）。"""
     if show_type not in ("list", "hidden", "all"):

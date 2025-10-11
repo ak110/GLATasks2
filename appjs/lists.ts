@@ -113,6 +113,7 @@ class ListsManager {
         headers["If-Modified-Since"] = timestamp
       }
 
+      console.debug("ListsManager.fetchLists:", showType, timestamp)
       const url = globalThis.appConfig.urls["lists.api"].replace(":show_type:", showType)
       const response = await fetch(url, {
         method: "GET",
