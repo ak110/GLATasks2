@@ -31,7 +31,7 @@
       <form
         :action='`{{ url_for('tasks.post', list_id=-9999) }}`.replace("-9999", selectedList)'
         method="post"
-        class="taskPostForm mb-3 text-right"
+        class="taskPostForm mb-3"
         data-next-url="{{ url_for('main.index') }}"
       >
         <input type="hidden" name="nonce" value="{{ csrf_token() }}" />
@@ -41,9 +41,11 @@
             <option :value="list_.id" x-text="list_.title"></option>
           </template>
         </select>
-        <button type="button" class="btn btn-sm btn-primary" @click="await tasksHandler.submitTaskForm($el.closest('form'))">
-          追加
-        </button>
+        <div class="text-right">
+          <button type="button" class="btn btn-sm btn-primary" @click="await tasksHandler.submitTaskForm($el.closest('form'))">
+            追加
+          </button>
+        </div>
       </form>
     </div>
   </div>

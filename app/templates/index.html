@@ -112,28 +112,31 @@
               </div>
             </div>
 
+            {# タスク追加フォーム #}
             <form
               x-data="{ isEditing: false }"
               :action="`{{ url_for('tasks.post', list_id=-9999) }}`.replace('-9999', list_.id)"
               method="post"
-              class="taskPostForm mb-3 text-right"
+              class="taskPostForm mb-3"
             >
               <input type="hidden" name="nonce" value="{{ csrf_token() }}" />
               <textarea
                 name="text"
-                class="form-control form-control-sm"
+                class="form-control form-control-sm w-full"
                 :rows="isEditing ? 5 : 1"
                 @focus="isEditing = true"
                 @blur='if ($el.value === "") { isEditing = false }'
               ></textarea>
-              <button
-                type="button"
-                class="btn btn-sm btn-primary"
-                x-show="isEditing"
-                @click="await tasksHandler.submitTaskForm($el.closest('form'))"
-              >
-                追加
-              </button>
+              <div class="text-right">
+                <button
+                  type="button"
+                  class="btn btn-sm btn-primary"
+                  x-show="isEditing"
+                  @click="await tasksHandler.submitTaskForm($el.closest('form'))"
+                >
+                  追加
+                </button>
+              </div>
             </form>
 
             <ul class="list-group mb-3">
