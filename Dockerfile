@@ -12,7 +12,7 @@ WORKDIR /app
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     set -x \
     && pnpm store path \
-    && pnpm install --offline --frozen-lockfile \
+    && pnpm install --frozen-lockfile \
     && pnpm build
 
 FROM python:3.13
