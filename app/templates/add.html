@@ -17,14 +17,14 @@
       tasksHandler: null,
     }"
     x-init='
-      listsHandler = window.initializeLists(this)
+      listsHandler = window.initializeLists()
       tasksHandler = window.initializeTasks()
 
-      await listsHandler.fetchLists()
+      await listsHandler.fetchLists($data)
 
       const savedList = localStorage.getItem("selectedList")
       selectedList = savedList ? parseInt(savedList) : (lists.length > 0 ? lists[0].id : null)
-      $watch("selectedList", value => localStorage.setItem("selectedList", value))
+      $watch("selectedList", value => localStorage.setItem("selectedList", value.toString()))
     '
   >
     <div class="col">
@@ -36,7 +36,7 @@
       >
         <input type="hidden" name="nonce" value="{{ csrf_token() }}" />
         <textarea name="text" class="form-control" rows="5">{{ shared_text if shared_text else '' }}</textarea>
-        <select class="form-control listSelector" x-model="selectedList" required>
+        <select class="form-control listSelector" x-model.number="selectedList" required>
           <template x-for="list_ in lists" :key="list_.id">
             <option :value="list_.id" x-text="list_.title"></option>
           </template>

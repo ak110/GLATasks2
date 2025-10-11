@@ -18,20 +18,25 @@
 
 ## 開発時の注意点
 
-- サーバーサイドのコードを変更した場合は`make hup`でリロードする。(クライアントサイドの実の場合は不要)
+- サーバーサイドのコードを変更した場合は`make hup`でリロードする。(クライアントサイドの場合は不要)
 - Alpine.jsとTypeScriptの連携について:
   - Alpine.jsのリアクティブデータをTypeScriptに渡す際は、`this`ではなく`$data`を使用すること
-  - TypeScript側で配列やオブジェクトのプロパティを更新する際は、直接代入ではなく`splice()`などのメソッドを使用してリアクティビティを維持すること
+  - `$data`のプロパティには単純に代入するだけでリアクティビティが維持される
+  - Arrayの中のMapのプロパティは反映されない場合があるためオブジェクト全体を置き換える必要がある
   - 例:
 
-    ```javascript
-    // ❌ 悪い例（リアクティビティが失われる）
-    alpineData.lists = newLists
-    alpineData.lists[0].tasks = newTasks
+    ```typescript
+    // Alpine.jsからTypeScriptへのデータ受け渡し
+    window.initializeLists($data)  // ✅ $dataを使用
+    window.initializeLists(this)   // ❌ thisは使わない
 
-    // ✅ 良い例（リアクティビティが維持される）
-    alpineData.lists.splice(0, alpineData.lists.length, ...newLists)
-    alpineData.lists[0].tasks.splice(0, alpineData.lists[0].tasks.length, ...newTasks)
+    // TypeScript側でのデータ更新
+    $data.lists = newLists           // ✅ 単純な代入でOK
+    $data.lists[0].tasks = newTasks  // ❌ Array内のMapのプロパティは反映されない
+    $data.lists[0] = {               // ✅ オブジェクト全体を置き換える
+      ...$data.lists[0],
+      tasks: newTasks,
+    }
     ```
 
 ## DB関連

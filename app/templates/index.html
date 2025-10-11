@@ -18,39 +18,24 @@
       __dummy_for_prettier: "",
     }'
     x-init='
-      console.debug("x-init: 開始")
-      listsHandler = window.initializeLists($data)
+      listsHandler = window.initializeLists()
       tasksHandler = window.initializeTasks()
 
-      await listsHandler.fetchLists()
-      console.debug("x-init: fetchLists完了後 lists =", lists, "lists.length =", lists.length)
+      await listsHandler.fetchLists($data)
 
       const savedList = localStorage.getItem("selectedList")
       selectedList = savedList ? parseInt(savedList) : (lists.length > 0 ? lists[0].id : null)
-      console.debug("x-init: selectedList =", selectedList)
-
       if (selectedList) {
-        await listsHandler.selectList(selectedList)
-        console.debug("x-init: selectList完了後 lists =", lists)
-        console.debug("x-init: selectList完了後 lists[0] =", lists[0])
-        console.debug("x-init: selectList完了後 lists[1] =", lists[1])
-        console.debug("x-init: selectList完了後 lists[0].tasks =", lists[0]?.tasks)
-        console.debug("x-init: selectList完了後 lists[1].tasks =", lists[1]?.tasks)
+        localStorage.setItem("selectedList", selectedList.toString())
       }
 
-      $watch("selectedList", async (value) => {
-        console.debug("$watch: selectedList変更 =", value)
-        if (value) {
-          await listsHandler.selectList(value)
-        }
-      })
-      console.debug("x-init: 完了")
+      $watch("selectedList", (value) => { localStorage.setItem("selectedList", value.toString()) })
     '
   >
     <div class="row mt-3 mb-3">
       <div class="col-3">
         {# 左ペイン #}
-        <div class="list-group list-group-flush" role="tablist" aria-label="タスクリスト">
+        <div class="list-group list-group-flush">
           <template x-for="(list_, index) in lists" :key="list_.id">
             <a
               class="list-group-item list-group-item-action"
@@ -78,11 +63,17 @@
         {# 右ペイン #}
         <template x-for="(list_, index) in lists" :key="list_.id">
           <div
-            x-show="selectedList === list_.id"
             :id="`list-${list_.id}`"
             class="tab-pane fade show active"
             role="tabpanel"
             :aria-labelledby="`list-${list_.id}-tab`"
+            x-show="selectedList === list_.id"
+            x-init="
+                // リスト選択時にタスク一覧を取得
+                await listsHandler.fetchTasks($data, list_.id)
+                // 定期的にタスク一覧を更新
+                setInterval(async () => { await listsHandler.fetchTasks($data, list_.id) }, 5 * 60 * 1000)
+              "
           >
             <div class="row mb-3">
               <div class="col-12 text-end">
@@ -145,31 +136,26 @@
               </button>
             </form>
 
-            <ul
-              class="list-group mb-3"
-              x-init="console.debug('タスクリスト表示:', list_.id, 'tasks:', list_.tasks, 'length:', list_.tasks?.length, 'list_:', list_)"
-            >
-              <template x-for="(task, index) in (list_.tasks || [])" :key="task.id">
-                <template
-                  x-if="(show_type == 'list' && ['needsAction', 'completed'].includes(task.status)) || show_type == 'all'"
+            <ul class="list-group mb-3" x-init="console.debug(`タスク一覧初期化`, list_)">
+              {# タスク一覧 #}
+              <template x-for="(task, index) in list_.tasks" :key="task.id">
+                <li
+                  x-show="['needsAction', 'completed'].includes(task.status) === (show_type == 'list') || show_type == 'all'"
+                  :id="task.id"
+                  :data-list-id="list_.id"
+                  class="list-group-item taskItem"
+                  :class="task.status == 'needsAction' ? '' : 'taskCompleted'"
                 >
-                  <li
-                    :id="task.id"
-                    :data-list-id="list_.id"
-                    class="list-group-item taskItem"
-                    :class="task.status == 'needsAction' ? '' : 'taskCompleted'"
-                  >
-                    <input
-                      type="checkbox"
-                      :checked="task.status !== 'needsAction'"
-                      @click.prevent="await tasksHandler.toggleTaskCompletion($el)"
-                    />
-                    <span class="editButton" @click="tasksHandler.editTask($el.closest('.taskItem'))">編集</span>
+                  <input
+                    type="checkbox"
+                    :checked="task.status !== 'needsAction'"
+                    @click.prevent="await tasksHandler.toggleTaskCompletion($el)"
+                  />
+                  <span class="editButton" @click="tasksHandler.editTask($el.closest('.taskItem'))">編集</span>
 
-                    <span class="title" x-text="task.title"></span><br />
-                    <small class="notes text-muted" style="white-space: pre-wrap;" x-text="task.notes.trim()"></small>
-                  </li>
-                </template>
+                  <span class="title" x-text="task.title"></span><br />
+                  <small class="notes text-muted" style="white-space: pre-wrap;" x-text="task.notes.trim()"></small>
+                </li>
               </template>
             </ul>
 
