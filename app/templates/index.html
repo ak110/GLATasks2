@@ -136,7 +136,7 @@
               </button>
             </form>
 
-            <ul class="list-group mb-3" x-init="console.debug(`タスク一覧初期化`, list_)">
+            <ul class="list-group mb-3">
               {# タスク一覧 #}
               <template x-for="(task, index) in list_.tasks" :key="task.id">
                 <li

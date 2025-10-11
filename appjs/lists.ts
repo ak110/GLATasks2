@@ -32,6 +32,7 @@ export function initializeLists(): {
      */
     async fetchLists($data: any) {
       $data.lists = await listsManager.fetchLists()
+      console.debug("fetchLists:", Alpine.raw($data.lists))
     },
 
     /**
@@ -47,7 +48,7 @@ export function initializeLists(): {
           ...($data.$data.lists[listIndex] as TaskInfo),
           tasks: await listsManager.fetchTasksForList(listId),
         }
-        console.debug(`fetchTasks: ${listId}`, $data.lists[listIndex])
+        console.debug(`fetchTasks:`, Alpine.raw($data.lists[listIndex]))
       }
     },
 
