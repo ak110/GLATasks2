@@ -19,19 +19,24 @@ type TaskInfo = {
   status: string
 }
 
+type $dataType = {
+  lists: ListInfo[] | undefined
+  loadingCount: number
+}
+
 /**
  * リスト管理機能を初期化
  */
 export function initializeLists(): {
-  fetchLists: ($data: any, showType: string) => Promise<void>
-  fetchTasks: ($data: any, listId: number) => Promise<void>
+  fetchLists: ($data: $dataType, showType: string) => Promise<void>
+  fetchTasks: ($data: $dataType, listId: number) => Promise<void>
   submitForm: (form: HTMLFormElement) => Promise<void>
 } {
   return {
     /**
      * リスト一覧を取得
      */
-    async fetchLists($data: any, showType: string) {
+    async fetchLists($data: $dataType, showType: string) {
       $data.loadingCount += 1
       try {
         $data.lists = await listsManager.fetchLists(showType)
@@ -44,19 +49,19 @@ export function initializeLists(): {
     /**
      * タスク一覧を取得
      */
-    async fetchTasks($data: any, listId: number) {
+    async fetchTasks($data: $dataType, listId: number) {
       $data.loadingCount += 1
       try {
-        const listIndex = ($data.lists as ListInfo[]).findIndex((l: ListInfo) => l.id === listId)
+        const listIndex = $data.lists!.findIndex((l: ListInfo) => l.id === listId)
         if (listIndex === -1) {
           console.warn(`fetchTasks: リストが見つかりません (listId=${listId})`)
         } else {
           // ↓うまくreactiveに反映されるにはこうするといいっぽい(謎)
-          $data.lists[listIndex] = {
-            ...($data.$data.lists[listIndex] as TaskInfo),
-            tasks: await listsManager.fetchTasksForList(listId),
-          }
-          console.debug(`fetchTasks:`, Alpine.raw($data.lists[listIndex]))
+          $data.lists![listIndex] = {
+            ...$data.lists![listIndex],
+            tasks: await listsManager.fetchTasks(listId),
+          } as any as ListInfo
+          console.debug(`fetchTasks:`, Alpine.raw($data.lists![listIndex]))
         }
       } finally {
         $data.loadingCount -= 1
@@ -113,12 +118,12 @@ class ListsManager {
         headers["If-Modified-Since"] = timestamp
       }
 
-      console.debug("ListsManager.fetchLists:", showType, timestamp)
       const url = globalThis.appConfig.urls["lists.api"].replace(":show_type:", showType)
       const response = await fetch(url, {
         method: "GET",
         headers,
       })
+      console.debug("ListsManager.fetchLists:", showType, timestamp, response.status)
 
       if (response.status === 304) {
         // キャッシュが有効
@@ -155,7 +160,7 @@ class ListsManager {
   /**
    * 指定されたリストのタスクを取得
    */
-  async fetchTasksForList(listId: number): Promise<TaskInfo[]> {
+  async fetchTasks(listId: number): Promise<TaskInfo[]> {
     const cacheKey = `tasks_${listId}`
 
     try {
@@ -177,6 +182,7 @@ class ListsManager {
         method: "GET",
         headers,
       })
+      console.debug("ListsManager.fetchTasks:", listId, cachedTimestamp, response.status)
 
       if (response.status === 304) {
         // キャッシュが有効

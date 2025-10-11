@@ -21,7 +21,7 @@ async def _before_request():
     pass
 
 
-@bp.route("/api/<show_type>", methods=["GET"], defaults={"show_type": "list"})
+@bp.route("/api/<show_type>", methods=["GET"])
 async def api(show_type: str):
     """リスト一覧の取得（タスクなし）。"""
     if show_type not in ("list", "hidden", "all"):
@@ -70,7 +70,7 @@ async def api_tasks(list_id: int):
         try:
             client_last_updated = pytilpack.datetime.fromiso(if_modified_since)
             # タイムゾーン情報を統一（UTCに変換）
-            server_last_updated = pytilpack.datetime.toutc(list_.last_updated)
+            server_last_updated = pytilpack.datetime.toutc(list_.last_updated.replace(tzinfo=zoneinfo.ZoneInfo("Asia/Tokyo")))
             client_last_updated = pytilpack.datetime.toutc(client_last_updated)
             # サーバー側のデータがクライアント側と同じか古い場合、304を返す
             if server_last_updated <= client_last_updated:
