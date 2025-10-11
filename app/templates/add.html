@@ -20,7 +20,7 @@
       listsHandler = globalThis.initializeLists()
       tasksHandler = globalThis.initializeTasks()
 
-      await listsHandler.fetchLists($data)
+      await listsHandler.fetchLists($data, "list")
 
       const savedList = localStorage.getItem("selectedList")
       selectedList = savedList ? parseInt(savedList) : (lists.length > 0 ? lists[0].id : null)
