@@ -45,7 +45,7 @@ ifeq ($(COMPOSE_PROFILE), development)
 	docker compose --progress=plain build --pull
 else
 	@# ビルド
-	$(call RUN_NODE, corepack prepare pnpm@latest --activate && pnpm install && pnpm run build, --rm)
+	$(call RUN_NODE, yes | pnpm install && pnpm run build, --rm)
 	@# NGINX用にコピー
 	docker compose cp app:/usr/src/app/app/static/dist app/static/
 endif
