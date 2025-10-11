@@ -62,155 +62,156 @@
       <div class="tab-content col-9">
         {# 右ペイン #}
         <template x-for="(list_, index) in lists" :key="list_.id">
-          <div
-            :id="`list-${list_.id}`"
-            class="tab-pane fade show active"
-            role="tabpanel"
-            :aria-labelledby="`list-${list_.id}-tab`"
-            x-show="selectedList === list_.id"
-            x-init="
-                // リスト選択時にタスク一覧を取得
-                await listsHandler.fetchTasks($data, list_.id)
-                // 定期的にタスク一覧を更新
-                setInterval(async () => { await listsHandler.fetchTasks($data, list_.id) }, 5 * 60 * 1000)
-              "
-          >
-            <div class="row mb-3">
-              <div class="col-12 text-end">
-                <div class="btn-group">
-                  <a class="btn btn-sm btn-outline-primary" href="{{ url_for('main.index') }}">再読み込み</a>
-                </div>
-                <div class="btn-group">
-                  <form :action="`{{ url_for('lists.clear', list_id=-9999) }}`.replace('-9999', list_.id)" method="post">
-                    <input type="hidden" name="nonce" value="{{ csrf_token() }}" />
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-outline-warning"
-                      @click="await listsHandler.submitForm($el.closest('form'))"
-                    >
-                      完了済みを非表示化
-                    </button>
-                  </form>
-                </div>
-                <div class="btn-group">
-                  <a
-                    class="btn btn-sm btn-outline-secondary {{ 'active' if show_type == 'list' else '' }}"
-                    href="{{ url_for('main.index', show_type='list') }}"
-                    >リスト</a
-                  >
-                  <a
-                    class="btn btn-sm btn-outline-secondary {{ 'active' if show_type == 'hidden' else '' }}"
-                    href="{{ url_for('main.index', show_type='hidden') }}"
-                    >非表示済みを表示</a
-                  >
-                  <a
-                    class="btn btn-sm btn-outline-secondary {{ 'active' if show_type == 'all' else '' }}"
-                    href="{{ url_for('main.index', show_type='all') }}"
-                    >全て表示</a
-                  >
-                </div>
-              </div>
-            </div>
-
-            {# タスク追加フォーム #}
-            <form
-              x-data="{ isEditing: false }"
-              :action="`{{ url_for('tasks.post', list_id=-9999) }}`.replace('-9999', list_.id)"
-              method="post"
-              class="taskPostForm mb-3"
+          <template x-if="selectedList === list_.id">
+            <div
+              :id="`list-${list_.id}`"
+              class="tab-pane fade show active"
+              role="tabpanel"
+              :aria-labelledby="`list-${list_.id}-tab`"
+              x-init="
+                  // リスト選択時にタスク一覧を取得
+                  await listsHandler.fetchTasks($data, list_.id)
+                  // 定期的にタスク一覧を更新
+                  setInterval(async () => { await listsHandler.fetchTasks($data, list_.id) }, 5 * 60 * 1000)
+                "
             >
-              <input type="hidden" name="nonce" value="{{ csrf_token() }}" />
-              <textarea
-                name="text"
-                class="form-control form-control-sm w-full"
-                :rows="isEditing ? 5 : 1"
-                @focus="isEditing = true"
-                @blur='if ($el.value === "") { isEditing = false }'
-              ></textarea>
-              <div class="text-right">
-                <button
-                  type="button"
-                  class="btn btn-sm btn-primary"
-                  x-show="isEditing"
-                  @click="await tasksHandler.submitTaskForm($el.closest('form'))"
-                >
-                  追加
-                </button>
+              <div class="row mb-3">
+                <div class="col-12 text-end">
+                  <div class="btn-group">
+                    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('main.index') }}">再読み込み</a>
+                  </div>
+                  <div class="btn-group">
+                    <form :action="`{{ url_for('lists.clear', list_id=-9999) }}`.replace('-9999', list_.id)" method="post">
+                      <input type="hidden" name="nonce" value="{{ csrf_token() }}" />
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-outline-warning"
+                        @click="await listsHandler.submitForm($el.closest('form'))"
+                      >
+                        完了済みを非表示化
+                      </button>
+                    </form>
+                  </div>
+                  <div class="btn-group">
+                    <a
+                      class="btn btn-sm btn-outline-secondary {{ 'active' if show_type == 'list' else '' }}"
+                      href="{{ url_for('main.index', show_type='list') }}"
+                      >リスト</a
+                    >
+                    <a
+                      class="btn btn-sm btn-outline-secondary {{ 'active' if show_type == 'hidden' else '' }}"
+                      href="{{ url_for('main.index', show_type='hidden') }}"
+                      >非表示済みを表示</a
+                    >
+                    <a
+                      class="btn btn-sm btn-outline-secondary {{ 'active' if show_type == 'all' else '' }}"
+                      href="{{ url_for('main.index', show_type='all') }}"
+                      >全て表示</a
+                    >
+                  </div>
+                </div>
               </div>
-            </form>
 
-            <ul class="list-group mb-3">
-              {# タスク一覧 #}
-              <template x-for="(task, index) in list_.tasks" :key="task.id">
-                <li
-                  x-show="['needsAction', 'completed'].includes(task.status) === (show_type == 'list') || show_type == 'all'"
-                  :id="task.id"
-                  :data-list-id="list_.id"
-                  class="list-group-item taskItem"
-                  :class="task.status == 'needsAction' ? '' : 'taskCompleted'"
-                >
-                  <input
-                    type="checkbox"
-                    :checked="task.status !== 'needsAction'"
-                    @click.prevent="await tasksHandler.toggleTaskCompletion($el)"
-                  />
-                  <span class="editButton" @click="tasksHandler.editTask($el.closest('.taskItem'))">編集</span>
-
-                  <span class="title" x-text="task.title"></span><br />
-                  <small class="notes text-muted" style="white-space: pre-wrap;" x-text="task.notes.trim()"></small>
-                </li>
-              </template>
-            </ul>
-
-            <details class="mt-5">
-              <summary>リスト操作</summary>
-              {# リストリネーム #}
+              {# タスク追加フォーム #}
               <form
-                :action="`{{ url_for('lists.rename', list_id=-9999) }}`.replace('-9999', list_.id)"
+                x-data="{ isEditing: false }"
+                :action="`{{ url_for('tasks.post', list_id=-9999) }}`.replace('-9999', list_.id)"
                 method="post"
-                class="input-group"
+                class="taskPostForm mb-3"
               >
                 <input type="hidden" name="nonce" value="{{ csrf_token() }}" />
-                <input type="text" name="title" :value="list_.title" class="form-control form-control-sm" required />
-                <button
-                  type="button"
-                  class="btn btn-sm btn-primary"
-                  data-confirm="リストの名前を変更します。よろしいですか?"
-                  @click="await listsHandler.submitForm($el.closest('form'))"
+                <textarea
+                  name="text"
+                  class="form-control form-control-sm w-full"
+                  :rows="isEditing ? 5 : 1"
+                  @focus="isEditing = true"
+                  @blur='if ($el.value === "") { isEditing = false }'
+                ></textarea>
+                <div class="text-right">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-primary"
+                    x-show="isEditing"
+                    @click="await tasksHandler.submitTaskForm($el.closest('form'))"
+                  >
+                    追加
+                  </button>
+                </div>
+              </form>
+
+              <ul class="list-group mb-3">
+                {# タスク一覧 #}
+                <template x-for="(task, index) in list_.tasks" :key="task.id">
+                  <li
+                    x-show="['needsAction', 'completed'].includes(task.status) === (show_type == 'list') || show_type == 'all'"
+                    :id="task.id"
+                    :data-list-id="list_.id"
+                    class="list-group-item taskItem"
+                    :class="task.status == 'needsAction' ? '' : 'taskCompleted'"
+                  >
+                    <input
+                      type="checkbox"
+                      :checked="task.status !== 'needsAction'"
+                      @click.prevent="await tasksHandler.toggleTaskCompletion($el)"
+                    />
+                    <span class="editButton" @click="tasksHandler.editTask($el.closest('.taskItem'))">編集</span>
+
+                    <span class="title" x-text="task.title"></span><br />
+                    <small class="notes text-muted" style="white-space: pre-wrap;" x-text="task.notes.trim()"></small>
+                  </li>
+                </template>
+              </ul>
+
+              <details class="mt-5">
+                <summary>リスト操作</summary>
+                {# リストリネーム #}
+                <form
+                  :action="`{{ url_for('lists.rename', list_id=-9999) }}`.replace('-9999', list_.id)"
+                  method="post"
+                  class="input-group"
                 >
-                  リネーム
-                </button>
-              </form>
-              {# リスト非表示化 #}
-              <form :action="`{{ url_for('lists.hide', list_id=-9999) }}`.replace('-9999', list_.id)" method="post">
-                <input type="hidden" name="nonce" value="{{ csrf_token() }}" />
-                <div class="text-end">
+                  <input type="hidden" name="nonce" value="{{ csrf_token() }}" />
+                  <input type="text" name="title" :value="list_.title" class="form-control form-control-sm" required />
                   <button
                     type="button"
-                    class="btn btn-sm btn-danger"
-                    data-confirm="リストを非表示化します。よろしいですか?"
+                    class="btn btn-sm btn-primary"
+                    data-confirm="リストの名前を変更します。よろしいですか?"
                     @click="await listsHandler.submitForm($el.closest('form'))"
                   >
-                    非表示化
+                    リネーム
                   </button>
-                </div>
-              </form>
-              {# リスト削除 #}
-              <form :action="`{{ url_for('lists.delete', list_id=-9999) }}`.replace('-9999', list_.id)" method="post">
-                <input type="hidden" name="nonce" value="{{ csrf_token() }}" />
-                <div class="text-end">
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-danger"
-                    data-confirm="リストと関連するタスクを全て削除します。よろしいですか?"
-                    @click="await listsHandler.submitForm($el.closest('form'))"
-                  >
-                    削除
-                  </button>
-                </div>
-              </form>
-            </details>
-          </div>
+                </form>
+                {# リスト非表示化 #}
+                <form :action="`{{ url_for('lists.hide', list_id=-9999) }}`.replace('-9999', list_.id)" method="post">
+                  <input type="hidden" name="nonce" value="{{ csrf_token() }}" />
+                  <div class="text-end">
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-danger"
+                      data-confirm="リストを非表示化します。よろしいですか?"
+                      @click="await listsHandler.submitForm($el.closest('form'))"
+                    >
+                      非表示化
+                    </button>
+                  </div>
+                </form>
+                {# リスト削除 #}
+                <form :action="`{{ url_for('lists.delete', list_id=-9999) }}`.replace('-9999', list_.id)" method="post">
+                  <input type="hidden" name="nonce" value="{{ csrf_token() }}" />
+                  <div class="text-end">
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-danger"
+                      data-confirm="リストと関連するタスクを全て削除します。よろしいですか?"
+                      @click="await listsHandler.submitForm($el.closest('form'))"
+                    >
+                      削除
+                    </button>
+                  </div>
+                </form>
+              </details>
+            </div>
+          </template>
         </template>
       </div>
     </div>
