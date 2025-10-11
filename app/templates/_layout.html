@@ -29,7 +29,19 @@
     {% block head %}{% endblock %}
   </head>
 
-  <body>
+  <body
+    x-data="{ loadingCount: 0 }"
+    x-init='
+      $watch("loadingCount", (value) => {
+        const dialog = document.getElementById("loadingDialog")
+        if (value > 0) {
+          dialog.showModal()
+        } else {
+          dialog.close()
+        }
+      })
+    '
+  >
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
       <a class="navbar-brand" href="{{ url_for('main.index') }}">GLATasks</a>
       <div class="navbar-collapse collapse"></div>
@@ -58,5 +70,17 @@
       {% block foot %}
       {% endblock %}
     </div>
+
+    {# ローディングダイアログ（全ページ共通） #}
+    <dialog
+      id="loadingDialog"
+      style="border: none; background: transparent; max-width: none; max-height: none;"
+    >
+      <div style="display: flex; justify-content: center; align-items: center; height: 100vh;">
+        <div class="spinner-border text-primary" style="width: 5rem; height: 5rem;" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    </dialog>
   </body>
 </html>
