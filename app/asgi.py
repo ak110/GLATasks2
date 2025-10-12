@@ -135,7 +135,9 @@ async def acreate_app():
             r.headers["X-XSS-Protection"] = "1; mode=block"
 
         r.headers["X-Content-Type-Options"] = "nosniff"
-        r.headers["X-Frame-Options"] = "SAMEORIGIN"
+        # /share配下はChrome拡張のiframe内で表示するためX-Frame-Optionsを設定しない
+        if not quart.request.path.startswith("/share/"):
+            r.headers["X-Frame-Options"] = "SAMEORIGIN"
 
         return r
 
