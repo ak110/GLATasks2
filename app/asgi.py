@@ -14,6 +14,7 @@ import pytilpack.sqlalchemy
 import quart
 import quart.json.provider
 import quart_auth
+import quart_cors
 import views.auth
 import views.lists
 import views.main
@@ -43,6 +44,15 @@ async def acreate_app():
 
     app.config.from_mapping(config.FLASK_CONFIG)
     app.asgi_app = pytilpack.quart.ProxyFix(app)  # type: ignore
+
+    # Chrome拡張からのアクセスを許可するためCORSを設定（/share配下のみ）
+    app = quart_cors.cors(
+        app,
+        allow_origin="chrome-extension://*",
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "OPTIONS"],
+        allow_headers=["Content-Type"],
+    )
 
     assert config.SQLALCHEMY_DATABASE_URI is not None
     await quart.utils.run_sync(pytilpack.sqlalchemy.wait_for_connection)(config.SQLALCHEMY_DATABASE_URI)

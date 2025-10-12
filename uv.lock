@@ -13,16 +13,16 @@ wheels = [
 
 [[package]]
 name = "alembic"
-version = "1.16.5"
+version = "1.17.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "mako" },
     { name = "sqlalchemy" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/9a/ca/4dc52902cf3491892d464f5265a81e9dff094692c8a049a3ed6a05fe7ee8/alembic-1.16.5.tar.gz", hash = "sha256:a88bb7f6e513bd4301ecf4c7f2206fe93f9913f9b48dac3b78babde2d6fe765e", size = 1969868, upload-time = "2025-08-27T18:02:05.668Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/6b/45/6f4555f2039f364c3ce31399529dcf48dd60726ff3715ad67f547d87dfd2/alembic-1.17.0.tar.gz", hash = "sha256:4652a0b3e19616b57d652b82bfa5e38bf5dbea0813eed971612671cb9e90c0fe", size = 1975526, upload-time = "2025-10-11T18:40:13.585Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/39/4a/4c61d4c84cfd9befb6fa08a702535b27b21fff08c946bc2f6139decbf7f7/alembic-1.16.5-py3-none-any.whl", hash = "sha256:e845dfe090c5ffa7b92593ae6687c5cb1a101e91fa53868497dbd79847f9dbe3", size = 247355, upload-time = "2025-08-27T18:02:07.37Z" },
+    { url = "https://files.pythonhosted.org/packages/44/1f/38e29b06bfed7818ebba1f84904afdc8153ef7b6c7e0d8f3bc6643f5989c/alembic-1.17.0-py3-none-any.whl", hash = "sha256:80523bc437d41b35c5db7e525ad9d908f79de65c27d6a5a5eab6df348a352d99", size = 247449, upload-time = "2025-10-11T18:40:16.288Z" },
 ]
 
 [[package]]
@@ -440,16 +440,16 @@ wheels = [
 
 [[package]]
 name = "fastapi"
-version = "0.118.3"
+version = "0.119.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
     { name = "starlette" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/44/e0/b2c4c5fed29587f0c0c56cec9b59f2c3ca58fd40e6c96d9a788219662a35/fastapi-0.118.3.tar.gz", hash = "sha256:5bf36d9bb0cd999e1aefcad74985a6d6a1fc3a35423d497f9e1317734633411d", size = 312055, upload-time = "2025-10-10T10:40:18.15Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/0a/f9/5c5bcce82a7997cc0eb8c47b7800f862f6b56adc40486ed246e5010d443b/fastapi-0.119.0.tar.gz", hash = "sha256:451082403a2c1f0b99c6bd57c09110ed5463856804c8078d38e5a1f1035dbbb7", size = 336756, upload-time = "2025-10-11T17:13:40.53Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/24/04/2f9e8a965f4214883258a6f716fea324d1b81e97bce6346cfbafffe6b86c/fastapi-0.118.3-py3-none-any.whl", hash = "sha256:8b9673dc083b4b9d3d295d49ba1c0a2abbfb293d34ba210fd9b0a90d5f39981e", size = 97957, upload-time = "2025-10-10T10:40:16.118Z" },
+    { url = "https://files.pythonhosted.org/packages/ce/70/584c4d7cad80f5e833715c0a29962d7c93b4d18eed522a02981a6d1b6ee5/fastapi-0.119.0-py3-none-any.whl", hash = "sha256:90a2e49ed19515320abb864df570dd766be0662c5d577688f1600170f7f73cf2", size = 107095, upload-time = "2025-10-11T17:13:39.048Z" },
 ]
 
 [[package]]
@@ -544,6 +544,7 @@ dependencies = [
     { name = "pytilpack", extra = ["all"] },
     { name = "quart" },
     { name = "quart-auth" },
+    { name = "quart-cors" },
     { name = "quart-flask-patch" },
     { name = "quart-schema" },
     { name = "sqlalchemy", extra = ["asyncio"] },
@@ -572,6 +573,7 @@ requires-dist = [
     { name = "pytilpack", extras = ["all"], git = "https://github.com/ak110/pytilpack.git" },
     { name = "quart" },
     { name = "quart-auth" },
+    { name = "quart-cors" },
     { name = "quart-flask-patch" },
     { name = "quart-schema" },
     { name = "sqlalchemy", extras = ["asyncio"] },
@@ -1618,8 +1620,8 @@ wheels = [
 
 [[package]]
 name = "pytilpack"
-version = "1.36.1.dev3+ge6531ee3f"
-source = { git = "https://github.com/ak110/pytilpack.git#e6531ee3f964ab38606971d6a1d46e97125ecb5f" }
+version = "1.36.1.dev4+g09608f755"
+source = { git = "https://github.com/ak110/pytilpack.git#09608f7557e1daedb01d54ae99de2700e50ac6a8" }
 dependencies = [
     { name = "beautifulsoup4" },
     { name = "httpx" },
@@ -1762,6 +1764,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/45/8d/d965905118fe612e7520f8a1014e4988842d8ed9fd68de4471999f7d968b/quart_auth-0.11.0.tar.gz", hash = "sha256:7703df693d795b3ec43a634efe4118c6adbddd98e7b8195008ca6def6d45cb47", size = 11122, upload-time = "2024-12-26T21:47:46.074Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/cf/a3/8ca9235569f39e471a9a319ba1665a27cb9cea8c48c688966460db67d48f/quart_auth-0.11.0-py3-none-any.whl", hash = "sha256:dd342ea39475a9b32b79d83e2b6820ddaa358e77f01dedbba47d50529f2c8c74", size = 9958, upload-time = "2024-12-26T21:47:44.717Z" },
+]
+
+[[package]]
+name = "quart-cors"
+version = "0.8.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "quart" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/14/b1/2a65be601f3c92c913f3321ee186d10c2da4325447b4b0fca83e0c493c60/quart_cors-0.8.0.tar.gz", hash = "sha256:ac32c4931da6fba944e9e2d3f856f2db4fd82e3fb905a09646086780c221a118", size = 12466, upload-time = "2024-12-27T20:34:32.245Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ea/31/da390a5a10674481dea2909178973de81fa3a246c0eedcc0e1e4114f52f8/quart_cors-0.8.0-py3-none-any.whl", hash = "sha256:62dc811768e2e1704d2b99d5880e3eb26fc776832305a19ea53db66f63837767", size = 8698, upload-time = "2024-12-27T20:34:29.511Z" },
 ]
 
 [[package]]
@@ -2088,7 +2102,7 @@ widechars = [
 
 [[package]]
 name = "textual"
-version = "6.2.1"
+version = "6.3.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "markdown-it-py", extra = ["linkify", "plugins"] },
@@ -2097,9 +2111,9 @@ dependencies = [
     { name = "rich" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a2/30/38b615f7d4b16f6fdd73e4dcd8913e2d880bbb655e68a076e3d91181a7ee/textual-6.2.1.tar.gz", hash = "sha256:4699d8dfae43503b9c417bd2a6fb0da1c89e323fe91c4baa012f9298acaa83e1", size = 1570645, upload-time = "2025-10-01T16:11:24.467Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ff/51/51a0863339c4c3fa204f43044e52dfd688a7ee2ba2c987e021acc9583a42/textual-6.3.0.tar.gz", hash = "sha256:a89c557fa740611551dcf4f93643f33853eca488183ef5882200dde8e94315e8", size = 1573232, upload-time = "2025-10-11T11:17:01.888Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c5/93/02c7adec57a594af28388d85da9972703a4af94ae1399542555cd9581952/textual-6.2.1-py3-none-any.whl", hash = "sha256:3c7190633cd4d8bfe6049ae66808b98da91ded2edb85cef54e82bf77b03d2a54", size = 710702, upload-time = "2025-10-01T16:11:22.161Z" },
+    { url = "https://files.pythonhosted.org/packages/ff/2a/bca677b0b05ee77b4105f73db0d8ef231a9f1db154d69388abd5c73f9dcc/textual-6.3.0-py3-none-any.whl", hash = "sha256:ec908b4b008662e7670af4a3e7c773847066b0950b1c50126c72fa939b514c97", size = 711457, upload-time = "2025-10-11T11:16:59.754Z" },
 ]
 
 [[package]]

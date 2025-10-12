@@ -1,7 +1,10 @@
 ignoredBuiltDependencies:
-  - "@tailwindcss/oxide"
+  - '@tailwindcss/oxide'
   - es5-ext
   - esbuild
   - unrs-resolver
+
+overrides:
+  '@eslint/plugin-kit@<0.3.4': '>=0.3.4'
 
 storeDir: ./.cache/pnpm-store
