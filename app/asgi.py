@@ -45,13 +45,11 @@ async def acreate_app():
     app.config.from_mapping(config.FLASK_CONFIG)
     app.asgi_app = pytilpack.quart.ProxyFix(app)  # type: ignore
 
-    # Chrome拡張からのアクセスを許可するためCORSを設定（/share配下のみ）
+    # Chrome拡張からのアクセスを許可するためCORSを設定
     app = quart_cors.cors(
         app,
         allow_origin="chrome-extension://*",
         allow_credentials=True,
-        allow_methods=["GET", "POST", "OPTIONS"],
-        allow_headers=["Content-Type"],
     )
 
     assert config.SQLALCHEMY_DATABASE_URI is not None
@@ -145,8 +143,9 @@ async def acreate_app():
             r.headers["X-XSS-Protection"] = "1; mode=block"
 
         r.headers["X-Content-Type-Options"] = "nosniff"
-        # /share配下はChrome拡張のiframe内で表示するためX-Frame-Optionsを設定しない
-        if not quart.request.path.startswith("/share/"):
+
+        # Chrome拡張からiframe内で表示するため一部はX-Frame-Optionsを設定しない
+        if quart.request.endpoint not in ("share.ingest", "auth.login", "auth.login_auth", "main.index", "lists.post"):
             r.headers["X-Frame-Options"] = "SAMEORIGIN"
 
         return r
