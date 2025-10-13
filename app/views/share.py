@@ -22,6 +22,7 @@ async def ingest():
     title = quart.request.args.get("title", "")
     text = quart.request.args.get("text", "")
     url = quart.request.args.get("url", "")
+    in_popup = quart.request.args.get("in_popup", "")
 
     # タスクテキストを構成
     task_text_parts = []
@@ -38,4 +39,7 @@ async def ingest():
         # 共有データが空の場合はメインページにリダイレクト
         return quart.redirect(quart.url_for("main.index"))
 
-    return await quart.render_template("add.html", shared_text=task_text)
+    # ポップアップ内で開かれている場合は投稿後に閉じる
+    next_url = "close" if in_popup else quart.url_for("main.index")
+
+    return await quart.render_template("add.html", shared_text=task_text, next_url=next_url)

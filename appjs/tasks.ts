@@ -85,7 +85,9 @@ export function initializeTasks(): {
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
 
       const { nextUrl } = form.dataset
-      if (nextUrl) {
+      if (nextUrl === "close") {
+        globalThis.close()
+      } else if (nextUrl) {
         globalThis.location.replace(nextUrl)
       } else {
         globalThis.location.reload()
