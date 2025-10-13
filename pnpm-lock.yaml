@@ -48,6 +48,9 @@ importers:
       '@vitest/ui':
         specifier: ^3.2.4
         version: 3.2.4(vitest@3.2.4)
+      chrome-types:
+        specifier: ^0.1.383
+        version: 0.1.383
       happy-dom:
         specifier: ^20.0.0
         version: 20.0.0
@@ -1107,6 +1110,9 @@ packages:
   chrome-trace-event@1.0.4:
     resolution: {integrity: sha512-rNjApaLzuwaOTjCiT8lSDdGN1APCiqkChLMJxJPWLunPAt5fy8xgU9/jNOchV84wfIxrA0lRQB7oCT8jrn/wrQ==}
     engines: {node: '>=6.0'}
+
+  chrome-types@0.1.383:
+    resolution: {integrity: sha512-TI85d2tN5mrTF6TsfA1X1yKBxmYcUJsXUE7vc2CN3eEC/I/0VkQcBFGCa6pudOvBze0emO2zm1PNAAc0olPZGA==}
 
   ci-info@4.3.1:
     resolution: {integrity: sha512-Wdy2Igu8OcBpI2pZePZ5oWjPC38tmDVx5WKUXKwlLYkA0ozo85sLsLvkBbBn/sZaSCMFOGZJ14fvW9t5/d7kdA==}
@@ -3946,6 +3952,8 @@ snapshots:
 
   chrome-trace-event@1.0.4:
     optional: true
+
+  chrome-types@0.1.383: {}
 
   ci-info@4.3.1: {}
 

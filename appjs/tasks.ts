@@ -86,6 +86,7 @@ export function initializeTasks(): {
 
       const { nextUrl } = form.dataset
       if (nextUrl === "close") {
+        await chrome.action.setPopup({ popup: "" })
         globalThis.close()
       } else if (nextUrl) {
         globalThis.location.replace(nextUrl)
