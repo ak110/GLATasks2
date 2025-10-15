@@ -81,10 +81,8 @@ GitHub に秘密鍵を登録:
 
 ## リリース手順
 
-事前に`gh`コマンドをインストールし、`gh auth login`でログインしておく。
+事前に`gh`コマンドをインストールして`gh auth login`でログインしておき、以下のコマンドのいずれかを実行。
 
-```bash
-gh workflow run リリース --field="bump=バグフィックス"
-gh workflow run リリース --field="bump=マイナーバージョンアップ"
-gh workflow run リリース --field="bump=メジャーバージョンアップ"
-```
+- `gh workflow run リリース --field="bump=バグフィックス"`
+- `gh workflow run リリース --field="bump=マイナーバージョンアップ"`
+- `gh workflow run リリース --field="bump=メジャーバージョンアップ"`
