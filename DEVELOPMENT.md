@@ -83,11 +83,8 @@ GitHub に秘密鍵を登録:
 
 事前に`gh`コマンドをインストールし、`gh auth login`でログインしておく。
 
-1. 変更がコミット・プッシュ済みでアクションが成功していることを確認:
-   `git status ; gh run list --commit=$(git rev-parse HEAD)`
-    - 未完了の場合は `gh run watch run_id` で完了を待機する
-2. 現在のバージョンの確認:
-  `git fetch --tags && git tag --sort=version:refname | tail -n1`
-3. GitHubでリリースを作成:
-  `gh release create --target=master --generate-notes v2.x.x`
-4. <https://github.com/ak110/GLATasks2/actions> をブラウザで開き、デプロイ状況を確認する (手動で実施)
+```bash
+gh workflow run リリース --field="bump=バグフィックス"
+gh workflow run リリース --field="bump=マイナーバージョンアップ"
+gh workflow run リリース --field="bump=メジャーバージョンアップ"
+```
