@@ -104,7 +104,7 @@ async def acreate_app():
     @app.errorhandler(werkzeug.exceptions.HTTPException)
     async def _http_error_handler(e: werkzeug.exceptions.HTTPException):
         """HTTPエラー"""
-        app.logger.error(f"HTTPエラー: {quart.request.full_path}", exc_info=True)
+        app.logger.error(f"HTTPエラー: {quart.request.full_path} {e}")
         pytilpack.sqlalchemy.safe_close(models.Base.session())
         return (
             await quart.render_template("error.html", name="HTTP Error", desc=e.description),
