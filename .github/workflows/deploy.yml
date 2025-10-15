@@ -1,4 +1,4 @@
-name: デプロイ
+name: Deploy
 
 on:
   push:
