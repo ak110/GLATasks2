@@ -1,4 +1,5 @@
 name: リリース
+
 on:
   workflow_dispatch:
     inputs:
@@ -10,8 +11,11 @@ on:
           - バグフィックス
           - マイナーバージョンアップ
           - メジャーバージョンアップ
+        default: バグフィックス
+
 permissions:
   contents: write
+
 jobs:
   release:
     runs-on: ubuntu-latest

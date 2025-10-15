@@ -1,8 +1,12 @@
 name: デプロイ
 
 on:
+  push:
+    tags:
+      - "*"
   release:
     types: [published]
+  workflow_dispatch: {}
 
 permissions:
   contents: read
