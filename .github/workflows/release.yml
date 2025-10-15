@@ -52,4 +52,10 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create --target=master --generate-notes "${{ steps.next.outputs.next }}"
+          gh release create "${{ steps.next.outputs.next }}" --target=master --generate-notes
+
+      - name: Run deploy workflow
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run deploy.yml --ref=master
