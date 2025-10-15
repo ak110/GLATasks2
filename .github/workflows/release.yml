@@ -7,9 +7,9 @@ on:
         required: true
         type: choice
         options:
-          - major
-          - minor
-          - patch
+          - バグフィックス
+          - マイナーバージョンアップ
+          - メジャーバージョンアップ
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -36,9 +36,9 @@ jobs:
           v=${{ steps.current.outputs.latest }}
           IFS='.' read -r major minor patch <<<"${v#v}"
           case "${{ github.event.inputs.bump }}" in
-            major) ((major++)); minor=0; patch=0;;
-            minor) ((minor++)); patch=0;;
-            patch) ((patch++));;
+          バグフィックス) ((patch++));;
+          マイナーバージョンアップ) ((minor++)); patch=0;;
+          メジャーバージョンアップ) ((major++)); minor=0; patch=0;;
           esac
           echo "next=v${major}.${minor}.${patch}" >> "$GITHUB_OUTPUT"
 
