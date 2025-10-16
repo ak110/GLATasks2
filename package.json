@@ -22,20 +22,20 @@
     "@testing-library/dom": "^10.4.1",
     "@types/alpinejs": "^3.13.11",
     "@types/bootstrap": "^5.2.10",
-    "@types/node": "^24.7.2",
+    "@types/node": "^24.8.0",
     "@types/xo": "^0.39.9",
     "@vitest/ui": "^3.2.4",
     "chrome-types": "^0.1.383",
-    "happy-dom": "^20.0.0",
+    "happy-dom": "^20.0.2",
     "prettier": "^3.6.2",
     "prettier-plugin-jinja-template": "^2.1.0",
-    "prettier-plugin-tailwindcss": "^0.6.14",
+    "prettier-plugin-tailwindcss": "^0.7.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
-    "vite": "^7.1.9",
+    "vite": "^7.1.10",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.2.4",
     "xo": "^1.2.3"
   },
-  "packageManager": "pnpm@10.18.2+sha512.9fb969fa749b3ade6035e0f109f0b8a60b5d08a1a87fdf72e337da90dcc93336e2280ca4e44f2358a649b83c17959e9993e777c2080879f3801e6f0d999ad3dd"
+  "packageManager": "pnpm@10.18.3+sha512.bbd16e6d7286fd7e01f6b3c0b3c932cda2965c06a908328f74663f10a9aea51f1129eea615134bf992831b009eabe167ecb7008b597f40ff9bc75946aadfb08d"
 }

@@ -44,6 +44,7 @@ async def acreate_app():
 
     app.config.from_mapping(config.FLASK_CONFIG)
     app.asgi_app = pytilpack.quart.ProxyFix(app)  # type: ignore
+    pytilpack.quart.patch()
 
     # Chrome拡張からのアクセスを許可するためCORSを設定
     app = quart_cors.cors(
