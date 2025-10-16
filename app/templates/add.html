@@ -33,6 +33,7 @@
         :action='`{{ url_for('tasks.post', list_id=-9999) }}`.replace("-9999", selectedList)'
         method="post"
         class="taskPostForm mb-3"
+        data-next-url="{{ url_for('main.index') }}"
       >
         <input type="hidden" name="nonce" value="{{ csrf_token() }}" />
         <textarea name="text" class="form-control" rows="5">{{ shared_text if shared_text else '' }}</textarea>
