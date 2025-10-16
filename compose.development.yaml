@@ -6,7 +6,7 @@ services:
       dockerfile: Dockerfile
     restart: always
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8000/healthcheck" ]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthcheck"]
       start_period: 30s
       start_interval: 1s
     volumes:
