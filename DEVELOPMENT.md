@@ -88,3 +88,5 @@ gh workflow run release.yml --field="bump=バグフィックス"
 gh workflow run release.yml --field="bump=マイナーバージョンアップ"
 gh workflow run release.yml --field="bump=メジャーバージョンアップ"
 ```
+
+<https://github.com/ak110/GLATasks2/actions> で状況を確認できる。
