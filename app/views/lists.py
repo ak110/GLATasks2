@@ -59,8 +59,8 @@ async def api(show_type: str):
     return response
 
 
-@bp.route("/api/<int:list_id>/tasks", methods=["GET"])
-async def api_tasks(list_id: int):
+@bp.route("/api/<int:list_id>/tasks/<show_type>", methods=["GET"])
+async def api_tasks(list_id: int, show_type: str):
     """リストのタスク一覧取得（キャッシュ対応）。"""
     list_ = await get_owned(list_id)
 
@@ -80,7 +80,13 @@ async def api_tasks(list_id: int):
             logger.warning("Invalid If-Modified-Since header: %s", if_modified_since, exc_info=True)
 
     # タスクデータのみを暗号化して返す
-    tasks_data = [task.to_dict_() for task in list_.tasks]
+    tasks_data = [
+        task.to_dict_()
+        for task in list_.tasks
+        if show_type == "all"
+        or (show_type == "list" and task.status != "hidden")
+        or (show_type == "hidden" and task.status == "hidden")
+    ]
     encrypted_data = helpers.encryptObject(tasks_data)
     response = quart.jsonify({"data": encrypted_data})
     response.headers["Last-Modified"] = (

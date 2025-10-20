@@ -70,9 +70,9 @@
               :aria-labelledby="`list-${list_.id}-tab`"
               x-init="
                   // リスト選択時にタスク一覧を取得
-                  await listsHandler.fetchTasks($data, list_.id)
+                  await listsHandler.fetchTasks($data, list_.id, show_type)
                   // 定期的にタスク一覧を更新
-                  setInterval(async () => { await listsHandler.fetchTasks($data, list_.id) }, 5 * 60 * 1000)
+                  setInterval(async () => { await listsHandler.fetchTasks($data, list_.id, show_type) }, 5 * 60 * 1000)
                 "
             >
               <div class="row mb-3">

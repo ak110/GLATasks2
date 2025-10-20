@@ -3,7 +3,7 @@
  */
 
 import { encrypt, decrypt } from "./crypto.js"
-import { getCache, setCache } from "./cache.js"
+import { fetchWithCache } from "./cache.js"
 
 type ListInfo = {
   id: number
@@ -29,7 +29,7 @@ type $dataType = {
  */
 export function initializeLists(): {
   fetchLists: ($data: $dataType, showType: string) => Promise<void>
-  fetchTasks: ($data: $dataType, listId: number) => Promise<void>
+  fetchTasks: ($data: $dataType, listId: number, showType: string) => Promise<void>
   submitForm: (form: HTMLFormElement) => Promise<void>
 } {
   return {
@@ -39,8 +39,22 @@ export function initializeLists(): {
     async fetchLists($data: $dataType, showType: string) {
       $data.loadingCount += 1
       try {
-        $data.lists = await listsManager.fetchLists(showType)
-        console.debug("fetchLists:", Alpine.raw($data.lists))
+        const cacheKey = `lists_${showType}`
+        const url = globalThis.appConfig.urls["lists.api"].replace(":show_type:", showType)
+        const listsData = await fetchWithCache<ListInfo>(cacheKey, url, async (data) =>
+          decrypt(data, globalThis.appConfig.encrypt_key),
+        )
+
+        // 各リストにtasks配列を初期化（APIからはtasksは送られてこない）
+        for (const list of listsData) {
+          list.tasks = []
+        }
+
+        $data.lists = listsData
+        console.debug("fetchLists result:", Alpine.raw($data.lists))
+      } catch (error) {
+        console.error("Error fetching lists:", error)
+        $data.lists = []
       } finally {
         $data.loadingCount -= 1
       }
@@ -49,20 +63,31 @@ export function initializeLists(): {
     /**
      * タスク一覧を取得
      */
-    async fetchTasks($data: $dataType, listId: number) {
+    async fetchTasks($data: $dataType, listId: number, showType: string) {
       $data.loadingCount += 1
       try {
         const listIndex = $data.lists!.findIndex((l: ListInfo) => l.id === listId)
         if (listIndex === -1) {
           console.warn(`fetchTasks: リストが見つかりません (listId=${listId})`)
-        } else {
-          // ↓うまくreactiveに反映されるにはこうするといいっぽい(謎)
-          $data.lists![listIndex] = {
-            ...$data.lists![listIndex],
-            tasks: await listsManager.fetchTasks(listId),
-          } as any as ListInfo
-          console.debug(`fetchTasks:`, Alpine.raw($data.lists![listIndex]))
+          return
         }
+
+        const cacheKey = `tasks_${listId}_${showType}`
+        const url = globalThis.appConfig.urls["lists.api_tasks"]
+          .replace(":list_id:", listId.toString())
+          .replace(":show_type:", showType)
+        const tasks = await fetchWithCache<TaskInfo>(cacheKey, url, async (data) =>
+          decrypt(data, globalThis.appConfig.encrypt_key),
+        )
+
+        // ↓うまくreactiveに反映されるにはこうするといいっぽい(謎)
+        $data.lists![listIndex] = {
+          ...$data.lists![listIndex],
+          tasks,
+        } as any as ListInfo
+        console.debug(`fetchTasks result:`, Alpine.raw($data.lists![listIndex]))
+      } catch (error) {
+        console.error(`Error fetching tasks for list ${listId}:`, error)
       } finally {
         $data.loadingCount -= 1
       }
@@ -76,7 +101,19 @@ export function initializeLists(): {
         !form.querySelector("button")?.dataset.confirm ||
         globalThis.confirm(form.querySelector("button")!.dataset.confirm)
       ) {
-        await listsManager.submitListForm(form)
+        const formData = new FormData(form)
+        const title = formData.get("title") as string
+        if (title) {
+          formData.set("title", await encrypt(title, globalThis.appConfig.encrypt_key))
+        }
+
+        const response = await fetch(form.action, {
+          method: form.method,
+          body: formData,
+        })
+
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+
         const { nextUrl } = form.dataset
         if (nextUrl) {
           globalThis.location.replace(nextUrl)
@@ -87,147 +124,3 @@ export function initializeLists(): {
     },
   }
 }
-
-/**
- * リスト管理クラス
- */
-class ListsManager {
-  // Show_type別にキャッシュを管理
-  private readonly listsCache = new Map<string, ListInfo[]>()
-  private readonly listTimestamps = new Map<string, string>()
-  private readonly tasksCache = new Map<number, TaskInfo[]>()
-  private readonly taskTimestamps = new Map<number, string>()
-
-  /**
-   * リスト一覧を取得
-   */
-  async fetchLists(showType: string): Promise<ListInfo[]> {
-    const cacheKey = `lists_${showType}`
-
-    try {
-      // IndexedDBからキャッシュを読み込み
-      const cached = await getCache<ListInfo[]>(cacheKey)
-      if (cached) {
-        this.listsCache.set(showType, cached.value)
-        this.listTimestamps.set(showType, cached.timestamp)
-      }
-
-      const headers: Record<string, string> = {}
-      const timestamp = this.listTimestamps.get(showType)
-      if (timestamp) {
-        headers["If-Modified-Since"] = timestamp
-      }
-
-      const url = globalThis.appConfig.urls["lists.api"].replace(":show_type:", showType)
-      const response = await fetch(url, {
-        method: "GET",
-        headers,
-      })
-      console.debug("ListsManager.fetchLists:", showType, timestamp, response.status)
-
-      if (response.status === 304) {
-        // キャッシュが有効
-        return this.listsCache.get(showType) ?? []
-      }
-
-      if (!response.ok) {
-        console.error("Failed to fetch lists:", response.status)
-        return this.listsCache.get(showType) ?? []
-      }
-
-      const responseData = (await response.json()) as { data: string }
-      const lastModified = response.headers.get("Last-Modified") ?? new Date().toISOString()
-      const decrypted = await decrypt(responseData.data, globalThis.appConfig.encrypt_key)
-      const listsData: ListInfo[] = JSON.parse(decrypted) as ListInfo[]
-
-      // 各リストにtasks配列を初期化（APIからはtasksは送られてこない）
-      for (const list of listsData) {
-        list.tasks = []
-      }
-
-      // メモリとIndexedDBにキャッシュを保存
-      this.listsCache.set(showType, listsData)
-      this.listTimestamps.set(showType, lastModified)
-      await setCache(cacheKey, listsData, lastModified)
-
-      return listsData
-    } catch (error) {
-      console.error("Error fetching lists:", error)
-      return this.listsCache.get(showType) ?? []
-    }
-  }
-
-  /**
-   * 指定されたリストのタスクを取得
-   */
-  async fetchTasks(listId: number): Promise<TaskInfo[]> {
-    const cacheKey = `tasks_${listId}`
-
-    try {
-      // IndexedDBからキャッシュを読み込み
-      const cached = await getCache<TaskInfo[]>(cacheKey)
-      if (cached) {
-        this.tasksCache.set(listId, cached.value)
-        this.taskTimestamps.set(listId, cached.timestamp)
-      }
-
-      const headers: Record<string, string> = {}
-      const cachedTimestamp = this.taskTimestamps.get(listId)
-      if (cachedTimestamp) {
-        headers["If-Modified-Since"] = cachedTimestamp
-      }
-
-      const url = globalThis.appConfig.urls["lists.api_tasks"].replace(":list_id:", listId.toString())
-      const response = await fetch(url, {
-        method: "GET",
-        headers,
-      })
-      console.debug("ListsManager.fetchTasks:", listId, cachedTimestamp, response.status)
-
-      if (response.status === 304) {
-        // キャッシュが有効
-        return this.tasksCache.get(listId) ?? []
-      }
-
-      if (!response.ok) {
-        console.error(`Failed to fetch tasks for list ${listId}:`, response.status)
-        return this.tasksCache.get(listId) ?? []
-      }
-
-      const responseData = (await response.json()) as { data: string }
-      const lastModified = response.headers.get("Last-Modified") ?? new Date().toISOString()
-      const decrypted = await decrypt(responseData.data, globalThis.appConfig.encrypt_key)
-      const tasksData: TaskInfo[] = JSON.parse(decrypted) as TaskInfo[]
-
-      // メモリとIndexedDBにキャッシュを保存
-      this.tasksCache.set(listId, tasksData)
-      this.taskTimestamps.set(listId, lastModified)
-      await setCache(cacheKey, tasksData, lastModified)
-
-      return tasksData
-    } catch (error) {
-      console.error(`Error fetching tasks for list ${listId}:`, error)
-      return this.tasksCache.get(listId) ?? []
-    }
-  }
-
-  /**
-   * リストフォームを送信
-   */
-  async submitListForm(form: HTMLFormElement): Promise<void> {
-    const formData = new FormData(form)
-    const title = formData.get("title") as string
-    if (title) {
-      formData.set("title", await encrypt(title, globalThis.appConfig.encrypt_key))
-    }
-
-    const response = await fetch(form.action, {
-      method: form.method,
-      body: formData,
-    })
-
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
-  }
-}
-
-export const listsManager = new ListsManager()
