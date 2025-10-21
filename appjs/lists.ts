@@ -85,7 +85,7 @@ export function initializeLists(): {
           ...$data.lists![listIndex],
           tasks,
         } as any as ListInfo
-        console.debug(`fetchTasks result:`, Alpine.raw($data.lists![listIndex]))
+        console.debug(`fetchTasks: tasks.length=`, $data.lists![listIndex].tasks?.length)
       } catch (error) {
         console.error(`Error fetching tasks for list ${listId}:`, error)
       } finally {
