@@ -53,7 +53,7 @@ async def acreate_app():
     )
 
     assert config.SQLALCHEMY_DATABASE_URI is not None
-    await quart.utils.run_sync(pytilpack.sqlalchemy.wait_for_connection)(config.SQLALCHEMY_DATABASE_URI)
+    await pytilpack.quart.run_sync(pytilpack.sqlalchemy.wait_for_connection)(config.SQLALCHEMY_DATABASE_URI)
     models.Base.init(config.SQLALCHEMY_DATABASE_URI)
 
     auth_manager = pytilpack.quart_auth.QuartAuth[models.User]()

@@ -17,7 +17,7 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     && pnpm install --frozen-lockfile \
     && pnpm build
 
-FROM python:3.13
+FROM python:3.14
 
 # APTのキャッシュ https://github.com/moby/buildkit/blob/master/frontend/dockerfile/docs/reference.md#example-cache-apt-packages
 RUN rm -f /etc/apt/apt.conf.d/docker-clean; \

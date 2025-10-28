@@ -5,7 +5,7 @@ import typing
 import zoneinfo
 
 import sqlalchemy
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
 from .task import Task
@@ -25,7 +25,7 @@ class List(Base):
     )
 
     # タスクの参照
-    tasks = sqlalchemy.orm.relationship(Task, order_by=Task.updated.desc())
+    tasks = relationship(Task, order_by=Task.updated.desc())
 
     def to_dict_(self) -> dict[str, typing.Any]:
         """dictへ変換。"""

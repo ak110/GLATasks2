@@ -6,7 +6,7 @@ import re
 import bcrypt
 import pytilpack.quart_auth
 import sqlalchemy
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
 from .list import List
@@ -28,7 +28,7 @@ class User(Base, pytilpack.quart_auth.UserMixin):
     last_login: Mapped[datetime.datetime | None] = mapped_column(comment="最終ログイン時刻")
 
     # リストの参照
-    lists = sqlalchemy.orm.relationship(List, order_by=List.title)
+    lists = relationship(List, order_by=List.title)
 
     def get_id(self) -> str:
         """認証ID。"""
