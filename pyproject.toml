@@ -24,7 +24,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pre-commit>=4.2.0",
-    "pyfltr",
+    "pyfltr[pyright]",
     "types-pyyaml",
     "types-requests",
     "uv-sort>=0.6.0",
