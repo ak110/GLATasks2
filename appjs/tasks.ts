@@ -102,10 +102,12 @@ export function initializeTasks(): {
 
       const textArea = form.querySelector<HTMLTextAreaElement>('[name="text"]')
       const moveToSelect = form.querySelector<HTMLSelectElement>('[name="move_to"]')
+      const keepOrderCheck = form.querySelector<HTMLInputElement>('[name="keep_order"]')
       const text = textArea?.value ?? ""
       const moveTo = moveToSelect?.value ?? ""
+      const keepOrder = keepOrderCheck?.checked ?? false
 
-      await updateTask(globalThis.appConfig, listId, taskId, text, moveTo)
+      await updateTask(globalThis.appConfig, listId, taskId, { text, moveTo, keepOrder })
       globalThis.location.reload()
     },
   }
@@ -139,10 +141,16 @@ async function updateTaskStatus(config: AppConfig, listId: string, taskId: strin
 /**
  * タスク内容を更新
  */
-async function updateTask(config: AppConfig, listId: string, taskId: string, text: string, moveTo: string): Promise<void> {
+async function updateTask(
+  config: AppConfig,
+  listId: string,
+  taskId: string,
+  parameters: { text: string; moveTo: string; keepOrder: boolean },
+): Promise<void> {
   const data = {
-    text,
-    move_to: moveTo,
+    text: parameters.text,
+    move_to: parameters.moveTo,
+    keep_order: parameters.keepOrder,
   }
 
   const encrypted = await encrypt(JSON.stringify(data), globalThis.appConfig.encrypt_key)

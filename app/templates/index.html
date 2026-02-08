@@ -241,6 +241,10 @@
                   </template>
                 </select>
               </div>
+              <div class="form-check mt-2">
+                <input type="checkbox" name="keep_order" class="form-check-input" id="keepOrderCheck" />
+                <label class="form-check-label" for="keepOrderCheck">並び順を維持する</label>
+              </div>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-primary" @click="await tasksHandler.submitTaskEdit($el.closest('form'))">

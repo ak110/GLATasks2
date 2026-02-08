@@ -47,7 +47,8 @@ async def patch_api(list_id, task_id):
     data = json.loads(helpers.decrypt(json_data["data"])) if "data" in json_data else json_data
     if "text" in data:
         task.text = data["text"]
-        task.updated = datetime.datetime.now()
+        if not data.get("keep_order"):
+            task.updated = datetime.datetime.now()
     if "status" in data:
         if task.status == "needsAction" and data["status"] == "completed":
             task.completed = datetime.datetime.now()
