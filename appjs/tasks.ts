@@ -51,6 +51,16 @@ export function initializeTasks(): {
 
       const modalElement = form.querySelector<HTMLElement>(".modal")
       if (!modalElement) return
+      if (modalElement.dataset.focusFixBound !== "1") {
+        modalElement.addEventListener("hide.bs.modal", () => {
+          const { activeElement } = document
+          if (activeElement instanceof HTMLElement && modalElement.contains(activeElement)) {
+            activeElement.blur()
+          }
+        })
+        modalElement.dataset.focusFixBound = "1"
+      }
+
       const modal = new Modal(modalElement)
       modal.show()
       form.querySelector<HTMLTextAreaElement>('[name="text"]')?.focus()
@@ -124,6 +134,11 @@ export function initializeTasks(): {
       // モーダルを閉じる
       const modalElement = form.querySelector<HTMLElement>(".modal")
       if (modalElement) {
+        const { activeElement } = document
+        if (activeElement instanceof HTMLElement && modalElement.contains(activeElement)) {
+          activeElement.blur()
+        }
+
         const modal = Modal.getInstance(modalElement)
         modal?.hide()
       }
