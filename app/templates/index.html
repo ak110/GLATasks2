@@ -247,7 +247,11 @@
               </div>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-primary" @click="await tasksHandler.submitTaskEdit($el.closest('form'))">
+              <button
+                type="button"
+                class="btn btn-primary"
+                @click="await tasksHandler.submitTaskEdit($el.closest('form'), $data)"
+              >
                 保存
               </button>
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>

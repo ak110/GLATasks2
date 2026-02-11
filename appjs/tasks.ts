@@ -7,6 +7,16 @@ import { encrypt } from "./crypto.js"
 
 type TaskPatchResponse = {
   status: "completed" | "needsAction"
+  list_id: number
+  title: string
+  notes: string
+}
+
+type AlpineData = {
+  lists?: Array<{
+    id: number
+    tasks?: Array<{ id: number; title: string; notes: string; status: string }>
+  }>
 }
 
 /**
@@ -16,7 +26,7 @@ export function initializeTasks(): {
   editTask: (taskElement: HTMLElement) => void
   toggleTaskCompletion: (checkbox: HTMLInputElement) => Promise<void>
   submitTaskForm: (form: HTMLFormElement) => Promise<void>
-  submitTaskEdit: (form: HTMLFormElement) => Promise<void>
+  submitTaskEdit: (form: HTMLFormElement, $data?: AlpineData) => Promise<void>
 } {
   return {
     editTask(taskElement: HTMLElement) {
@@ -95,10 +105,12 @@ export function initializeTasks(): {
       }
     },
 
-    async submitTaskEdit(form: HTMLFormElement) {
+    async submitTaskEdit(form: HTMLFormElement, $data?: AlpineData) {
       const { listId } = form.dataset
       const { taskId } = form.dataset
       if (!listId || !taskId) return
+      const lists = $data?.lists
+      if (!lists) return
 
       const textArea = form.querySelector<HTMLTextAreaElement>('[name="text"]')
       const moveToSelect = form.querySelector<HTMLSelectElement>('[name="move_to"]')
@@ -107,8 +119,55 @@ export function initializeTasks(): {
       const moveTo = moveToSelect?.value ?? ""
       const keepOrder = keepOrderCheck?.checked ?? false
 
-      await updateTask(globalThis.appConfig, listId, taskId, { text, moveTo, keepOrder })
-      globalThis.location.reload()
+      const result = await updateTask(globalThis.appConfig, listId, taskId, { text, moveTo, keepOrder })
+
+      // モーダルを閉じる
+      const modalElement = form.querySelector<HTMLElement>(".modal")
+      if (modalElement) {
+        const modal = Modal.getInstance(modalElement)
+        modal?.hide()
+      }
+
+      // Alpine.jsのデータを更新
+      const numericListId = Number.parseInt(listId, 10)
+      const numericTaskId = Number.parseInt(taskId, 10)
+      const listIndex = lists.findIndex((l) => l.id === numericListId)
+      if (listIndex === -1) return
+
+      const targetList = lists[listIndex]
+      if (!targetList) return
+      const { tasks } = targetList
+      if (!tasks) return
+
+      const taskIndex = tasks.findIndex((t) => t.id === numericTaskId)
+      if (taskIndex === -1) return
+      const currentTask = tasks[taskIndex]
+      if (!currentTask) return
+
+      if (result.list_id === numericListId) {
+        // 同じリストの場合: タイトルとノートを更新
+        const editedTask = { id: numericTaskId, title: result.title, notes: result.notes, status: currentTask.status }
+        const newTasks = [...tasks]
+        if (keepOrder) {
+          newTasks[taskIndex] = editedTask
+        } else {
+          newTasks.splice(taskIndex, 1)
+          newTasks.unshift(editedTask)
+        }
+
+        lists[listIndex] = {
+          ...targetList,
+          tasks: newTasks,
+        }
+      } else {
+        // 別リストに移動した場合: 現在のリストから削除
+        const newTasks = [...tasks]
+        newTasks.splice(taskIndex, 1)
+        lists[listIndex] = {
+          ...targetList,
+          tasks: newTasks,
+        }
+      }
     },
   }
 }
@@ -146,7 +205,7 @@ async function updateTask(
   listId: string,
   taskId: string,
   parameters: { text: string; moveTo: string; keepOrder: boolean },
-): Promise<void> {
+): Promise<TaskPatchResponse> {
   const data = {
     text: parameters.text,
     move_to: parameters.moveTo,
@@ -166,6 +225,8 @@ async function updateTask(
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`)
   }
+
+  return (await response.json()) as TaskPatchResponse
 }
 
 /**

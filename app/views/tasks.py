@@ -87,6 +87,8 @@ async def patch_api(list_id, task_id):
             if task.completed
             else None,
             "list_id": task.list_id,
+            "title": task.title,
+            "notes": task.notes,
         }
     )
 
