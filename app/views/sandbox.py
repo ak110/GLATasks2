@@ -2,55 +2,36 @@
 
 import asyncio
 import logging
+import typing
 
-import models
-import quart
+import fastapi
+import starlette.requests
+import starlette.responses
 
-bp = quart.Blueprint("sandbox", __name__, url_prefix="/sandbox")
+router = fastapi.APIRouter(prefix="/sandbox", tags=["sandbox"])
 logger = logging.getLogger(__name__)
 
 
-@bp.before_request
-# @quart_auth.login_required
-async def _before_request():
-    pass
-
-
-@bp.route("/sse", methods=["GET"])
-async def sse():
+@router.get("/sse", name="sandbox.sse")
+async def sse(request: starlette.requests.Request) -> starlette.responses.StreamingResponse:
     """SSEお試し。"""
-    # https://quart.palletsprojects.com/en/latest/how_to_guides/server_sent_events/
 
-    async def send_events():
+    async def send_events() -> typing.AsyncGenerator[str]:
         """SSEイベントを送信するジェネレーター関数。"""
-        # print(f"1 {models.Base.session()}")
         await asyncio.sleep(0.01)
-        yield f"data: foo {getattr(quart.g, 'sse_test', 'novalue')} {quart.request.path=}\n\n"
+        yield f"data: foo {request.url.path}\n\n"
 
-        # print(f"2 {models.Base.session()}")
         await asyncio.sleep(0.01)
-        yield f"data: bar {getattr(quart.g, 'sse_test', 'novalue')} {quart.request.remote_addr=}\n\n"
+        yield f"data: bar {request.client.host if request.client else 'unknown'}\n\n"
 
-        # print(f"3 {models.Base.session()}")
         await asyncio.sleep(0.01)
-        yield f"data: baz {getattr(quart.g, 'sse_test', 'novalue')} {quart.request.script_root=}\n\n"
+        yield "data: baz\n\n"
 
-        # print(f"4 {models.Base.session()}")
         await asyncio.sleep(0.01)
         yield "data: [DONE]\n\n"
 
-    print(f"0 {models.Base.session()}")
-    quart.g.sse_test = "sse_test!"
-
-    response = await quart.make_response(
-        quart.stream_with_context(send_events)(),
-        {
-            "Content-Type": "text/event-stream",
-            "Cache-Control": "no-cache",
-            "Transfer-Encoding": "chunked",
-            "X-Accel-Buffering": "no",
-        },
+    return starlette.responses.StreamingResponse(
+        send_events(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
-    assert isinstance(response, quart.Response)
-    response.timeout = None
-    return response

@@ -26,27 +26,36 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      devserver:
-        condition: service_started
 
-  devserver:
+  frontend:
     image: node:lts
     restart: always
     command: >
       bash -xc '
-        mkdir -p ${PWD}/.cache/bin &&\
-        corepack enable --install-directory ${PWD}/.cache/bin &&\
-        export PATH=${PWD}/.cache/bin:${PWD}/node_modules/.bin:$$PATH &&\
-        pnpm store path &&\
-        pnpm install --frozen-lockfile &&\
-        exec pnpm run build:watch
+        mkdir -p ${PWD}/.cache/bin &&
+        corepack enable --install-directory ${PWD}/.cache/bin &&
+        export PATH=${PWD}/.cache/bin:${PWD}/frontend/node_modules/.bin:$$PATH &&
+        cd ${PWD}/frontend &&
+        pnpm install &&
+        exec pnpm dev --host 0.0.0.0 --port 3000
       '
     user: ${UID}:${GID}
     environment:
       - HOME=${PWD}/.cache
       - COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+      - FASTAPI_URL=http://app:8000
+      - DATA_DIR
+      - PROTOCOL_HEADER=X-Forwarded-Proto
     volumes:
       - ${PWD}:${PWD}
-    working_dir: ${PWD}
+      - ${DATA_DIR}:${DATA_DIR}:ro
+    working_dir: ${PWD}/frontend
     networks:
       - network
+    depends_on:
+      app:
+        condition: service_healthy
+    logging:
+      options:
+        max-size: "1m"
+        max-file: "3"

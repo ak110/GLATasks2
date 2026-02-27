@@ -23,3 +23,26 @@ services:
     depends_on:
       db:
         condition: service_healthy
+
+  frontend:
+    image: ghcr.io/ak110/glatasks2-frontend:latest
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/auth/login"]
+      start_period: 30s
+      start_interval: 1s
+    volumes:
+      - ${DATA_DIR}:${DATA_DIR}
+    environment:
+      - FASTAPI_URL=http://app:8000
+      - DATA_DIR
+      - PROTOCOL_HEADER=X-Forwarded-Proto
+    networks:
+      - network
+    logging:
+      options:
+        max-size: "1m"
+        max-file: "3"
+    depends_on:
+      app:
+        condition: service_healthy

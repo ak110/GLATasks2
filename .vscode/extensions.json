@@ -19,6 +19,7 @@
     "ms-vscode.makefile-tools",
     "redhat.vscode-yaml",
     "richie5um2.vscode-sort-json",
-    "samverschueren.linter-xo"
+    "samverschueren.linter-xo",
+    "svelte.svelte-vscode"
   ]
 }

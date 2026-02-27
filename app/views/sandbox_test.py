@@ -1,13 +1,12 @@
 """テストコード。"""
 
+import httpx
 import pytest
-import pytilpack.quart
-import quart.typing
 
 
 @pytest.mark.asyncio
-async def test_user(user_client: quart.typing.TestClientProtocol):
-    """インデックスページのテスト。"""
-    # デフォルトのshow_type
-    data = await pytilpack.quart.assert_bytes(user_client.get("/sandbox/sse"))
-    assert b"data: [DONE]" in data
+async def test_sse(client: httpx.AsyncClient):
+    """SSEエンドポイントのテスト。"""
+    response = await client.get("/sandbox/sse")
+    assert response.status_code == 200
+    assert b"data: [DONE]" in response.content

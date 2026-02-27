@@ -1,22 +1,3 @@
-FROM node:lts AS build
-
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
-RUN corepack enable
-RUN pnpm --version
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.json vite.config.ts /app/
-COPY app /app/app
-COPY appjs /app/appjs
-WORKDIR /app
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-    set -x \
-    && pnpm store path \
-    && pnpm config set store-dir /pnpm/store \
-    && pnpm store path \
-    && pnpm install --frozen-lockfile \
-    && pnpm build
-
 FROM python:3.14
 
 # APTのキャッシュ https://github.com/moby/buildkit/blob/master/frontend/dockerfile/docs/reference.md#example-cache-apt-packages
@@ -48,8 +29,6 @@ RUN --mount=type=cache,target=/root/.cache \
 
 COPY . /usr/src/app
 WORKDIR /usr/src/app
-
-COPY --from=build /app/app/static/dist /usr/src/app/app/static/dist
 
 ARG RUN_UID=1000
 RUN useradd --no-create-home --no-user-group --uid=$RUN_UID user

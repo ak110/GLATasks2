@@ -3,73 +3,58 @@
 import datetime
 import logging
 
+import config
+import fastapi
+import fastapi.responses
 import models
-import pytilpack.quart_auth
-import pytilpack.web
-import quart
-import quart_auth
+import pydantic
 
-bp = quart.Blueprint("auth", __name__, url_prefix="/auth")
+router = fastapi.APIRouter(prefix="/auth", tags=["auth"])
 logger = logging.getLogger(__name__)
 
 
-@bp.route("/login", methods=["GET"])
-async def login():
-    """ログインページ"""
-    return await quart.render_template("login.html", next=quart.request.args.get("next"))
+class _ValidateBody(pydantic.BaseModel):
+    user: str
+    password: str
 
 
-@bp.route("/login", methods=["POST"])
-async def login_auth():
-    """ログイン"""
-    form = await quart.request.form
-    user_id = form["user"]
-    user = (models.Base.session().execute(models.User.select().filter(models.User.user == user_id))).scalar_one_or_none()
-    if user is None or not user.password_is_ok(form["pass"]):
-        await quart.flash("ユーザーIDまたはパスワードが異なります。", "error")
-        return quart.redirect(quart.url_for("auth.login"))
+class _RegisterBody(pydantic.BaseModel):
+    user_id: str
+    password: str
 
-    user.last_login = datetime.datetime.now(datetime.UTC)
+
+async def _check_api_key(x_api_key: str | None = fastapi.Header(default=None)) -> None:
+    """内部APIキーを検証するFastAPI Dependency。"""
+    if x_api_key != config.INTERNAL_API_KEY:
+        raise fastapi.HTTPException(status_code=403)
+
+
+@router.post("/validate", name="auth.validate")
+async def validate(
+    body: _ValidateBody,
+    _: None = fastapi.Depends(_check_api_key),
+) -> fastapi.responses.JSONResponse:
+    """資格情報を検証してユーザー情報を返す。"""
+    user_obj = models.Base.session().execute(models.User.select().filter(models.User.user == body.user)).scalar_one_or_none()
+    if user_obj is None or not user_obj.password_is_ok(body.password):
+        raise fastapi.HTTPException(status_code=401, detail="ユーザーIDまたはパスワードが異なります。")
+
+    user_obj.last_login = datetime.datetime.now(datetime.UTC)
     models.Base.session().commit()
 
-    pytilpack.quart_auth.login_user(user.user)
-    quart.session.permanent = True
-    next_url = pytilpack.web.get_safe_url(
-        quart.request.args.get("next"),
-        str(quart.request.host_url),
-        quart.url_for("main.index"),
-    )
-    return quart.redirect(next_url)
+    return fastapi.responses.JSONResponse(content={"id": user_obj.id, "user": user_obj.user})
 
 
-@bp.route("/regist_user", methods=["GET"])
-async def regist_user():
-    """ユーザー登録"""
-    return await quart.render_template("regist_user.html", user_id="")
+@router.post("/register", name="auth.register")
+async def register(
+    body: _RegisterBody,
+    _: None = fastapi.Depends(_check_api_key),
+) -> fastapi.responses.JSONResponse:
+    """ユーザーを登録してユーザー情報を返す。"""
+    try:
+        models.User.add(body.user_id, body.password)
+    except ValueError as e:
+        raise fastapi.HTTPException(status_code=400, detail=str(e)) from e
 
-
-@bp.route("/regist_user", methods=["POST"])
-async def regist_user_do():
-    """ユーザー登録(実行)"""
-    form = await quart.request.form
-    user_id = form["user_id"]
-
-    if form["pass"] != form["pass_conf"]:
-        await quart.flash("パスワードとパスワード(確認)が一致していません。", "error")
-        return await quart.render_template("regist_user.html", user_id=user_id)
-
-    error = models.User.add(user_id, form["pass"])
-    if error:
-        await quart.flash(error, "error")
-        return await quart.render_template("regist_user.html", user_id=user_id)
-
-    await quart.flash(f"ユーザー {user_id} を登録しました。", "info")
-    return quart.redirect(quart.url_for("auth.login"))
-
-
-@bp.route("/logout", methods=["GET"])
-@quart_auth.login_required
-async def logout():
-    """ログアウト"""
-    pytilpack.quart_auth.logout_user()
-    return quart.redirect(quart.url_for("auth.login"))
+    user_obj = models.Base.session().execute(models.User.select().filter(models.User.user == body.user_id)).scalar_one()
+    return fastapi.responses.JSONResponse(content={"id": user_obj.id, "user": user_obj.user})

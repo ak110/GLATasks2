@@ -1,6 +1,5 @@
 """設定。"""
 
-import datetime
 import os
 import pathlib
 
@@ -23,19 +22,4 @@ DEV_SERVER_URL = os.environ.get("DEV_SERVER_URL", "http://devserver:5173")
 
 SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI")
 
-FLASK_CONFIG = {
-    "SECRET_KEY": pytilpack.secrets.generate_secret_key(DATA_DIR / ".secret_key"),
-    "SESSION_COOKIE_NAME": "gla-session",
-    "SESSION_COOKIE_HTTPONLY": True,
-    "SESSION_COOKIE_SECURE": True,
-    "SESSION_COOKIE_SAMESITE": "None",  # Chrome拡張のiframe内でCookieを使用可能にする
-    "PERMANENT_SESSION_LIFETIME": datetime.timedelta(days=365),
-    "SEND_FILE_MAX_AGE_DEFAULT": 12 * 3600,  # Flask 2.0対策
-    "DEBUG": True,
-    "TEMPLATES_AUTO_RELOAD": True,
-    # Quart-Auth
-    # https://quart-auth.readthedocs.io/en/latest/how_to_guides/configuration.html
-    "QUART_AUTH_COOKIE_NAME": "gla-remember",
-    "QUART_AUTH_COOKIE_SAMESITE": "None",  # Chrome拡張のiframe内でCookieを使用可能にする
-    "QUART_AUTH_SALT": "gla-auth",
-}
+INTERNAL_API_KEY: str = pytilpack.secrets.generate_secret_key(DATA_DIR / ".internal_api_key").hex()

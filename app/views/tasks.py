@@ -1,50 +1,52 @@
 """コントローラー。"""
 
 import datetime
-import json
 import logging
 import zoneinfo
 
+import fastapi
+import fastapi.responses
 import helpers
 import models
-import quart
-import quart_auth
+import pydantic
+import starlette.requests
 
 import views.lists
 
-bp = quart.Blueprint("tasks", __name__, url_prefix="/tasks")
+router = fastapi.APIRouter(prefix="/tasks", tags=["tasks"])
 logger = logging.getLogger(__name__)
 
 
-@bp.before_request
-@quart_auth.login_required
-async def _before_request():
-    pass
+class _AddTaskBody(pydantic.BaseModel):
+    text: str
 
 
-@bp.route("/<list_id>", methods=["POST"])
-async def post(list_id):
+@router.post("/{list_id}", name="tasks.post")
+async def post(
+    list_id: int,
+    body: _AddTaskBody,
+    current_user: models.User = fastapi.Depends(helpers.get_current_user),
+) -> fastapi.responses.JSONResponse:
     """タスクの追加。"""
-    list_ = await views.lists.get_owned(list_id)
-    form = await quart.request.form
-    text = form.get("text", "")
-    text = helpers.decrypt(text)
-    text = text.lstrip("\r\n").rstrip()  # 左側は改行のみstrip(インデント維持のため)
+    list_ = views.lists.get_owned(list_id, current_user)
+    text = body.text.lstrip("\r\n").rstrip()  # 左側は改行のみstrip(インデント維持のため)
     models.Base.session().add(models.Task(list_id=list_.id, text=text))
     list_.last_updated = datetime.datetime.now()
     models.Base.session().commit()
-    return quart.redirect(quart.url_for("main.index"))
+    return fastapi.responses.JSONResponse(content={"status": "ok"})
 
 
-@bp.route("/api/<list_id>/<task_id>", methods=["PATCH"])
-async def patch_api(list_id, task_id):
+@router.patch("/api/{list_id}/{task_id}", name="tasks.patch_api")
+async def patch_api(
+    request: starlette.requests.Request,
+    list_id: int,
+    task_id: int,
+    current_user: models.User = fastapi.Depends(helpers.get_current_user),
+) -> fastapi.responses.JSONResponse:
     """タスクの更新。"""
-    list_, task = await get_owned(list_id, task_id)
+    list_, task = get_owned(list_id, task_id, current_user)
 
-    json_data = await quart.request.get_json()  # type: ignore
-    # 難読化されたデータを復号
-    # 後方互換性のため、難読化されていない場合もサポート
-    data = json.loads(helpers.decrypt(json_data["data"])) if "data" in json_data else json_data
+    data = await request.json()
     if "text" in data:
         task.text = data["text"]
         if not data.get("keep_order"):
@@ -66,20 +68,19 @@ async def patch_api(list_id, task_id):
                 # タイムゾーン情報がない場合、そのまま保存
                 task.completed = completed_dt
     if "move_to" in data:
-        move_to = data["move_to"]
+        move_to = int(data["move_to"])  # JSONからは文字列で来るため明示的にint変換
         if move_to != list_id:
             list2 = (models.Base.session().execute(models.List.select().filter(models.List.id == move_to))).scalar_one()
-            current_user = helpers.get_logged_in_user()
             if list2.user_id != current_user.id:
-                quart.abort(403)
+                raise fastapi.HTTPException(status_code=403)
             task.list_id = move_to
             list2.last_updated = datetime.datetime.now()
 
     list_.last_updated = datetime.datetime.now()
     models.Base.session().commit()
 
-    return quart.jsonify(
-        {
+    return fastapi.responses.JSONResponse(
+        content={
             "status": task.status,
             "completed": task.completed.replace(tzinfo=zoneinfo.ZoneInfo("Asia/Tokyo"))
             .astimezone(zoneinfo.ZoneInfo("UTC"))
@@ -93,11 +94,12 @@ async def patch_api(list_id, task_id):
     )
 
 
-async def get_owned(list_id, task_id) -> tuple[models.List, models.Task]:
-    list_ = await views.lists.get_owned(list_id)
+def get_owned(list_id: int, task_id: int, current_user: models.User) -> tuple[models.List, models.Task]:
+    """タスクの取得(所有者用)。"""
+    list_ = views.lists.get_owned(list_id, current_user)
     task = models.Task.get_by_id(task_id)
     if task is None:
-        quart.abort(404)
+        raise fastapi.HTTPException(status_code=404)
     if task.list_id != list_.id:
-        quart.abort(403)
+        raise fastapi.HTTPException(status_code=403)
     return list_, task

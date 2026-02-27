@@ -1,69 +1,66 @@
 """テスト用の設定。"""
 
 import logging
-import re
 import typing
 
 import config
+import fastapi
+import httpx
 import models
 import pytest_asyncio
-import pytilpack.quart
-import quart.typing
 
 logger = logging.getLogger(__name__)
 
+TEST_USER = "user"
+TEST_PASS = "user"
 
-@pytest_asyncio.fixture(name="base_app", scope="session", autouse=True)
-async def _base_app(tmp_path_factory) -> quart.Quart:
+
+@pytest_asyncio.fixture(name="app", scope="session")
+async def _app(tmp_path_factory) -> fastapi.FastAPI:
     """テスト用のアプリケーションを生成する。"""
     data_dir = tmp_path_factory.mktemp("data_dir")
     config.DATA_DIR = data_dir
     config.SQLALCHEMY_DATABASE_URI = f"sqlite:///{data_dir}/testdb.sqlite"
+    # INTERNAL_API_KEY を新しい DATA_DIR に合わせて再生成
+    import pytilpack.secrets
+
+    config.INTERNAL_API_KEY = pytilpack.secrets.generate_secret_key(data_dir / ".internal_api_key").hex()
 
     import asgi
 
-    _app = await asgi.acreate_app()
-    async with _app.app_context():
-        # テスト用のデータを作成する。
-        with models.Base.connect() as conn:
-            models.Base.metadata.create_all(conn)
-        with models.Base.session_scope():
-            models.User.add("user", "user")
-            models.Base.session().commit()
+    app_ = await asgi.acreate_app()
 
-    return _app
+    with models.Base.connect() as conn:
+        models.Base.metadata.create_all(conn)
+    with models.Base.session_scope():
+        models.User.add(TEST_USER, TEST_PASS)
 
-
-@pytest_asyncio.fixture(name="app", scope="function", autouse=True)
-async def _app(base_app: quart.Quart) -> typing.AsyncGenerator[quart.Quart]:
-    # テストの実行
-    async with base_app.app_context():
-        yield base_app
+    return app_
 
 
 @pytest_asyncio.fixture(name="client", scope="function")
-async def _client(
-    app: quart.Quart,
-) -> typing.AsyncGenerator[quart.typing.TestClientProtocol]:
-    """テストクライアント。"""
-    async with app.test_client() as client:
-        yield client
-
-
-@pytest_asyncio.fixture(name="nonce", scope="function")
-async def _nonce(client: quart.typing.TestClientProtocol) -> str:
-    """nonce取得。"""
-    response = await client.get("/auth/login")
-    page_data = await pytilpack.quart.assert_html(response)
-    nonce_match = re.search(r'name="nonce" value="(\w+)"', page_data)
-    assert nonce_match is not None
-    return nonce_match.group(1)
+async def _client(app: fastapi.FastAPI) -> typing.AsyncGenerator[httpx.AsyncClient]:
+    """認証なしのテストクライアント。"""
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app),
+        base_url="http://testserver",
+    ) as c:
+        yield c
 
 
 @pytest_asyncio.fixture(name="user_client", scope="function")
-async def _user_client(client: quart.typing.TestClientProtocol, nonce: str) -> quart.typing.TestClientProtocol:
-    # ログインボタン押下
-    response = await client.post("/auth/login", form={"user": "user", "pass": "user", "nonce": nonce})
-    await pytilpack.quart.assert_html(response, status_code=302)
-    logger.info(f"user_client: logged in ({nonce=}")
-    return client
+async def _user_client(app: fastapi.FastAPI) -> typing.AsyncGenerator[httpx.AsyncClient]:
+    """認証済みのテストクライアント。"""
+    with models.Base.session_scope():
+        user = models.Base.session().execute(models.User.select().filter(models.User.user == TEST_USER)).scalar_one()
+        user_id = user.id
+
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app),
+        base_url="http://testserver",
+        headers={
+            "x-api-key": config.INTERNAL_API_KEY,
+            "x-user-id": str(user_id),
+        },
+    ) as c:
+        yield c

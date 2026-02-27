@@ -1,55 +1,35 @@
 """タスクコントローラーのテストコード。"""
 
-import json
-import re
-
-import helpers
+import httpx
 import models
 import pytest
-import pytilpack.quart
-import quart.typing
-
-
-async def get_nonce(client: quart.typing.TestClientProtocol) -> str:
-    """CSRFトークンを取得する。"""
-    response = await client.get("/auth/login")
-    page_data = await pytilpack.quart.assert_html(response)
-    nonce_match = re.search(r'name="nonce" value="(\w+)"', page_data)
-    assert nonce_match is not None
-    return nonce_match.group(1)
 
 
 @pytest.mark.asyncio
-async def test_anonymous(client: quart.typing.TestClientProtocol):
-    """未ログインのテスト。"""
-    response = await client.post("/tasks/1")
-    assert response.status_code == 403  # CSRFトークンがないため403エラー
+async def test_anonymous(client: httpx.AsyncClient):
+    """未認証のテスト。"""
+    response = await client.post("/tasks/1", json={"text": "テスト"})
+    assert response.status_code == 403
 
-    response = await client.post("/tasks/patch/1/1")
-    assert response.status_code == 403  # CSRFトークンがないため403エラー
-
-    response = await client.patch("/tasks/api/1/1")
-    assert response.status_code == 302
+    response = await client.patch("/tasks/api/1/1", json={"status": "completed"})
+    assert response.status_code == 403
 
 
 @pytest.mark.asyncio
-async def test_task_operations(user_client: quart.typing.TestClientProtocol):
+async def test_task_operations(user_client: httpx.AsyncClient):
     """タスク操作のテスト。"""
     # テスト用リストの作成
-    nonce = await get_nonce(user_client)
-    response = await user_client.post("/lists/post", form={"title": helpers.encrypt("テストリスト"), "nonce": nonce})
-    assert response.status_code == 302
+    response = await user_client.post("/lists/post", json={"title": "テストリスト"})
+    assert response.status_code == 200
 
     # リストIDの取得
     response = await user_client.get("/lists/api/list")
-    data = json.loads(await response.get_data())
-    lists = json.loads(helpers.decrypt(data["data"]))
+    lists = response.json()
     list_id = lists[0]["id"]
 
     # タスクの追加
-    nonce = await get_nonce(user_client)
-    response = await user_client.post(f"/tasks/{list_id}", form={"text": helpers.encrypt("テストタスク"), "nonce": nonce})
-    assert response.status_code == 302
+    response = await user_client.post(f"/tasks/{list_id}", json={"text": "テストタスク"})
+    assert response.status_code == 200
 
     # タスクIDの取得
     with models.Base.session_scope():
@@ -57,38 +37,31 @@ async def test_task_operations(user_client: quart.typing.TestClientProtocol):
         assert list_ is not None
         task_id = list_.tasks[0].id
 
-    # タスクのAPIを使用した更新
     # ステータス更新
     response = await user_client.patch(f"/tasks/api/{list_id}/{task_id}", json={"status": "completed"})
     assert response.status_code == 200
-    data = json.loads(await response.get_data())
+    data = response.json()
     assert data["status"] == "completed"
     assert data["completed"] is not None
 
     # テキスト更新
-    response = await user_client.patch(f"/tasks/api/{list_id}/{task_id}", json={"text": "API経由で更新"})
+    response = await user_client.patch(f"/tasks/api/{list_id}/{task_id}", json={"text": "更新済みタスク"})
     assert response.status_code == 200
 
     # completed日時の更新
     test_date = "2024-01-01T00:00:00+00:00"
     response = await user_client.patch(f"/tasks/api/{list_id}/{task_id}", json={"completed": test_date})
     assert response.status_code == 200
-    data = json.loads(await response.get_data())
+    data = response.json()
     assert data["completed"] == test_date
 
 
 @pytest.mark.asyncio
-async def test_access_control(user_client: quart.typing.TestClientProtocol):
+async def test_access_control(user_client: httpx.AsyncClient):
     """アクセス制御のテスト。"""
     # 存在しないリストへのアクセス
-    nonce = await get_nonce(user_client)
-    response = await user_client.post("/tasks/99999", form={"text": helpers.encrypt("テスト"), "nonce": nonce})
+    response = await user_client.post("/tasks/99999", json={"text": "テスト"})
     assert response.status_code == 404
 
-    # 存在しないタスクへのアクセス
-    nonce = await get_nonce(user_client)
-    response = await user_client.post("/tasks/patch/1/99999", form={"text": helpers.encrypt("テスト"), "nonce": nonce})
-    assert response.status_code == 404
-
-    response = await user_client.patch("/tasks/api/1/99999", json={"status": "completed"})
+    response = await user_client.patch("/tasks/api/99999/99999", json={"status": "completed"})
     assert response.status_code == 404

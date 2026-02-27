@@ -4,7 +4,6 @@ import datetime
 import re
 
 import bcrypt
-import pytilpack.quart_auth
 import sqlalchemy
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -12,7 +11,7 @@ from .base import Base
 from .list import List
 
 
-class User(Base, pytilpack.quart_auth.UserMixin):
+class User(Base):
     """ユーザー"""
 
     __tablename__ = "user"

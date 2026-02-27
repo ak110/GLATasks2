@@ -8,18 +8,18 @@ RUN_ARGS += --user=$(shell id --user):$(shell id --group) --ulimit="core=0"
 export DOCKER_BUILDKIT=1
 export BETTER_EXCEPTIONS=1
 
-# pnpm実行用の共通コマンド
+# pnpm実行用の共通コマンド（frontend/ ディレクトリで実行）
 RUN_NODE = docker run $(2) \
     --env=HOME=${PWD}/.cache \
 	--env=COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
 	--volume=${PWD}:${PWD} \
-	--workdir=${PWD} \
+	--workdir=${PWD}/frontend \
 	$(RUN_ARGS) \
 	node:lts \
 	bash -xc '\
 	    mkdir -p ${PWD}/.cache/bin &&\
         corepack enable --install-directory ${PWD}/.cache/bin &&\
-        export PATH=${PWD}/.cache/bin:${PWD}/node_modules/.bin:$$PATH &&\
+        export PATH=${PWD}/.cache/bin:${PWD}/frontend/node_modules/.bin:$$PATH &&\
 		$(1)\
 	'
 
@@ -48,10 +48,6 @@ endif
 
 start:
 	docker compose up -d
-ifneq ($(COMPOSE_PROFILE), development)
-	@# NGINX用にコピー
-	docker compose cp app:/usr/src/app/app/static/dist app/static/
-endif
 
 stop:
 	docker compose down
@@ -80,12 +76,12 @@ ps:
 healthcheck:
 	docker compose exec app curl --fail http://localhost:8000/healthcheck
 
-start-devserver:
-	docker compose down devserver
-	docker compose up -d devserver
+start-frontend:
+	docker compose down frontend
+	docker compose up -d frontend
 
-logs-devserver:
-	docker compose logs -ft devserver
+logs-frontend:
+	docker compose logs -ft frontend
 
 sql:
 	docker compose exec db mariadb -uglatasks -pglatasks -Dglatasks
@@ -102,7 +98,7 @@ update:
 	$(MAKE) test
 
 update-ts:
-	$(call RUN_NODE, corepack prepare pnpm@latest --activate && corepack use pnpm@latest && pnpm run clean-update, --rm)
+	$(call RUN_NODE, corepack prepare pnpm@latest --activate && corepack use pnpm@latest && pnpm update --latest && pnpm prune && pnpm store prune, --rm)
 
 update-py:
 	uv sync --upgrade
@@ -113,7 +109,7 @@ format:
 	$(MAKE) format-py
 
 format-ts:
-	-$(call RUN_NODE, pnpm run format, --rm)
+	-$(call RUN_NODE, pnpm install && pnpm run format, --rm)
 
 format-py:
 	-uv run pyfltr --exit-zero-even-if-formatted --commands=fast app
@@ -124,9 +120,28 @@ test:
 	$(MAKE) test-py
 
 test-ts:
-	$(call RUN_NODE, pnpm run format && pnpm run test && pnpm run build, --rm)
+	$(call RUN_NODE, pnpm install && pnpm run check, --rm)
 
 test-py:
 	uv run pyfltr --exit-zero-even-if-formatted app
 
-.PHONY: help sync deploy build start stop db-up db-down db-history hup restart-app logs ps healthcheck shell node-shell update update-ts update-py format format-ts format-py test test-ts test-py
+PLAYWRIGHT_IMAGE = mcr.microsoft.com/playwright:v1.50.0-noble
+
+PNPM_VERSION = $(shell node -e "const p=require('./frontend/package.json'); console.log((p.packageManager||'').split('@')[1]?.split('+')[0]||'latest')" 2>/dev/null || echo latest)
+
+test-e2e:
+	docker run --rm --network=host \
+		--env=HOME=${PWD}/.cache/playwright \
+		--env=BASE_URL=https://localhost:38180 \
+		--env=PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
+		--volume=${PWD}:${PWD} \
+		--workdir=${PWD}/frontend \
+		$(RUN_ARGS) \
+		$(PLAYWRIGHT_IMAGE) \
+		bash -xc '\
+			npm install -g pnpm@$(PNPM_VERSION) --prefix ${PWD}/.cache/playwright --force &&\
+			export PATH=${PWD}/.cache/playwright/bin:${PWD}/frontend/node_modules/.bin:$$PATH &&\
+			pnpm install && pnpm run test:e2e\
+		'
+
+.PHONY: help sync deploy build start stop db-up db-down db-history hup restart-app logs ps healthcheck shell node-shell update update-ts update-py format format-ts format-py test test-ts test-py test-e2e start-frontend logs-frontend

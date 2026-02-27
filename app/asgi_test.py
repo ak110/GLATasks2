@@ -1,18 +1,12 @@
 """ASGIアプリケーションのテスト。"""
 
+import httpx
 import pytest
-import pytilpack.quart
-import quart.typing
 
 
 @pytest.mark.asyncio
-async def test_anonymous(client: quart.typing.TestClientProtocol):
-    """未ログインのテスト"""
-    # ヘルスチェック
+async def test_healthcheck(client: httpx.AsyncClient):
+    """ヘルスチェックのテスト。"""
     response = await client.get("/healthcheck")
-    assert (await pytilpack.quart.assert_json(response)) == {"status": "ok"}
-
-    # サービスワーカー
-    response = await client.get("/sw.js")
     assert response.status_code == 200
-    assert response.headers["Content-Type"] == "application/javascript"
+    assert response.json() == {"status": "ok"}
