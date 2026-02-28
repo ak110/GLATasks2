@@ -85,10 +85,14 @@ update:
 format:  # 整形 + 軽量lint（自動修正あり）
 	pre-commit run --all-files
 
-test:  # format + lint + 型チェック + pre-commit + e2eテスト
+test:  # format + lint + 型チェック + pre-commit + unit test + e2eテスト
 	SKIP=pnpm-format pre-commit run --all-files
 	$(call RUN_NODE, pnpm run test, --rm)
+	$(MAKE) test-unit
 	$(MAKE) test-e2e
+
+test-unit:  # Vitestユニットテスト実行
+	$(call RUN_NODE, pnpm run test:unit, --rm)
 
 migrate:  # DBマイグレーション実行
 	docker compose exec app node --input-type=module --eval "\
@@ -120,4 +124,4 @@ test-e2e:
 			CI=true pnpm install && pnpm run test:e2e\
 		'
 
-.PHONY: help sync deploy build start stop restart-app logs ps healthcheck shell node-shell update format test test-e2e start-app logs-app migrate db-studio
+.PHONY: help sync deploy build start stop restart-app logs ps healthcheck shell node-shell update format test test-unit test-e2e start-app logs-app migrate db-studio
