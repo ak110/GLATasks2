@@ -7,18 +7,19 @@ RUN_ARGS += --user=$(shell id --user):$(shell id --group) --ulimit="core=0"
 
 export DOCKER_BUILDKIT=1
 
-# pnpm実行用の共通コマンド（app/ ディレクトリで実行）
+# pnpm実行用の共通コマンド（プロジェクトルートで実行）
 RUN_NODE = docker run $(2) \
     --env=HOME=${PWD}/.cache \
 	--env=COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
 	--volume=${PWD}:${PWD} \
-	--workdir=${PWD}/app \
+	--workdir=${PWD} \
 	$(RUN_ARGS) \
 	node:lts \
 	bash -xc '\
 	    mkdir -p ${PWD}/.cache/bin &&\
         corepack enable --install-directory ${PWD}/.cache/bin &&\
-        export PATH=${PWD}/.cache/bin:${PWD}/app/node_modules/.bin:$$PATH &&\
+        export PATH=${PWD}/.cache/bin:${PWD}/node_modules/.bin:$$PATH &&\
+		CI=true pnpm install &&\
 		$(1)\
 	'
 
@@ -91,7 +92,7 @@ test:  # format + lint + 型チェック + pre-commit + e2eテスト
 
 PLAYWRIGHT_IMAGE = mcr.microsoft.com/playwright:v1.50.0-noble
 
-PNPM_VERSION = $(shell node -e "const p=require('./app/package.json'); console.log((p.packageManager||'').split('@')[1]?.split('+')[0]||'latest')" 2>/dev/null || echo latest)
+PNPM_VERSION = $(shell node -e "const p=require('./package.json'); console.log((p.packageManager||'').split('@')[1]?.split('+')[0]||'latest')" 2>/dev/null || echo latest)
 
 test-e2e:
 	docker run --rm --network=host \
@@ -99,12 +100,12 @@ test-e2e:
 		--env=BASE_URL=https://localhost:38180 \
 		--env=PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
 		--volume=${PWD}:${PWD} \
-		--workdir=${PWD}/app \
+		--workdir=${PWD} \
 		$(RUN_ARGS) \
 		$(PLAYWRIGHT_IMAGE) \
 		bash -xc '\
 			npm install -g pnpm@$(PNPM_VERSION) --prefix ${PWD}/.cache/playwright --force &&\
-			export PATH=${PWD}/.cache/playwright/bin:${PWD}/app/node_modules/.bin:$$PATH &&\
+			export PATH=${PWD}/.cache/playwright/bin:${PWD}/node_modules/.bin:$$PATH &&\
 			CI=true pnpm install && pnpm run test:e2e\
 		'
 

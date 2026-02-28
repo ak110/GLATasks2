@@ -7,10 +7,9 @@ services:
       bash -xc '
         mkdir -p ${PWD}/.cache/bin &&
         corepack enable --install-directory ${PWD}/.cache/bin &&
-        export PATH=${PWD}/.cache/bin:${PWD}/app/node_modules/.bin:$$PATH &&
-        cd ${PWD}/app &&
+        export PATH=${PWD}/.cache/bin:${PWD}/node_modules/.bin:$$PATH &&
         CI=true pnpm install &&
-        exec pnpm dev --host 0.0.0.0 --port 3000
+        exec pnpm run dev
       '
     user: ${UID}:${GID}
     environment:
@@ -22,7 +21,7 @@ services:
     volumes:
       - ${PWD}:${PWD}
       - ${DATA_DIR}:${DATA_DIR}:ro
-    working_dir: ${PWD}/app
+    working_dir: ${PWD}
     networks:
       - network
     depends_on:

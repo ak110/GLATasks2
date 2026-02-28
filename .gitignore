@@ -6,9 +6,9 @@
 /web/openssl.cnf
 /web/ssl
 /app/build/
-/app/test-results/
-/app/playwright-report/
 /app/tests/.auth/
+/test-results/
+/playwright-report/
 
 # https://github.com/github/gitignore/blob/main/Node.gitignore
 

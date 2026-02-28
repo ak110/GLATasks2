@@ -4,11 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite dev",
-    "build": "vite build",
-    "preview": "vite preview",
-    "format": "prettier --write '**/*.{ts,svelte,json,css}' '../**/*.{yaml,yml,jsonc}' && eslint --fix src",
-    "test": "eslint src && svelte-kit sync && svelte-check --tsconfig ../tsconfig.json",
+    "dev": "cd app && vite dev",
+    "build": "cd app && vite build",
+    "preview": "cd app && vite preview",
+    "format": "prettier --write . && eslint --fix .",
+    "test": "eslint . && cd app && svelte-kit sync && svelte-check --tsconfig ../tsconfig.json",
     "test:e2e": "playwright test"
   },
   "dependencies": {

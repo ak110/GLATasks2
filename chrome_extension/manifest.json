@@ -3,11 +3,7 @@
   "name": "Save To GLATasks",
   "version": "1.0.0",
   "description": "Save current page to GLATasks with a single click",
-  "permissions": [
-    "activeTab",
-    "contextMenus",
-    "tabs"
-  ],
+  "permissions": ["activeTab", "contextMenus", "tabs"],
   "action": {
     "default_popup": "popup.html",
     "default_title": "Save To GLATasks",

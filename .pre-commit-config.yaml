@@ -39,7 +39,8 @@ repos:
           - textlint-rule-preset-japanese@10.0.4
       - id: pnpm-format
         name: pnpm-format
-        entry: bash -c 'cd app && pnpm run format'
+        entry: pnpm run format
         types_or: [javascript, json, ts, svelte, css, yaml]
+        pass_filenames: false
         require_serial: true
         language: system

@@ -6,15 +6,15 @@ Google Tasks の canvas ビューが廃止されたため自作した低機能 W
 
 ## スタック
 
-| レイヤー         | 技術               | 役割                                   |
-|------------------|--------------------|----------------------------------------|
+| レイヤー         | 技術               | 役割                                    |
+| ---------------- | ------------------ | --------------------------------------- |
 | アプリケーション | SvelteKit          | UI・ルーティング・SSR・API・DB アクセス |
-| ORM              | Drizzle ORM        | DB アクセス（型安全）                  |
-| DB               | MariaDB            | データ永続化                           |
-| リバースプロキシ | nginx              | HTTPS 終端                             |
-| CSS              | Tailwind CSS       | スタイリング                           |
-| 暗号化           | Web Crypto API     | ブラウザ ↔ SvelteKit 間 AES-GCM       |
-| 認証             | JWT/HS256 (`jose`) | Cookie セッション管理                  |
+| ORM              | Drizzle ORM        | DB アクセス（型安全）                   |
+| DB               | MariaDB            | データ永続化                            |
+| リバースプロキシ | nginx              | HTTPS 終端                              |
+| CSS              | Tailwind CSS       | スタイリング                            |
+| 暗号化           | Web Crypto API     | ブラウザ ↔ SvelteKit 間 AES-GCM         |
+| 認証             | JWT/HS256 (`jose`) | Cookie セッション管理                   |
 
 ## アーキテクチャ図
 
@@ -97,41 +97,48 @@ Chrome 拡張のポップアップ内 iframe からのアクセスを許可す�
 
 ### user
 
-| カラム | 型 | 説明 |
-|---|---|---|
-| id | INT PK | 内部 ID |
-| user | VARCHAR(80) UNIQUE | ログイン ID（英数字 4〜32 文字） |
-| pass\_hash | VARCHAR(255) | bcrypt ハッシュ |
-| joined | DATETIME | 登録日時 |
-| last\_login | DATETIME NULL | 最終ログイン日時 |
+| カラム     | 型                 | 説明                             |
+| ---------- | ------------------ | -------------------------------- |
+| id         | INT PK             | 内部 ID                          |
+| user       | VARCHAR(80) UNIQUE | ログイン ID（英数字 4〜32 文字） |
+| pass_hash  | VARCHAR(255)       | bcrypt ハッシュ                  |
+| joined     | DATETIME           | 登録日時                         |
+| last_login | DATETIME NULL      | 最終ログイン日時                 |
 
 ### list
 
-| カラム | 型 | 説明 |
-|---|---|---|
-| id | INT PK | 内部 ID |
-| user\_id | INT FK→user | 所有ユーザー |
-| status | VARCHAR(255) | `show` / `hidden` / `active` |
-| title | VARCHAR(255) | リスト名 |
-| last\_updated | DATETIME | 最終更新日時 |
+| カラム       | 型           | 説明                         |
+| ------------ | ------------ | ---------------------------- |
+| id           | INT PK       | 内部 ID                      |
+| user_id      | INT FK→user  | 所有ユーザー                 |
+| status       | VARCHAR(255) | `show` / `hidden` / `active` |
+| title        | VARCHAR(255) | リスト名                     |
+| last_updated | DATETIME     | 最終更新日時                 |
 
 ### task
 
-| カラム | 型 | 説明 |
-|---|---|---|
-| id | INT PK | 内部 ID |
-| list\_id | INT FK→list | 所属リスト |
-| status\_id | INT | 0=needsAction, 1=completed, 2=hidden |
-| text | TEXT | 内容（1行目=タイトル, 2行目以降=メモ） |
-| created | DATETIME | 作成日時 |
-| updated | DATETIME | 更新日時（並び順に使用、降順） |
-| completed | DATETIME NULL | 完了日時 |
+| カラム    | 型            | 説明                                   |
+| --------- | ------------- | -------------------------------------- |
+| id        | INT PK        | 内部 ID                                |
+| list_id   | INT FK→list   | 所属リスト                             |
+| status_id | INT           | 0=needsAction, 1=completed, 2=hidden   |
+| text      | TEXT          | 内容（1行目=タイトル, 2行目以降=メモ） |
+| created   | DATETIME      | 作成日時                               |
+| updated   | DATETIME      | 更新日時（並び順に使用、降順）         |
+| completed | DATETIME NULL | 完了日時                               |
 
 ## ディレクトリ構造
 
 ```text
 /
-├── app/                # SvelteKit アプリケーション
+├── package.json          # 依存関係管理（ルートに統一）
+├── eslint.config.js      # ESLint 設定（app + chrome_extension）
+├── playwright.config.ts  # Playwright e2e テスト設定
+├── tsconfig.json         # TypeScript 設定
+├── Dockerfile            # 本番用マルチステージビルド
+├── app/                  # SvelteKit アプリケーション
+│   ├── svelte.config.js
+│   ├── vite.config.ts
 │   ├── src/
 │   │   ├── hooks.server.ts
 │   │   ├── lib/
@@ -145,8 +152,8 @@ Chrome 拡張のポップアップ内 iframe からのアクセスを許可す�
 │   │   │       └── session.ts    # JWT 生成・検証
 │   │   └── routes/               # ページ・API エンドポイント
 │   └── tests/                    # Playwright e2e テスト
-├── chrome_extension/   # Chrome 拡張機能
-├── web/                # nginx 設定・SSL 証明書
-├── docs/               # ドキュメント
-└── db/                 # DB 設定
+├── chrome_extension/     # Chrome 拡張機能
+├── web/                  # nginx 設定・SSL 証明書
+├── docs/                 # ドキュメント
+└── db/                   # DB 設定
 ```

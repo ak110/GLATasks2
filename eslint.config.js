@@ -19,6 +19,16 @@ export default [
     },
   },
   {
-    ignores: [".svelte-kit/**", "build/**", "node_modules/**", "tests/**"],
+    files: ["chrome_extension/**/*.js"],
+    ...ts.configs.disableTypeChecked,
+  },
+  {
+    ignores: [
+      "app/.svelte-kit/**",
+      "app/build/**",
+      "app/tests/**",
+      "node_modules/**",
+      ".cache/**",
+    ],
   },
 ];

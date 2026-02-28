@@ -3,7 +3,7 @@
 /.env
 /.git
 /.github
-/app/node_modules
+/node_modules
 /app/build
 /app/tests
 /compose.override.yaml
