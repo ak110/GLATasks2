@@ -7,7 +7,7 @@ import {
   int,
   varchar,
   text,
-  datetime,
+  timestamp,
 } from "drizzle-orm/mysql-core";
 
 /** user テーブル */
@@ -15,8 +15,8 @@ export const users = mysqlTable("user", {
   id: int("id").primaryKey().autoincrement(),
   user: varchar("user", { length: 80 }).notNull().unique(),
   pass_hash: varchar("pass_hash", { length: 255 }).notNull(),
-  joined: datetime("joined").notNull(),
-  last_login: datetime("last_login"),
+  joined: timestamp("joined").notNull(),
+  last_login: timestamp("last_login"),
 });
 
 /** list テーブル */
@@ -25,7 +25,7 @@ export const lists = mysqlTable("list", {
   user_id: int("user_id").notNull(),
   status: varchar("status", { length: 255 }).notNull().default("show"),
   title: varchar("title", { length: 255 }).notNull(),
-  last_updated: datetime("last_updated").notNull(),
+  last_updated: timestamp("last_updated").notNull(),
 });
 
 /** task テーブル */
@@ -34,7 +34,7 @@ export const tasks = mysqlTable("task", {
   list_id: int("list_id").notNull(),
   status_id: int("status_id").notNull().default(0),
   text: text("text").notNull(),
-  created: datetime("created").notNull(),
-  updated: datetime("updated").notNull(),
-  completed: datetime("completed"),
+  created: timestamp("created").notNull(),
+  updated: timestamp("updated").notNull(),
+  completed: timestamp("completed"),
 });

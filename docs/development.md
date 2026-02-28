@@ -95,9 +95,9 @@ nginx 経由の HTTPS（port 38180）でテストするため、開発環境が�
 - JSONボディから受け取る数値は文字列の場合があるため`Number()`で明示変換すること。
   - 例: `Number(data.move_to)` ← `"5" !== 5` になる型不一致を防ぐ
 - 日時の取り扱いについて:
-  - **DBに保存**: ローカルタイム(Asia/Tokyo)、タイムゾーン情報なしで保存
-  - **クライアントに送信**: mysql2 の `timezone: "+09:00"` 設定により `toISOString()` で UTC に変換
-  - **クライアントから受信**: `new Date(isoString)` で UTC→Date に変換し、mysql2 が自動的に JST に変換して格納
+  - **DBに保存**: TIMESTAMP型でUTC保存（MariaDBが自動的にUTC変換）
+  - **クライアントに送信**: JavaScriptのDateオブジェクトとして送信され、`toISOString()`でUTC ISO8601文字列に変換
+  - **クライアントから受信**: `new Date(isoString)`でUTC→Dateオブジェクトに変換し、MariaDBが自動的にUTCとして格納
 
 ## GitHub Actionsのデプロイ用SSHキー作成手順
 

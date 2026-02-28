@@ -17,7 +17,7 @@ export function getDb(): MySql2Database<typeof schema> {
     const pool = mysql.createPool({
       uri: url,
       connectionLimit: 5,
-      timezone: "+09:00",
+      // TIMESTAMP型はUTC保存・自動変換されるためtimezone指定不要
     });
     _db = drizzle(pool, { schema, mode: "default" });
   }

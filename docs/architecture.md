@@ -95,7 +95,7 @@ Chrome 拡張のポップアップ内 iframe からのアクセスを許可す�
 
 ## DB スキーマ
 
-3テーブル構成。日時カラムはすべて Asia/Tokyo ローカルタイム（tz 情報なし）で保存。
+3テーブル構成。日時カラムはすべて TIMESTAMP 型で UTC 保存。
 
 ### user
 
@@ -104,8 +104,8 @@ Chrome 拡張のポップアップ内 iframe からのアクセスを許可す�
 | id         | INT PK             | 内部 ID                          |
 | user       | VARCHAR(80) UNIQUE | ログイン ID（英数字 4〜32 文字） |
 | pass_hash  | VARCHAR(255)       | bcrypt ハッシュ                  |
-| joined     | DATETIME           | 登録日時                         |
-| last_login | DATETIME NULL      | 最終ログイン日時                 |
+| joined     | TIMESTAMP          | 登録日時（UTC）                  |
+| last_login | TIMESTAMP NULL     | 最終ログイン日時（UTC）          |
 
 ### list
 
@@ -115,19 +115,19 @@ Chrome 拡張のポップアップ内 iframe からのアクセスを許可す�
 | user_id      | INT FK→user  | 所有ユーザー                 |
 | status       | VARCHAR(255) | `show` / `hidden` / `active` |
 | title        | VARCHAR(255) | リスト名                     |
-| last_updated | DATETIME     | 最終更新日時                 |
+| last_updated | TIMESTAMP    | 最終更新日時（UTC）          |
 
 ### task
 
-| カラム    | 型            | 説明                                   |
-| --------- | ------------- | -------------------------------------- |
-| id        | INT PK        | 内部 ID                                |
-| list_id   | INT FK→list   | 所属リスト                             |
-| status_id | INT           | 0=needsAction, 1=completed, 2=hidden   |
-| text      | TEXT          | 内容（1行目=タイトル, 2行目以降=メモ） |
-| created   | DATETIME      | 作成日時                               |
-| updated   | DATETIME      | 更新日時（並び順に使用、降順）         |
-| completed | DATETIME NULL | 完了日時                               |
+| カラム    | 型             | 説明                                   |
+| --------- | -------------- | -------------------------------------- |
+| id        | INT PK         | 内部 ID                                |
+| list_id   | INT FK→list    | 所属リスト                             |
+| status_id | INT            | 0=needsAction, 1=completed, 2=hidden   |
+| text      | TEXT           | 内容（1行目=タイトル, 2行目以降=メモ） |
+| created   | TIMESTAMP      | 作成日時（UTC）                        |
+| updated   | TIMESTAMP      | 更新日時（UTC、並び順に使用、降順）    |
+| completed | TIMESTAMP NULL | 完了日時（UTC）                        |
 
 ## ディレクトリ構造
 
