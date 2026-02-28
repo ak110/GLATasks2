@@ -144,28 +144,28 @@ export const appRouter = t.router({
         return { success: true };
       }),
 
-    delete: protectedProcedure
+    delete: encryptedProcedure
       .input(UpdateListSchema.pick({ listId: true }))
       .mutation(async ({ ctx, input }) => {
         await api.deleteList(ctx.userId, input.listId);
         return { success: true };
       }),
 
-    hide: protectedProcedure
+    hide: encryptedProcedure
       .input(UpdateListSchema.pick({ listId: true }))
       .mutation(async ({ ctx, input }) => {
         await api.hideList(ctx.userId, input.listId);
         return { success: true };
       }),
 
-    show: protectedProcedure
+    show: encryptedProcedure
       .input(UpdateListSchema.pick({ listId: true }))
       .mutation(async ({ ctx, input }) => {
         await api.showList(ctx.userId, input.listId);
         return { success: true };
       }),
 
-    clear: protectedProcedure
+    clear: encryptedProcedure
       .input(UpdateListSchema.pick({ listId: true }))
       .mutation(async ({ ctx, input }) => {
         await api.clearList(ctx.userId, input.listId);

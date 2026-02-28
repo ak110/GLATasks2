@@ -56,11 +56,10 @@ const STATUS_IDS: Record<string, number> = {
 // ── 日時変換ヘルパー ──
 
 /**
- * DB のローカルタイム (Asia/Tokyo, tz なし) の Date を UTC ISO 文字列に変換する。
+ * DB の TIMESTAMP 型から読み込んだ Date を UTC ISO 文字列に変換する。
  *
- * mysql2 の timezone: "+09:00" 設定により、DB から読み込んだ datetime は
- * 内部的に UTC ms から 9 時間引いた値として保持される。
- * そのため toISOString() がそのまま UTC 表現になる。
+ * TIMESTAMP 型は内部的に UTC で保存され、mysql2 が Date オブジェクトとして返す。
+ * toISOString() でそのまま UTC 表現になる。
  */
 function toUtcIso(dt: Date): string {
   return dt.toISOString();
@@ -69,10 +68,8 @@ function toUtcIso(dt: Date): string {
 /**
  * クライアントから受け取った UTC ISO 文字列を DB に保存する Date に変換する。
  *
- * mysql2 の timezone: "+09:00" 設定により、Date を INSERT すると
- * 内部的に UTC ms + 9 時間した値が DB に格納される。
- * クライアントから受け取った UTC 日時をそのまま Date にすれば、
- * mysql2 が自動的に JST に変換して格納してくれる。
+ * new Date(isoString) で UTC ミリ秒の Date を生成し、
+ * TIMESTAMP 型に INSERT すると MariaDB が UTC として格納する。
  */
 function fromUtcIso(isoStr: string): Date {
   return new Date(isoStr);

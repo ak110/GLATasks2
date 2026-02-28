@@ -3,6 +3,7 @@
     import type { Snippet } from "svelte";
     import { QueryClientProvider } from "@tanstack/svelte-query";
     import { queryClient } from "$lib/query-client";
+    import { onMount } from "svelte";
     import { setEncryptKey } from "$lib/trpc";
     import type { LayoutData } from "./$types";
 
@@ -13,6 +14,22 @@
     $effect(() => {
         if (data.encrypt_key) {
             setEncryptKey(data.encrypt_key);
+        }
+    });
+
+    // サービスワーカー登録
+    onMount(async () => {
+        if ("serviceWorker" in navigator) {
+            try {
+                const registration =
+                    await navigator.serviceWorker.register("/sw.js");
+                console.log(
+                    "ServiceWorker registration successful with scope:",
+                    registration.scope,
+                );
+            } catch (error) {
+                console.log("ServiceWorker registration failed:", error);
+            }
         }
     });
 </script>
