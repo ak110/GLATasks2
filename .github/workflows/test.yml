@@ -26,10 +26,6 @@ jobs:
 
       - name: Build
         run: pnpm run build
-        env:
-          DATABASE_URL: mysql://dummy:dummy@localhost/dummy
 
       - name: Lint and type check
         run: pnpm run test
-        env:
-          DATABASE_URL: mysql://dummy:dummy@localhost/dummy

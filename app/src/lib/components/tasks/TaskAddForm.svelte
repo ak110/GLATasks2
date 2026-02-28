@@ -33,7 +33,7 @@
         ></textarea>
         <button
             type="submit"
-            class="mt-1 cursor-pointer rounded bg-blue-100 px-3 py-1 text-xs text-blue-600 hover:bg-blue-200"
+            class="mt-1 cursor-pointer rounded bg-blue-100 px-3 py-1 text-sm text-blue-600 hover:bg-blue-200"
         >
             追加
         </button>

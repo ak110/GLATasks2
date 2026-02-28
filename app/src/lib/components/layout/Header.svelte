@@ -28,7 +28,7 @@
     {/if}
     <a href="/" class="font-bold hover:text-gray-300">GLATasks</a>
     {#if isLoading}
-        <span class="text-xs text-gray-400">読み込み中...</span>
+        <span class="text-sm text-gray-400">読み込み中...</span>
     {/if}
     <div class="ml-auto flex items-center gap-2">
         <select
@@ -46,7 +46,7 @@
         <form method="post" action="/auth/logout">
             <button
                 type="submit"
-                class="cursor-pointer rounded px-2 py-1 text-xs text-gray-300 hover:text-white"
+                class="cursor-pointer rounded px-2 py-1 text-sm text-gray-300 hover:text-white"
                 >ログアウト</button
             >
         </form>

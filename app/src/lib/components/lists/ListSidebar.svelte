@@ -85,7 +85,7 @@
             />
             <button
                 type="submit"
-                class="cursor-pointer rounded bg-blue-600 px-3 py-1.5 text-xs text-white hover:bg-blue-700"
+                class="cursor-pointer rounded bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700"
                 >追加</button
             >
         </form>

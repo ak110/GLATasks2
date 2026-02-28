@@ -15,7 +15,16 @@ const envSchema = z.object({
   PROTOCOL_HEADER: z.string().optional(),
 });
 
-export const env = envSchema.parse(process.env);
+/** ビルド時のpostbuild分析で実行されるため遅延評価する */
+let _env: z.infer<typeof envSchema> | null = null;
+
+/** 環境変数を取得する（初回呼び出し時にバリデーション） */
+export function getEnv(): z.infer<typeof envSchema> {
+  if (!_env) {
+    _env = envSchema.parse(process.env);
+  }
+  return _env;
+}
 
 // ── 暗号化キー・JWT秘密鍵の管理 ──
 
@@ -26,7 +35,7 @@ let _jwtSecret: string | null = null;
  * 鍵ファイルを読み込む（32バイトバイナリ形式、Base64文字列として返す）
  */
 function loadOrCreateKey(keyPath: string): string {
-  fs.mkdirSync(env.DATA_DIR, { recursive: true });
+  fs.mkdirSync(getEnv().DATA_DIR, { recursive: true });
 
   if (!fs.existsSync(keyPath)) {
     const newKey = crypto.randomBytes(32);
@@ -42,7 +51,7 @@ function loadOrCreateKey(keyPath: string): string {
  */
 export function getEncryptKey(): string {
   if (!_encryptKey) {
-    _encryptKey = loadOrCreateKey(`${env.DATA_DIR}/.encrypt_key`);
+    _encryptKey = loadOrCreateKey(`${getEnv().DATA_DIR}/.encrypt_key`);
   }
   return _encryptKey;
 }
@@ -52,7 +61,7 @@ export function getEncryptKey(): string {
  */
 export function getJwtSecret(): string {
   if (!_jwtSecret) {
-    _jwtSecret = loadOrCreateKey(`${env.DATA_DIR}/.secret_key`);
+    _jwtSecret = loadOrCreateKey(`${getEnv().DATA_DIR}/.secret_key`);
   }
   return _jwtSecret;
 }

@@ -358,7 +358,7 @@
                     </h2>
                     <button
                         onclick={() => clearList(selectedListId!)}
-                        class="cursor-pointer text-xs text-gray-500 hover:text-gray-600"
+                        class="cursor-pointer text-sm text-gray-500 hover:text-gray-600"
                         title="完了済みタスクを非表示にする"
                         >完了済みを非表示</button
                     >

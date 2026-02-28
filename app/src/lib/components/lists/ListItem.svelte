@@ -45,7 +45,7 @@
     <!-- ⋮ メニュー -->
     <div class="relative flex-shrink-0">
         <button
-            class="cursor-pointer px-2 py-2.5 text-xs text-gray-400 hover:text-gray-700 sm:opacity-0 sm:group-hover:opacity-100"
+            class="cursor-pointer px-2 py-2.5 text-sm text-gray-400 hover:text-gray-700 sm:opacity-0 sm:group-hover:opacity-100"
             onclick={(e) => {
                 e.stopPropagation();
                 onToggleMenu(list.id);
