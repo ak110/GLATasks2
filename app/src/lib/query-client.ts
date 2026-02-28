@@ -25,7 +25,7 @@ export const queryClient = new QueryClient({
     queries: {
       staleTime: 5 * 60 * 1000, // 5分間はキャッシュ有効
       gcTime: 10 * 60 * 1000, // 10分間はガベージコレクション対象外
-      refetchOnWindowFocus: false,
+      refetchOnWindowFocus: "always",
       retry: 1,
     },
   },

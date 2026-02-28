@@ -88,8 +88,13 @@ function splitTitle(text: string): string {
 }
 
 function splitNotes(text: string): string {
-  const parts = text.split("\n", 2);
-  return parts.length >= 2 ? parts[1].replace(/^[\r\n]+/, "").trimEnd() : "";
+  const idx = text.indexOf("\n");
+  return idx === -1
+    ? ""
+    : text
+        .slice(idx + 1)
+        .replace(/^[\r\n]+/, "")
+        .trimEnd();
 }
 
 // ── 所有権チェック ──

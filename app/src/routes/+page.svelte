@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { onMount } from "svelte";
     import { writable, derived } from "svelte/store";
     import {
         createQuery,
@@ -71,7 +70,7 @@
         })),
     );
 
-    // タスク一覧取得
+    // タスク一覧取得（5分ポーリングで他画面の変更を自動反映）
     const tasksQuery = createQuery<GetTasksResult>(
         derived([selectedListIdStore, showTypeStore], ([$listId, $st]) => ({
             queryKey: ["tasks", $listId, $st] as const,
@@ -88,6 +87,7 @@
                 }) as Promise<GetTasksResult>;
             },
             enabled: $listId !== null,
+            refetchInterval: 5 * 60 * 1000,
         })),
     );
 
@@ -179,13 +179,16 @@
     });
     const isLoading = $derived($listsQuery.isLoading || $tasksQuery.isLoading);
 
-    onMount(() => {
-        const saved = localStorage.getItem("selectedList");
-        const savedId = saved ? parseInt(saved) : null;
-        const initial = lists.find((l) => l.id === savedId) ?? lists[0];
-        if (initial) {
-            selectedListId = initial.id;
-            localStorage.setItem("selectedList", String(initial.id));
+    // リストデータ到着時に localStorage から選択状態を復元（初回のみ）
+    $effect(() => {
+        if (lists.length > 0 && selectedListId === null) {
+            const saved = localStorage.getItem("selectedList");
+            const savedId = saved ? parseInt(saved) : null;
+            const initial = lists.find((l) => l.id === savedId) ?? lists[0];
+            if (initial) {
+                selectedListId = initial.id;
+                localStorage.setItem("selectedList", String(initial.id));
+            }
         }
     });
 

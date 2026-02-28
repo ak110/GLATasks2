@@ -20,10 +20,13 @@
     let localMoveTo = $state("");
     let localKeepOrder = $state(false);
 
+    // ダイアログが開くたびにローカル状態をリセット（同じタスクの再編集にも対応）
     $effect(() => {
-        localText = text;
-        localMoveTo = moveTo;
-        localKeepOrder = keepOrder;
+        if (open) {
+            localText = text;
+            localMoveTo = moveTo;
+            localKeepOrder = keepOrder;
+        }
     });
 
     function handleSubmit() {
