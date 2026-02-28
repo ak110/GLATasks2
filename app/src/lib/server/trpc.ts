@@ -52,17 +52,22 @@ const isAuthed = t.middleware(({ ctx, next }) => {
 /**
  * 暗号化ミドルウェア: 入力を復号化し、出力を暗号化する
  */
-const withEncryption = t.middleware(async ({ ctx, rawInput, next }) => {
+const withEncryption = t.middleware(async ({ getRawInput, next }) => {
+  // getRawInput() で生の入力を取得（tRPC v11 API）
+  const rawInput = await getRawInput();
+
   // 入力が暗号化されている場合は復号化
   let decryptedInput = rawInput;
   if (
     typeof rawInput === "object" &&
     rawInput !== null &&
     "encrypted" in rawInput &&
-    typeof rawInput.encrypted === "string"
+    typeof (rawInput as Record<string, unknown>).encrypted === "string"
   ) {
     try {
-      const decryptedStr = decryptToString(rawInput.encrypted, ctx.encryptKey);
+      const decryptedStr = await decryptToString(
+        (rawInput as Record<string, unknown>).encrypted as string,
+      );
       decryptedInput = JSON.parse(decryptedStr);
     } catch (error) {
       throw new TRPCError({
@@ -73,21 +78,16 @@ const withEncryption = t.middleware(async ({ ctx, rawInput, next }) => {
     }
   }
 
-  // 次のミドルウェア/プロシージャを実行
+  // 次のミドルウェア/プロシージャを実行（復号化した入力を渡す）
   const result = await next({
-    ctx,
-    // 復号化した入力を次に渡す（zodバリデーションの前に復号化される）
     getRawInput: async () => decryptedInput,
   });
 
-  // 出力を暗号化して返す
+  // 出力を暗号化して返す（result を直接変更し型推論を保持する）
   if (result.ok) {
-    return {
-      ok: true,
-      data: {
-        encrypted: encryptObject(result.data, ctx.encryptKey),
-      },
-    } as typeof result;
+    (result as unknown as Record<string, unknown>).data = {
+      encrypted: await encryptObject(result.data),
+    };
   }
 
   return result;

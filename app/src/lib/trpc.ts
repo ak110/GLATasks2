@@ -23,44 +23,58 @@ export function setEncryptKey(key: string) {
 const encryptionLink: TRPCLink<AppRouter> = () => {
   return ({ next, op }) => {
     return observable((observer) => {
+      // 非同期の next ハンドラが完了する前に complete が呼ばれないようにする
+      let pending: Promise<void> | null = null;
+
       const unsubscribe = next(op).subscribe({
-        next: async (value) => {
-          // レスポンスが暗号化されている場合は復号化
-          if (
-            value.result.type === "data" &&
-            typeof value.result.data === "object" &&
-            value.result.data !== null &&
-            "encrypted" in value.result.data &&
-            typeof value.result.data.encrypted === "string"
-          ) {
-            if (!encryptKey) {
-              observer.error(new Error("Encryption key not set"));
-              return;
+        next: (value) => {
+          pending = (async () => {
+            // レスポンスが暗号化されている場合は復号化
+            if (
+              value.result.type === "data" &&
+              typeof value.result.data === "object" &&
+              value.result.data !== null &&
+              "encrypted" in value.result.data &&
+              typeof value.result.data.encrypted === "string"
+            ) {
+              if (!encryptKey) {
+                observer.error(new Error("Encryption key not set") as never);
+                return;
+              }
+              try {
+                const decryptedStr = await decrypt(
+                  value.result.data.encrypted,
+                  encryptKey,
+                );
+                const decryptedData = JSON.parse(decryptedStr);
+                observer.next({
+                  ...value,
+                  result: {
+                    ...value.result,
+                    data: decryptedData,
+                  },
+                });
+              } catch (error) {
+                observer.error(
+                  new Error("Failed to decrypt response", {
+                    cause: error,
+                  }) as never,
+                );
+              }
+            } else {
+              observer.next(value);
             }
-            try {
-              const decryptedStr = await decrypt(
-                value.result.data.encrypted,
-                encryptKey,
-              );
-              const decryptedData = JSON.parse(decryptedStr);
-              observer.next({
-                ...value,
-                result: {
-                  ...value.result,
-                  data: decryptedData,
-                },
-              });
-            } catch (error) {
-              observer.error(
-                new Error("Failed to decrypt response", { cause: error }),
-              );
-            }
-          } else {
-            observer.next(value);
-          }
+          })();
         },
         error: (err) => observer.error(err),
-        complete: () => observer.complete(),
+        complete: () => {
+          const done = () => observer.complete();
+          if (pending) {
+            pending.then(done, done);
+          } else {
+            done();
+          }
+        },
       });
       return unsubscribe;
     });

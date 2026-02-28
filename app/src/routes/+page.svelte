@@ -1,16 +1,24 @@
 <script lang="ts">
     import { onMount } from "svelte";
+    import { writable, derived } from "svelte/store";
     import {
         createQuery,
         createMutation,
         useQueryClient,
     } from "@tanstack/svelte-query";
     import { trpc } from "$lib/trpc";
+    import type { TaskStatus } from "$lib/schemas";
     import Header from "$lib/components/layout/Header.svelte";
     import ListSidebar from "$lib/components/lists/ListSidebar.svelte";
     import TaskList from "$lib/components/tasks/TaskList.svelte";
     import TaskAddForm from "$lib/components/tasks/TaskAddForm.svelte";
     import TaskEditDialog from "$lib/components/tasks/TaskEditDialog.svelte";
+
+    type ListInfo = {
+        id: number;
+        title: string;
+        last_updated: string;
+    };
 
     type TaskInfo = {
         id: number;
@@ -18,6 +26,10 @@
         notes: string;
         status: string;
     };
+
+    type GetTasksResult =
+        | { status: 304 }
+        | { status: 200; data: TaskInfo[]; lastModified: string };
 
     let selectedListId = $state<number | null>(null);
     let showType = $state<"list" | "hidden" | "all">("list");
@@ -45,29 +57,39 @@
 
     const queryClient = useQueryClient();
 
+    // rune → Svelte store 同期（@tanstack/svelte-query が Readable<T> を要求するため）
+    const showTypeStore = writable<"list" | "hidden" | "all">("list");
+    const selectedListIdStore = writable<number | null>(null);
+    $effect(() => showTypeStore.set(showType));
+    $effect(() => selectedListIdStore.set(selectedListId));
+
     // リスト一覧取得
-    const listsQuery = createQuery(() => ({
-        queryKey: ["lists", showType],
-        queryFn: () => trpc.lists.list.query(showType),
-    }));
+    const listsQuery = createQuery<ListInfo[]>(
+        derived(showTypeStore, ($st) => ({
+            queryKey: ["lists", $st] as const,
+            queryFn: () => trpc.lists.list.query($st) as Promise<ListInfo[]>,
+        })),
+    );
 
     // タスク一覧取得
-    const tasksQuery = createQuery(() => ({
-        queryKey: ["tasks", selectedListId, showType],
-        queryFn: async () => {
-            if (!selectedListId)
-                return Promise.resolve({
-                    status: 200 as const,
-                    data: [],
-                    lastModified: "",
-                });
-            return trpc.tasks.list.query({
-                listId: selectedListId,
-                showType,
-            });
-        },
-        enabled: selectedListId !== null,
-    }));
+    const tasksQuery = createQuery<GetTasksResult>(
+        derived([selectedListIdStore, showTypeStore], ([$listId, $st]) => ({
+            queryKey: ["tasks", $listId, $st] as const,
+            queryFn: async (): Promise<GetTasksResult> => {
+                if (!$listId)
+                    return {
+                        status: 200 as const,
+                        data: [] as TaskInfo[],
+                        lastModified: "",
+                    };
+                return trpc.tasks.list.query({
+                    listId: $listId,
+                    showType: $st,
+                }) as Promise<GetTasksResult>;
+            },
+            enabled: $listId !== null,
+        })),
+    );
 
     // リスト作成
     const createListMutation = createMutation({
@@ -96,7 +118,7 @@
             listId: number;
             taskId: number;
             text?: string;
-            status?: string;
+            status?: TaskStatus;
             completed?: string | null;
             move_to?: number;
             keep_order?: boolean;
@@ -150,12 +172,11 @@
     });
 
     // 派生状態
-    const lists = $derived($listsQuery.data ?? []);
-    const tasks = $derived(
-        $tasksQuery.data && $tasksQuery.data.status === 200
-            ? $tasksQuery.data.data
-            : [],
-    );
+    const lists = $derived(($listsQuery.data ?? []) as ListInfo[]);
+    const tasks = $derived.by(() => {
+        const data = $tasksQuery.data as GetTasksResult | undefined;
+        return data && "data" in data ? data.data : [];
+    });
     const isLoading = $derived($listsQuery.isLoading || $tasksQuery.isLoading);
 
     onMount(() => {
