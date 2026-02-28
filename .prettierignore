@@ -1,0 +1,6 @@
+app/.svelte-kit/
+.svelte-kit/
+app/build/
+build/
+.cache/
+node_modules/

@@ -4,37 +4,13 @@ services:
     image: ghcr.io/ak110/glatasks2:latest
     restart: always
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/healthcheck"]
-      start_period: 30s
-      start_interval: 1s
-    volumes:
-      - ${DATA_DIR}:${DATA_DIR}
-    working_dir: /usr/src/app/app
-    environment:
-      - SQLALCHEMY_DATABASE_URI=mysql+pymysql://glatasks:glatasks@db/glatasks?charset=utf8mb4
-      - DATA_DIR
-      - PYTHONDEVMODE=1
-    networks:
-      - network
-    logging:
-      options:
-        max-size: "1m"
-        max-file: "3"
-    depends_on:
-      db:
-        condition: service_healthy
-
-  frontend:
-    image: ghcr.io/ak110/glatasks2-frontend:latest
-    restart: always
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/auth/login"]
+      test: ["CMD", "curl", "-f", "http://localhost:3000/healthcheck"]
       start_period: 30s
       start_interval: 1s
     volumes:
       - ${DATA_DIR}:${DATA_DIR}
     environment:
-      - FASTAPI_URL=http://app:8000
+      - DATABASE_URL=mysql://glatasks:glatasks@db/glatasks
       - DATA_DIR
       - PROTOCOL_HEADER=X-Forwarded-Proto
     networks:
@@ -44,5 +20,5 @@ services:
         max-size: "1m"
         max-file: "3"
     depends_on:
-      app:
+      db:
         condition: service_healthy

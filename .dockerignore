@@ -1,11 +1,11 @@
 /.cache
-/.clinerules
+/.claude
 /.env
 /.git
 /.github
-/.venv
+/app/node_modules
+/app/build
+/app/tests
 /compose.override.yaml
-/app/static/dist
-/node_modules
 /web/openssl.cnf
 /web/ssl

@@ -1,9 +1,6 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 
-default_language_version:
-  python: python3
-
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
@@ -19,14 +16,8 @@ repos:
       - id: end-of-file-fixer
         exclude: ^dist/.*$
       - id: mixed-line-ending
-      - id: name-tests-test
       - id: trailing-whitespace
         exclude: ^dist/.*$
-
-  - repo: https://github.com/ninoseki/uv-sort
-    rev: v0.7.0
-    hooks:
-      - id: uv-sort
 
   - repo: https://github.com/DavidAnson/markdownlint-cli2
     rev: v0.21.0
@@ -48,14 +39,7 @@ repos:
           - textlint-rule-preset-japanese@10.0.4
       - id: pnpm-format
         name: pnpm-format
-        entry: pnpm run format
-        types: [javascript, json]
+        entry: bash -c 'cd app && pnpm run format'
+        types_or: [javascript, json, ts, svelte, css, yaml]
         require_serial: true
         language: system
-      - id: pyfltr
-        name: pyfltr
-        entry: uv run pyfltr --exit-zero-even-if-formatted --commands=fast
-        types: [python]
-        require_serial: true
-        language: system
-        files: ^app/

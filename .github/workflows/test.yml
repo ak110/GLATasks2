@@ -10,20 +10,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.14"]
+    defaults:
+      run:
+        working-directory: app
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-          enable-cache: true
-
-      - name: Install dependencies
-        run: uv sync --all-extras --dev
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -33,14 +24,11 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
 
-      - name: Install frontend dependencies
+      - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build frontend
+      - name: Build
         run: pnpm run build
 
-      - name: Test with pyfltr
-        run: uv run pyfltr app
-
-      - name: Prune uv cache for CI
-        run: uv cache prune --ci
+      - name: Type check
+        run: pnpm run check

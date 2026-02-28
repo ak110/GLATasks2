@@ -1,20 +1,59 @@
 # 開発手順
 
+## 作業ディレクトリ
+
+**すべての `make` コマンドはプロジェクトルートから実行すること。**
+
+```bash
+cd /path/to/glatasks
+make test  # OK
+```
+
+`app/` に移動して実行すると `${PWD}` がずれて Makefile 内のパス解決が狂うため、必ずルートから実行する。
+
 ## 開発環境構築手順
 
 1. 本リポジトリをcloneする。
-2. [uvをインストール](https://docs.astral.sh/uv/getting-started/installation/)する。
-3. [pre-commit](https://pre-commit.com/)フックをインストールする。
+2. [pre-commit](https://pre-commit.com/)フックをインストールする。
 
     ```bash
-    uv run pre-commit install
+    pre-commit install
     ```
 
-4. 起動する。
+3. 起動する。
 
     ```bash
     make deploy
     ```
+
+## make コマンド一覧
+
+| コマンド | 説明 |
+|---|---|
+| `make deploy` | ビルド → 停止 → 起動 |
+| `make start` / `make stop` | 起動 / 停止 |
+| `make format` | コード整形 + 軽量 lint（自動修正あり） |
+| `make test` | format + lint + 型チェック + e2e（これだけ実行すればOK） |
+| `make test-e2e` | Playwright e2e テストのみ |
+| `make update` | 依存パッケージ更新 + テスト |
+| `make sql` | MariaDB コンソール |
+| `make logs` | 全サービスのログ |
+| `make ps` | コンテナ状態確認 |
+| `make healthcheck` | ヘルスチェック |
+
+## Docker サービス構成
+
+| サービス | イメージ | 役割 |
+|---|---|---|
+| `web` | nginx | HTTPS 終端（ポート 38180:443） |
+| `app` | node:lts（開発）/ ghcr.io（本番） | SvelteKit アプリケーション（ポート 3000） |
+| `db` | mariadb:lts | データベース |
+
+環境変数:
+
+- `COMPOSE_PROFILE`: `development` / `staging` / `production`
+- `DATA_DIR`: データ格納ディレクトリ（暗号化キー・JWT 署名鍵・DB データ）
+- `DATABASE_URL`: MariaDB 接続 URI（例: `mysql://glatasks:glatasks@db/glatasks`）
 
 ## クライアント・サーバー間の通信難読化
 
@@ -23,8 +62,8 @@
 
 関連ソースコード:
 
-- `frontend/src/lib/crypto.ts`（ブラウザ側 AES-GCM）
-- `frontend/src/lib/server/crypto.ts`（サーバー側 AES-GCM）
+- `app/src/lib/crypto.ts`（ブラウザ側 AES-GCM）
+- `app/src/lib/server/crypto.ts`（サーバー側 AES-GCM）
 
 ## e2e テスト
 
@@ -34,7 +73,7 @@ Playwright を使った e2e テストを `make test-e2e` で実行できる。
 make test-e2e
 ```
 
-テストコードは `frontend/tests/` に配置する。
+テストコードは `app/tests/` に配置する。
 nginx 経由の HTTPS（port 38180）でテストするため、開発環境が起動している必要がある。
 
 - `auth.test.ts` — ログイン・ログアウト・ユーザー登録
@@ -52,31 +91,13 @@ nginx 経由の HTTPS（port 38180）でテストするため、開発環境が�
 
 ## 開発時の注意点
 
-- サーバーサイドのコードを変更した場合は`make hup`でリロードする。
-- FastAPIのパスパラメータとJSONボディの型の不一致に注意:
-  - FastAPIは `list_id: int` のようにパスパラメータを自動的に整数に変換する
-  - クライアントから送られてくるJSONボディ内の値（`move_to` など）は文字列のまま来る場合がある
-  - 比較や代入の前に明示的に `int()` で変換すること
-    - 例: `move_to = int(data["move_to"])` ← `"5" != 5` になる型不一致を防ぐ
-
+- 開発中のサーバーサイドコード変更は Vite の HMR で自動反映される。
+- JSONボディから受け取る数値は文字列の場合があるため`Number()`で明示変換すること。
+  - 例: `Number(data.move_to)` ← `"5" !== 5` になる型不一致を防ぐ
 - 日時の取り扱いについて:
   - **DBに保存**: ローカルタイム(Asia/Tokyo)、タイムゾーン情報なしで保存
-    - 例: `datetime.datetime.now()` を使用
-  - **クライアントに送信**: ローカルタイムをUTC(GMT)に変換してから送信
-    - 例: `dt.replace(tzinfo=zoneinfo.ZoneInfo("Asia/Tokyo")).astimezone(zoneinfo.ZoneInfo("UTC")).isoformat()`
-  - **クライアントから受信**: UTC→ローカルタイムに変換してからDBに保存
-    - 例: `dt.astimezone(zoneinfo.ZoneInfo("Asia/Tokyo")).replace(tzinfo=None)`
-
-## DB関連
-
-```bash
-docker compose up --detach db
-# docker compose run --rm app alembic init -t async migrations
-docker compose run --rm app alembic revision --autogenerate --message=""
-make db-up  # docker compose run --rm app alembic upgrade head
-make db-down  # docker compose run --rm app alembic downgrade -1
-make db-history  # docker compose run --rm app alembic history
-```
+  - **クライアントに送信**: mysql2 の `timezone: "+09:00"` 設定により `toISOString()` で UTC に変換
+  - **クライアントから受信**: `new Date(isoString)` で UTC→Date に変換し、mysql2 が自動的に JST に変換して格納
 
 ## GitHub Actionsのデプロイ用SSHキー作成手順
 

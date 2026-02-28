@@ -15,7 +15,6 @@ services:
       - "38180:443"
     depends_on:
       - app
-      - frontend
     logging:
       options:
         max-size: "1m"

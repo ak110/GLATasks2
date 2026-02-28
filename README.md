@@ -1,10 +1,15 @@
 # GLATasks
 
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Test](https://github.com/ak110/GLATasks2/actions/workflows/test.yml/badge.svg)](https://github.com/ak110/GLATasks2/actions/workflows/test.yml)
 [![Deploy](https://github.com/ak110/GLATasks2/actions/workflows/deploy.yml/badge.svg)](https://github.com/ak110/GLATasks2/actions/workflows/deploy.yml)
 
 Google Tasksのcanvasビューが無くなって困ったので自作し始めた低機能Webアプリ。
+
+## 技術スタック
+
+SvelteKit + Drizzle ORM + MariaDB + nginx
+
+詳細は [docs/architecture.md](docs/architecture.md) を参照。
 
 ## 利用方法
 
@@ -20,6 +25,10 @@ make deploy
 make stop
 ```
 
+## 開発
+
+[docs/development.md](docs/development.md) を参照。
+
 ## Chrome拡張機能
 
-- [./chrome_extension](./chrome_extension)
+[./chrome_extension](./chrome_extension)
