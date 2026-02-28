@@ -2,33 +2,15 @@
  * @fileoverview セッショントークン（JWT/HS256）の生成・検証
  */
 
-import crypto from "node:crypto";
-import fs from "node:fs";
 import { SignJWT, jwtVerify } from "jose";
-
-let _secret: Uint8Array | null = null;
+import { getJwtSecret } from "./env";
 
 /**
- * セッション署名用の秘密鍵を取得する。
- * ファイルが存在しない場合はランダム生成して保存する。
+ * セッション署名用の秘密鍵を取得する（Uint8Array形式で）。
  */
 function getSecret(): Uint8Array {
-  if (!_secret) {
-    const keyFile =
-      process.env.SESSION_SECRET_FILE ??
-      (process.env.DATA_DIR ? `${process.env.DATA_DIR}/.secret_key` : null);
-    if (!keyFile)
-      throw new Error("SESSION_SECRET_FILE or DATA_DIR env var is required");
-
-    if (!fs.existsSync(keyFile)) {
-      const key = crypto.randomBytes(32);
-      fs.writeFileSync(keyFile, key, { mode: 0o600 });
-      _secret = new Uint8Array(key);
-    } else {
-      _secret = new Uint8Array(fs.readFileSync(keyFile));
-    }
-  }
-  return _secret;
+  const base64Secret = getJwtSecret();
+  return Uint8Array.from(atob(base64Secret), (c) => c.codePointAt(0)!);
 }
 
 /**

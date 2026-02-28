@@ -27,6 +27,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      migrate-dev:
+        condition: service_completed_successfully
     logging:
       options:
         max-size: "1m"

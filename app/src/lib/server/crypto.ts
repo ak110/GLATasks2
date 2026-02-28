@@ -2,28 +2,7 @@
  * @fileoverview サーバーサイド AES-GCM 暗号化（ブラウザ側と互換）
  */
 
-import fs from "node:fs";
-
-let _encryptKeyBase64: string | null = null;
-
-/**
- * 暗号化キーを取得する（base64 文字列として返す）。
- * ブラウザに渡す際にそのまま使用できる。
- */
-export function getEncryptKey(): string {
-  if (!_encryptKeyBase64) {
-    if (process.env.ENCRYPT_KEY) {
-      _encryptKeyBase64 = process.env.ENCRYPT_KEY;
-    } else {
-      const keyFile =
-        process.env.ENCRYPT_KEY_FILE ??
-        (process.env.DATA_DIR ? `${process.env.DATA_DIR}/.encrypt_key` : null);
-      if (!keyFile) throw new Error("ENCRYPT_KEY_FILE env var is required");
-      _encryptKeyBase64 = fs.readFileSync(keyFile).toString("base64");
-    }
-  }
-  return _encryptKeyBase64;
-}
+import { getEncryptKey } from "./env";
 
 async function getCryptoKey(usage: KeyUsage[]): Promise<CryptoKey> {
   const base64 = getEncryptKey();

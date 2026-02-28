@@ -90,6 +90,22 @@ test:  # format + lint + 型チェック + pre-commit + e2eテスト
 	$(call RUN_NODE, pnpm run test, --rm)
 	$(MAKE) test-e2e
 
+migrate:  # DBマイグレーション実行
+	docker compose exec app node --input-type=module --eval "\
+		import { drizzle } from 'drizzle-orm/mysql2';\
+		import { migrate } from 'drizzle-orm/mysql2/migrator';\
+		import mysql from 'mysql2/promise';\
+		const conn = await mysql.createConnection(process.env.DATABASE_URL);\
+		const db = drizzle(conn);\
+		console.log('🔄 Running migrations...');\
+		await migrate(db, { migrationsFolder: './drizzle/migrations' });\
+		await conn.end();\
+		console.log('✅ Done!');\
+	"
+
+db-studio:  # Drizzle Studio起動
+	$(call RUN_NODE, pnpm run db:studio, --rm --interactive --tty)
+
 PLAYWRIGHT_IMAGE = mcr.microsoft.com/playwright:v1.50.0-noble
 
 PNPM_VERSION = $(shell node -e "const p=require('./package.json'); console.log((p.packageManager||'').split('@')[1]?.split('+')[0]||'latest')" 2>/dev/null || echo latest)
@@ -109,4 +125,4 @@ test-e2e:
 			CI=true pnpm install && pnpm run test:e2e\
 		'
 
-.PHONY: help sync deploy build start stop restart-app logs ps healthcheck shell node-shell update format test test-e2e start-app logs-app
+.PHONY: help sync deploy build start stop restart-app logs ps healthcheck shell node-shell update format test test-e2e start-app logs-app migrate db-studio

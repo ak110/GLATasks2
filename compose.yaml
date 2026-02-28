@@ -44,6 +44,69 @@ services:
         max-size: "1m"
         max-file: "3"
 
+  migrate:
+    profiles:
+      - production
+      - staging
+    image: ghcr.io/ak110/glatasks2:latest
+    restart: "no"
+    environment:
+      - DATABASE_URL=mysql://glatasks:glatasks@db/glatasks
+    networks:
+      - network
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      node --input-type=module --eval "
+        import { drizzle } from 'drizzle-orm/mysql2';
+        import { migrate } from 'drizzle-orm/mysql2/migrator';
+        import mysql from 'mysql2/promise';
+        const conn = await mysql.createConnection(process.env.DATABASE_URL);
+        const db = drizzle(conn);
+        console.log('🔄 Running migrations from ./drizzle/migrations...');
+        await migrate(db, { migrationsFolder: './drizzle/migrations' });
+        await conn.end();
+        console.log('✅ Migrations completed successfully!');
+      "
+
+  migrate-dev:
+    profiles:
+      - development
+    image: node:lts
+    restart: "no"
+    user: ${UID}:${GID}
+    environment:
+      - HOME=${PWD}/.cache
+      - COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+      - DATABASE_URL=mysql://glatasks:glatasks@db/glatasks
+    volumes:
+      - ${PWD}:${PWD}
+    working_dir: ${PWD}
+    networks:
+      - network
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      bash -xc '
+        mkdir -p ${PWD}/.cache/bin &&
+        corepack enable --install-directory ${PWD}/.cache/bin &&
+        export PATH=${PWD}/.cache/bin:$$PATH &&
+        CI=true pnpm install &&
+        node --input-type=module --eval "
+          import { drizzle } from '\''drizzle-orm/mysql2'\'';
+          import { migrate } from '\''drizzle-orm/mysql2/migrator'\'';
+          import mysql from '\''mysql2/promise'\'';
+          const conn = await mysql.createConnection(process.env.DATABASE_URL);
+          const db = drizzle(conn);
+          console.log('\''🔄 Running migrations from ./drizzle/migrations...'\'');
+          await migrate(db, { migrationsFolder: '\''./drizzle/migrations'\'' });
+          await conn.end();
+          console.log('\''✅ Migrations completed successfully!'\'');
+        "
+      '
+
 include:
   - ./compose.${COMPOSE_PROFILE}.yaml
 
