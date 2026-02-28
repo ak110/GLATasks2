@@ -15,6 +15,7 @@ import {
   LoginSchema,
 } from "$lib/schemas";
 import * as api from "./api";
+import { decryptToString, encryptObject } from "./crypto";
 
 // ── Context 型定義 ──
 
@@ -48,14 +49,55 @@ const isAuthed = t.middleware(({ ctx, next }) => {
   });
 });
 
+/**
+ * 暗号化ミドルウェア: 入力を復号化し、出力を暗号化する
+ */
+const withEncryption = t.middleware(async ({ ctx, rawInput, next }) => {
+  // 入力が暗号化されている場合は復号化
+  let decryptedInput = rawInput;
+  if (
+    typeof rawInput === "object" &&
+    rawInput !== null &&
+    "encrypted" in rawInput &&
+    typeof rawInput.encrypted === "string"
+  ) {
+    try {
+      const decryptedStr = decryptToString(rawInput.encrypted, ctx.encryptKey);
+      decryptedInput = JSON.parse(decryptedStr);
+    } catch (error) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Failed to decrypt input",
+        cause: error,
+      });
+    }
+  }
+
+  // 次のミドルウェア/プロシージャを実行
+  const result = await next({
+    ctx,
+    // 復号化した入力を次に渡す（zodバリデーションの前に復号化される）
+    getRawInput: async () => decryptedInput,
+  });
+
+  // 出力を暗号化して返す
+  if (result.ok) {
+    return {
+      ok: true,
+      data: {
+        encrypted: encryptObject(result.data, ctx.encryptKey),
+      },
+    } as typeof result;
+  }
+
+  return result;
+});
+
 // ── プロシージャ定義 ──
 
 const publicProcedure = t.procedure;
 const protectedProcedure = t.procedure.use(isAuthed);
-
-// TODO: 暗号化ミドルウェアは後で実装
-// 現時点では protectedProcedure をそのまま使用
-const encryptedProcedure = protectedProcedure;
+const encryptedProcedure = protectedProcedure.use(withEncryption);
 
 // ── ルーター定義 ──
 

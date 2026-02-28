@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS `user` (
   `joined` datetime NOT NULL,
   `last_login` datetime
 );
-
+--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS `list` (
   `id` int AUTO_INCREMENT PRIMARY KEY,
   `user_id` int NOT NULL,
@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS `list` (
   `last_updated` datetime NOT NULL,
   KEY `user_id_idx` (`user_id`)
 );
-
+--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS `task` (
   `id` int AUTO_INCREMENT PRIMARY KEY,
   `list_id` int NOT NULL,

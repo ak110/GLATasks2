@@ -39,41 +39,41 @@ deploy:
 	$(MAKE) start
 
 build:
-	docker compose pull
+	docker compose --profile $(COMPOSE_PROFILE) pull
 ifeq ($(COMPOSE_PROFILE), development)
-	docker compose --progress=plain build --pull
+	docker compose --profile $(COMPOSE_PROFILE) --progress=plain build --pull
 endif
 
 start:
-	docker compose up -d
+	docker compose --profile $(COMPOSE_PROFILE) up -d
 
 stop:
-	docker compose down
+	docker compose --profile $(COMPOSE_PROFILE) down
 
 restart-app:
-	docker compose restart app
+	docker compose --profile $(COMPOSE_PROFILE) restart app
 
 logs:
-	docker compose logs -ft
+	docker compose --profile $(COMPOSE_PROFILE) logs -ft
 
 ps:
-	docker compose ps
+	docker compose --profile $(COMPOSE_PROFILE) ps
 
 healthcheck:
-	curl --fail http://localhost:3000/healthcheck 2>/dev/null || docker compose exec app curl --fail http://localhost:3000/healthcheck
+	curl --fail http://localhost:3000/healthcheck 2>/dev/null || docker compose --profile $(COMPOSE_PROFILE) exec app curl --fail http://localhost:3000/healthcheck
 
 start-app:
-	docker compose down app
-	docker compose up -d app
+	docker compose --profile $(COMPOSE_PROFILE) down app
+	docker compose --profile $(COMPOSE_PROFILE) up -d app
 
 logs-app:
-	docker compose logs -ft app
+	docker compose --profile $(COMPOSE_PROFILE) logs -ft app
 
 sql:
-	docker compose exec db mariadb -uglatasks -pglatasks -Dglatasks
+	docker compose --profile $(COMPOSE_PROFILE) exec db mariadb -uglatasks -pglatasks -Dglatasks
 
 shell:
-	docker compose exec app bash
+	docker compose --profile $(COMPOSE_PROFILE) exec app bash
 
 node-shell:
 	$(call RUN_NODE, bash, --rm --interactive --tty)
@@ -111,14 +111,9 @@ PLAYWRIGHT_IMAGE = mcr.microsoft.com/playwright:v1.50.0-noble
 PNPM_VERSION = $(shell node -e "const p=require('./package.json'); console.log((p.packageManager||'').split('@')[1]?.split('+')[0]||'latest')" 2>/dev/null || echo latest)
 
 test-e2e:
-	docker run --rm --network=host \
-		--env=HOME=${PWD}/.cache/playwright \
-		--env=BASE_URL=https://localhost:38180 \
-		--env=PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
-		--volume=${PWD}:${PWD} \
-		--workdir=${PWD} \
-		$(RUN_ARGS) \
-		$(PLAYWRIGHT_IMAGE) \
+	docker compose --profile $(COMPOSE_PROFILE) run --rm \
+		--env=BASE_URL=https://web \
+		playwright \
 		bash -xc '\
 			npm install -g pnpm@$(PNPM_VERSION) --prefix ${PWD}/.cache/playwright --force &&\
 			export PATH=${PWD}/.cache/playwright/bin:${PWD}/node_modules/.bin:$$PATH &&\

@@ -6,6 +6,11 @@
         useQueryClient,
     } from "@tanstack/svelte-query";
     import { trpc } from "$lib/trpc";
+    import Header from "$lib/components/layout/Header.svelte";
+    import ListSidebar from "$lib/components/lists/ListSidebar.svelte";
+    import TaskList from "$lib/components/tasks/TaskList.svelte";
+    import TaskAddForm from "$lib/components/tasks/TaskAddForm.svelte";
+    import TaskEditDialog from "$lib/components/tasks/TaskEditDialog.svelte";
 
     type TaskInfo = {
         id: number;
@@ -220,18 +225,22 @@
         };
     }
 
-    async function submitTaskEdit() {
-        const { listId, taskId, text, moveTo, keepOrder } = editDialog;
+    async function submitTaskEdit(data: {
+        text: string;
+        moveTo: string;
+        keepOrder: boolean;
+    }) {
+        const { listId, taskId } = editDialog;
         await $updateTaskMutation.mutateAsync({
             listId,
             taskId,
-            text,
-            move_to: Number(moveTo),
-            keep_order: keepOrder,
+            text: data.text,
+            move_to: Number(data.moveTo),
+            keep_order: data.keepOrder,
         });
         editDialog.open = false;
 
-        if (Number(moveTo) !== listId) {
+        if (Number(data.moveTo) !== listId) {
             queryClient.invalidateQueries({ queryKey: ["lists"] });
         }
     }
@@ -277,156 +286,34 @@
 
 <svelte:window onclick={() => (openMenuId = null)} />
 
-<!-- ヘッダー -->
-<header
-    class="sticky top-0 z-10 flex h-12 items-center gap-3 bg-gray-800 px-4 text-white shadow"
->
-    {#if mobileView === "tasks"}
-        <button
-            class="cursor-pointer text-sm text-gray-300 hover:text-white sm:hidden"
-            onclick={() => (mobileView = "lists")}
-            aria-label="リスト一覧に戻る">← リスト</button
-        >
-    {/if}
-    <a href="/" class="font-bold hover:text-gray-300">GLATasks</a>
-    {#if isLoading}
-        <span class="text-xs text-gray-400">読み込み中...</span>
-    {/if}
-    <div class="ml-auto flex items-center gap-2">
-        <select
-            value={showType}
-            onchange={(e) =>
-                changeShowType(
-                    e.currentTarget.value as "list" | "hidden" | "all",
-                )}
-            class="cursor-pointer rounded bg-gray-700 px-2 py-1 text-sm text-white focus:outline-none"
-        >
-            <option value="list">表示中</option>
-            <option value="hidden">非表示</option>
-            <option value="all">すべて</option>
-        </select>
-        <form method="post" action="/auth/logout">
-            <button
-                type="submit"
-                class="cursor-pointer rounded px-2 py-1 text-xs text-gray-300 hover:text-white"
-                >ログアウト</button
-            >
-        </form>
-    </div>
-</header>
+<Header
+    {mobileView}
+    {showType}
+    {isLoading}
+    onBackToLists={() => (mobileView = "lists")}
+    onChangeShowType={changeShowType}
+/>
 
 <!-- ボディ: サイドバー + メインコンテンツ -->
 <div class="flex h-[calc(100vh-3rem)]">
-    <!-- サイドバー: リスト一覧 -->
-    <aside
-        class="flex-col border-r bg-white sm:flex sm:w-56 sm:shrink-0"
-        class:flex={mobileView === "lists"}
-        class:w-full={mobileView === "lists"}
-        class:hidden={mobileView !== "lists"}
-    >
-        <div class="flex-1 overflow-y-auto">
-            {#each lists as list (list.id)}
-                <div
-                    class="group flex items-center border-b border-gray-100"
-                    class:bg-blue-50={selectedListId === list.id}
-                >
-                    <button
-                        class="min-w-0 flex-1 cursor-pointer truncate px-3 py-2 text-left text-sm"
-                        class:font-medium={selectedListId === list.id}
-                        onclick={() => selectList(list.id)}
-                    >
-                        {list.title}
-                    </button>
-                    <!-- ⋮ メニュー -->
-                    <div class="relative flex-shrink-0">
-                        <button
-                            class="cursor-pointer px-2 py-2 text-xs text-gray-400 hover:text-gray-700 sm:opacity-0 sm:group-hover:opacity-100"
-                            onclick={(e) => {
-                                e.stopPropagation();
-                                openMenuId =
-                                    openMenuId === list.id ? null : list.id;
-                            }}
-                            title="操作メニュー"
-                            aria-label="操作メニュー"
-                        >
-                            ⋮
-                        </button>
-                        {#if openMenuId === list.id}
-                            <div
-                                class="absolute top-full right-0 z-20 min-w-max rounded border bg-white py-1 shadow-lg"
-                            >
-                                <button
-                                    class="block w-full cursor-pointer px-4 py-1.5 text-left text-sm hover:bg-gray-100"
-                                    onclick={() => {
-                                        renameList(list.id, list.title);
-                                        openMenuId = null;
-                                    }}
-                                >
-                                    名前変更
-                                </button>
-                                {#if showType === "hidden"}
-                                    <button
-                                        class="block w-full cursor-pointer px-4 py-1.5 text-left text-sm hover:bg-gray-100"
-                                        onclick={() => {
-                                            showList(list.id);
-                                            openMenuId = null;
-                                        }}
-                                    >
-                                        再表示
-                                    </button>
-                                {:else}
-                                    <button
-                                        class="block w-full cursor-pointer px-4 py-1.5 text-left text-sm hover:bg-gray-100"
-                                        onclick={() => {
-                                            hideList(list.id);
-                                            openMenuId = null;
-                                        }}
-                                    >
-                                        非表示にする
-                                    </button>
-                                {/if}
-                                <hr class="my-1 border-gray-100" />
-                                <button
-                                    class="block w-full cursor-pointer px-4 py-1.5 text-left text-sm text-red-600 hover:bg-red-50"
-                                    onclick={() => {
-                                        deleteList(list.id);
-                                        openMenuId = null;
-                                    }}
-                                >
-                                    削除
-                                </button>
-                            </div>
-                        {/if}
-                    </div>
-                </div>
-            {/each}
-            {#if lists.length === 0 && !isLoading}
-                <p class="p-4 text-sm text-gray-400">リストなし</p>
-            {/if}
-        </div>
-        <!-- リスト追加フォーム -->
-        <div class="border-t p-2">
-            <form
-                onsubmit={(e) => {
-                    e.preventDefault();
-                    addList();
-                }}
-                class="flex gap-1"
-            >
-                <input
-                    type="text"
-                    bind:value={addListTitle}
-                    placeholder="新しいリスト"
-                    class="min-w-0 flex-1 rounded border border-gray-200 px-2 py-1 text-sm focus:border-blue-400 focus:outline-none"
-                />
-                <button
-                    type="submit"
-                    class="cursor-pointer rounded bg-blue-600 px-2 py-1 text-xs text-white hover:bg-blue-700"
-                    >追加</button
-                >
-            </form>
-        </div>
-    </aside>
+    <ListSidebar
+        {lists}
+        {selectedListId}
+        {showType}
+        {isLoading}
+        {mobileView}
+        {openMenuId}
+        bind:addListTitle
+        onSelect={selectList}
+        onToggleMenu={(listId) => {
+            openMenuId = openMenuId === listId ? null : listId;
+        }}
+        onRename={renameList}
+        onHide={hideList}
+        onShow={showList}
+        onDelete={deleteList}
+        onAddList={addList}
+    />
 
     <!-- メインコンテンツ: 選択リストのタスク -->
     <main
@@ -450,84 +337,14 @@
                 </div>
             {/if}
 
-            <!-- タスク一覧 -->
-            <div class="flex-1 overflow-y-auto">
-                {#if $tasksQuery.isLoading}
-                    <p class="p-4 text-sm text-gray-400">読み込み中...</p>
-                {:else if tasks.length === 0}
-                    <p class="p-4 text-sm text-gray-400">タスクなし</p>
-                {:else}
-                    {#each tasks as task (task.id)}
-                        <div
-                            class="flex items-start gap-2 border-b border-gray-200 px-4 py-2 hover:bg-gray-50"
-                            class:opacity-50={task.status === "hidden"}
-                        >
-                            <input
-                                type="checkbox"
-                                checked={task.status === "completed"}
-                                onchange={(e) =>
-                                    toggleTask(
-                                        task.id,
-                                        e.currentTarget.checked,
-                                    )}
-                                class="mt-0.5 cursor-pointer"
-                            />
-                            <div class="min-w-0 flex-1">
-                                <p
-                                    class="text-sm leading-tight"
-                                    class:line-through={task.status ===
-                                        "completed"}
-                                    class:text-gray-400={task.status ===
-                                        "completed"}
-                                >
-                                    {task.title}
-                                </p>
-                                {#if task.notes}
-                                    <p
-                                        class="mt-0.5 truncate text-xs text-gray-400"
-                                    >
-                                        {task.notes}
-                                    </p>
-                                {/if}
-                            </div>
-                            <button
-                                onclick={() => openEditDialog(task)}
-                                class="shrink-0 cursor-pointer text-xs text-gray-400 hover:text-gray-600"
-                                aria-label="タスクを編集">✏️</button
-                            >
-                        </div>
-                    {/each}
-                {/if}
-            </div>
+            <TaskList
+                {tasks}
+                isLoading={$tasksQuery.isLoading}
+                onToggle={toggleTask}
+                onEdit={openEditDialog}
+            />
 
-            <!-- タスク追加フォーム -->
-            <div class="border-t bg-white p-3">
-                <form
-                    onsubmit={(e) => {
-                        e.preventDefault();
-                        addTask();
-                    }}
-                >
-                    <textarea
-                        bind:value={addTaskText}
-                        placeholder="タスクを追加... (Shift+Enter で改行、Enter で送信)"
-                        rows={2}
-                        onkeydown={(e) => {
-                            if (e.key === "Enter" && !e.shiftKey) {
-                                e.preventDefault();
-                                addTask();
-                            }
-                        }}
-                        class="w-full resize-none rounded border border-gray-200 px-3 py-2 text-sm focus:border-blue-400 focus:outline-none"
-                    ></textarea>
-                    <button
-                        type="submit"
-                        class="mt-1 cursor-pointer rounded bg-blue-100 px-3 py-1 text-xs text-blue-600 hover:bg-blue-200"
-                    >
-                        追加
-                    </button>
-                </form>
-            </div>
+            <TaskAddForm bind:value={addTaskText} onSubmit={addTask} />
         {:else}
             <div class="flex flex-1 items-center justify-center">
                 <p class="text-sm text-gray-400">
@@ -538,70 +355,12 @@
     </main>
 </div>
 
-<!-- タスク編集ダイアログ -->
-{#if editDialog.open}
-    <div
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 sm:p-0"
-        role="dialog"
-        aria-modal="true"
-    >
-        <div class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
-            <h2 class="mb-4 text-lg font-semibold text-gray-800">
-                タスクの編集
-            </h2>
-            <div class="mb-4">
-                <label
-                    class="mb-1 block text-sm font-medium text-gray-700"
-                    for="edit-text">内容</label
-                >
-                <textarea
-                    id="edit-text"
-                    rows={6}
-                    bind:value={editDialog.text}
-                    class="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
-                ></textarea>
-                <p class="mt-1 text-xs text-gray-500">
-                    1行目: タイトル、3行目以降: メモ（空行で区切る）
-                </p>
-            </div>
-            <div class="mb-4">
-                <label
-                    class="mb-1 block text-sm font-medium text-gray-700"
-                    for="edit-move-to">リスト</label
-                >
-                <select
-                    id="edit-move-to"
-                    bind:value={editDialog.moveTo}
-                    class="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
-                >
-                    {#each lists as l (l.id)}
-                        <option value={String(l.id)}>{l.title}</option>
-                    {/each}
-                </select>
-            </div>
-            <div class="mb-6 flex items-center gap-2">
-                <input
-                    id="edit-keep-order"
-                    type="checkbox"
-                    bind:checked={editDialog.keepOrder}
-                    class="cursor-pointer"
-                />
-                <label for="edit-keep-order" class="text-sm text-gray-700"
-                    >並び順を維持する</label
-                >
-            </div>
-            <div class="flex gap-3">
-                <button
-                    onclick={submitTaskEdit}
-                    class="flex-1 cursor-pointer rounded bg-blue-600 py-2 text-sm text-white hover:bg-blue-700 focus:outline-none"
-                    >保存</button
-                >
-                <button
-                    onclick={() => (editDialog.open = false)}
-                    class="flex-1 cursor-pointer rounded bg-gray-200 py-2 text-sm text-gray-700 hover:bg-gray-300 focus:outline-none"
-                    >キャンセル</button
-                >
-            </div>
-        </div>
-    </div>
-{/if}
+<TaskEditDialog
+    {lists}
+    open={editDialog.open}
+    text={editDialog.text}
+    moveTo={editDialog.moveTo}
+    keepOrder={editDialog.keepOrder}
+    onSubmit={submitTaskEdit}
+    onClose={() => (editDialog.open = false)}
+/>

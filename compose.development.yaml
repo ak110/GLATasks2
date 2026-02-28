@@ -20,7 +20,7 @@ services:
       - PROTOCOL_HEADER=X-Forwarded-Proto
     volumes:
       - ${PWD}:${PWD}
-      - ${DATA_DIR}:${DATA_DIR}:ro
+      - ${DATA_DIR}:${DATA_DIR}
     working_dir: ${PWD}
     networks:
       - network

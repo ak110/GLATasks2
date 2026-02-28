@@ -23,18 +23,44 @@ let _encryptKey: string | null = null;
 let _jwtSecret: string | null = null;
 
 /**
+ * 鍵ファイルを読み込み、Base64形式に正規化する（バイナリ形式の既存ファイルにも対応）
+ */
+function loadOrCreateKey(keyPath: string): string {
+  fs.mkdirSync(env.DATA_DIR, { recursive: true });
+
+  if (!fs.existsSync(keyPath)) {
+    // 新規作成: Base64形式で保存
+    const newKey = crypto.randomBytes(32).toString("base64");
+    fs.writeFileSync(keyPath, newKey, "utf-8");
+    return newKey;
+  }
+
+  // 既存ファイルを読み込み
+  const data = fs.readFileSync(keyPath, "utf-8").trim();
+
+  // Base64形式かどうかを判定（Base64は44文字で、[A-Za-z0-9+/=]のみ）
+  const isBase64 = /^[A-Za-z0-9+/]+=*$/.test(data) && data.length >= 40;
+
+  if (isBase64) {
+    return data;
+  }
+
+  // バイナリ形式の場合: バイナリとして読み直してBase64に変換
+  const binaryData = fs.readFileSync(keyPath);
+  const base64Key = binaryData.toString("base64");
+
+  // Base64形式で上書き保存（次回起動時から統一形式になる）
+  fs.writeFileSync(keyPath, base64Key, "utf-8");
+
+  return base64Key;
+}
+
+/**
  * 暗号化キーを取得する（初回起動時に自動生成）
  */
 export function getEncryptKey(): string {
   if (!_encryptKey) {
-    const keyPath = `${env.DATA_DIR}/.encrypt_key`;
-    if (!fs.existsSync(keyPath)) {
-      _encryptKey = crypto.randomBytes(32).toString("base64");
-      fs.mkdirSync(env.DATA_DIR, { recursive: true });
-      fs.writeFileSync(keyPath, _encryptKey, "utf-8");
-    } else {
-      _encryptKey = fs.readFileSync(keyPath, "utf-8").trim();
-    }
+    _encryptKey = loadOrCreateKey(`${env.DATA_DIR}/.encrypt_key`);
   }
   return _encryptKey;
 }
@@ -44,14 +70,7 @@ export function getEncryptKey(): string {
  */
 export function getJwtSecret(): string {
   if (!_jwtSecret) {
-    const keyPath = `${env.DATA_DIR}/.secret_key`;
-    if (!fs.existsSync(keyPath)) {
-      _jwtSecret = crypto.randomBytes(32).toString("base64");
-      fs.mkdirSync(env.DATA_DIR, { recursive: true });
-      fs.writeFileSync(keyPath, _jwtSecret, "utf-8");
-    } else {
-      _jwtSecret = fs.readFileSync(keyPath, "utf-8").trim();
-    }
+    _jwtSecret = loadOrCreateKey(`${env.DATA_DIR}/.secret_key`);
   }
   return _jwtSecret;
 }

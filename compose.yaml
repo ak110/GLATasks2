@@ -107,6 +107,20 @@ services:
         "
       '
 
+  playwright:
+    profiles:
+      - development
+    image: mcr.microsoft.com/playwright:v1.50.0-noble
+    user: ${UID}:${GID}
+    environment:
+      - HOME=${PWD}/.cache/playwright
+      - PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+    volumes:
+      - ${PWD}:${PWD}
+    working_dir: ${PWD}
+    networks:
+      - network
+
 include:
   - ./compose.${COMPOSE_PROFILE}.yaml
 
