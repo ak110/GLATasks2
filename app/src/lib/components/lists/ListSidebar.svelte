@@ -50,7 +50,7 @@
 </script>
 
 <aside
-    class="flex-col border-r border-gray-100 bg-white sm:flex sm:w-56 sm:shrink-0"
+    class="flex-col border-r border-gray-200 bg-white sm:flex sm:w-56 sm:shrink-0"
     class:flex={mobileView === "lists"}
     class:w-full={mobileView === "lists"}
     class:hidden={mobileView !== "lists"}
@@ -75,7 +75,7 @@
         {/if}
     </div>
     <!-- リスト追加フォーム -->
-    <div class="border-t border-gray-100 p-3">
+    <div class="border-t border-gray-200 p-3">
         <form onsubmit={handleAddList} class="flex gap-2">
             <input
                 type="text"

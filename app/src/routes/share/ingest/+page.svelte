@@ -30,7 +30,7 @@
                     id="list_id"
                     name="list_id"
                     required
-                    class="w-full rounded border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                    class="w-full rounded border border-gray-200 px-3 py-2 focus:border-blue-500 focus:outline-none"
                 >
                     {#each data.lists as list}
                         <option value={list.id}>{list.title}</option>
@@ -47,7 +47,7 @@
                     rows={5}
                     required
                     value={defaultText}
-                    class="w-full rounded border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                    class="w-full rounded border border-gray-200 px-3 py-2 focus:border-blue-500 focus:outline-none"
                 ></textarea>
             </div>
             <div class="flex gap-2">

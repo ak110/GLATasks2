@@ -26,7 +26,7 @@
                     type="text"
                     required
                     autocomplete="username"
-                    class="w-full rounded border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                    class="w-full rounded border border-gray-200 px-3 py-2 focus:border-blue-500 focus:outline-none"
                 />
             </div>
             <div class="mb-4">
@@ -40,7 +40,7 @@
                     type="password"
                     required
                     autocomplete="new-password"
-                    class="w-full rounded border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                    class="w-full rounded border border-gray-200 px-3 py-2 focus:border-blue-500 focus:outline-none"
                 />
             </div>
             <div class="mb-6">
@@ -54,7 +54,7 @@
                     type="password"
                     required
                     autocomplete="new-password"
-                    class="w-full rounded border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                    class="w-full rounded border border-gray-200 px-3 py-2 focus:border-blue-500 focus:outline-none"
                 />
             </div>
             <button

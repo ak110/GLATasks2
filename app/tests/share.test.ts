@@ -21,7 +21,7 @@ test.describe("share/ingest", () => {
     await page.fill('aside input[placeholder="新しいリスト"]', LIST_NAME);
     await page.click('aside button[type="submit"]');
     await page
-      .locator(`aside button:has-text("${LIST_NAME}")`)
+      .locator(`[data-testid="list-select-btn"]:has-text("${LIST_NAME}")`)
       .waitFor({ timeout: 15000 });
     await ctx.close();
   });
@@ -36,8 +36,10 @@ test.describe("share/ingest", () => {
     const page = await ctx.newPage();
     await page.goto("/", { waitUntil: "networkidle" });
     page.once("dialog", (dialog) => dialog.accept());
-    const listRow = page.locator("aside .group").filter({ hasText: LIST_NAME });
-    await listRow.locator('button[title="操作メニュー"]').click();
+    const listRow = page
+      .locator('[data-testid="list-item"]')
+      .filter({ hasText: LIST_NAME });
+    await listRow.locator('[data-testid="list-menu-btn"]').click();
     await page.click('button:has-text("削除")');
     await page.waitForTimeout(1000);
     await ctx.close();

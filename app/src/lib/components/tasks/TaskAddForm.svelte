@@ -5,6 +5,21 @@
     };
 
     let { value = $bindable(), onSubmit }: Props = $props();
+    let formFocused = $state(false);
+
+    /** フォーム内のどこかにフォーカスがあるかを遅延チェック */
+    function handleBlur(e: FocusEvent) {
+        const form = (e.currentTarget as HTMLElement).closest("form");
+        // relatedTarget がフォーム内ならフォーカス維持
+        if (
+            form &&
+            e.relatedTarget instanceof Node &&
+            form.contains(e.relatedTarget)
+        ) {
+            return;
+        }
+        formFocused = false;
+    }
 
     function handleSubmit(e: Event) {
         e.preventDefault();
@@ -22,20 +37,26 @@
     }
 </script>
 
-<div class="border-t border-gray-100 bg-white p-4">
-    <form onsubmit={handleSubmit}>
+<div class="bg-white px-4 py-2" data-testid="task-add-form">
+    <form onsubmit={handleSubmit} class="flex items-start gap-2">
         <textarea
             bind:value
             placeholder="タスクを追加... (Shift+Enter で改行、Enter で送信)"
-            rows={2}
+            rows={formFocused || value ? 5 : 1}
+            onfocus={() => (formFocused = true)}
+            onblur={handleBlur}
             onkeydown={handleKeydown}
-            class="w-full resize-none rounded border border-gray-200 px-3 py-2 focus:border-blue-400 focus:outline-none"
+            class="flex-1 resize-none rounded border border-gray-200 px-3 py-1.5 text-sm focus:border-blue-400 focus:outline-none"
         ></textarea>
-        <button
-            type="submit"
-            class="mt-1 cursor-pointer rounded bg-blue-100 px-3 py-1 text-sm text-blue-600 hover:bg-blue-200"
-        >
-            追加
-        </button>
+        {#if formFocused || value}
+            <button
+                type="submit"
+                onfocus={() => (formFocused = true)}
+                onblur={handleBlur}
+                class="cursor-pointer rounded bg-blue-100 px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-200"
+            >
+                追加
+            </button>
+        {/if}
     </form>
 </div>

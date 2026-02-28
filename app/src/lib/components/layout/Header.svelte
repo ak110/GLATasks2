@@ -3,16 +3,20 @@
         mobileView: "lists" | "tasks";
         showType: "list" | "hidden" | "all";
         isLoading: boolean;
+        hasSelectedList: boolean;
         onBackToLists: () => void;
         onChangeShowType: (type: "list" | "hidden" | "all") => void;
+        onClearList: () => void;
     };
 
     let {
         mobileView,
         showType,
         isLoading,
+        hasSelectedList,
         onBackToLists,
         onChangeShowType,
+        onClearList,
     }: Props = $props();
 </script>
 
@@ -31,6 +35,13 @@
         <span class="text-sm text-gray-400">読み込み中...</span>
     {/if}
     <div class="ml-auto flex items-center gap-2">
+        {#if hasSelectedList}
+            <button
+                onclick={onClearList}
+                class="cursor-pointer text-sm text-gray-400 hover:text-gray-200"
+                title="完了済みタスクを非表示にする">完了済みを非表示</button
+            >
+        {/if}
         <select
             value={showType}
             onchange={(e) =>

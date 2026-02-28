@@ -21,6 +21,11 @@
 - `make format`でprettier + eslintをまとめて実行できる
 - `make test`でformat + lint + type check + e2eテストをまとめて実行できる
 
+### Tailwind CSS の規約
+
+- ボーダー色は `border-gray-200` を基本とする（デフォルトの `border` は黒が強すぎるため）
+- e2e テストのセレクタには CSS クラスではなく `data-testid` 属性を使用する
+
 ## Markdown記述スタイル
 
 - `**`は強調したい箇所のみとし、箇条書きの見出しなどでの使用は禁止

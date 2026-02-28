@@ -314,8 +314,12 @@
     {mobileView}
     {showType}
     {isLoading}
+    hasSelectedList={selectedListId !== null}
     onBackToLists={() => (mobileView = "lists")}
     onChangeShowType={changeShowType}
+    onClearList={() => {
+        if (selectedListId !== null) clearList(selectedListId);
+    }}
 />
 
 <!-- ボディ: サイドバー + メインコンテンツ -->
@@ -343,7 +347,7 @@
 
     <!-- メインコンテンツ: 選択リストのタスク -->
     <main
-        class="flex-1 flex-col overflow-hidden bg-white sm:flex"
+        class="flex-1 flex-col overflow-y-auto bg-white sm:flex"
         class:flex={mobileView === "tasks"}
         class:hidden={mobileView !== "tasks"}
     >
@@ -351,19 +355,15 @@
             {@const selectedList = lists.find((l) => l.id === selectedListId)}
             {#if selectedList}
                 <div
-                    class="flex items-center border-b border-gray-100 bg-blue-50 px-4 py-3"
+                    class="flex items-center border-b border-gray-200 bg-blue-50 px-4 py-3 sm:hidden"
                 >
-                    <h2 class="flex-1 font-semibold text-gray-800">
+                    <h2 class="font-semibold text-gray-800">
                         {selectedList.title}
                     </h2>
-                    <button
-                        onclick={() => clearList(selectedListId!)}
-                        class="cursor-pointer text-sm text-gray-500 hover:text-gray-600"
-                        title="完了済みタスクを非表示にする"
-                        >完了済みを非表示</button
-                    >
                 </div>
             {/if}
+
+            <TaskAddForm bind:value={addTaskText} onSubmit={addTask} />
 
             <TaskList
                 {tasks}
@@ -371,8 +371,6 @@
                 onToggle={toggleTask}
                 onEdit={openEditDialog}
             />
-
-            <TaskAddForm bind:value={addTaskText} onSubmit={addTask} />
         {:else}
             <div class="flex flex-1 items-center justify-center">
                 <p class=" text-gray-400">

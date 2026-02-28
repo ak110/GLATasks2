@@ -18,7 +18,7 @@
     let { tasks, isLoading, onToggle, onEdit }: Props = $props();
 </script>
 
-<div class="flex-1 overflow-y-auto">
+<div class="flex-1">
     {#if isLoading}
         <p class="p-4 text-gray-400">読み込み中...</p>
     {:else if tasks.length === 0}

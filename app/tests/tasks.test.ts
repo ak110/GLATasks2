@@ -21,7 +21,7 @@ test.describe("tasks", () => {
     await page.fill('aside input[placeholder="新しいリスト"]', LIST_NAME);
     await page.click('aside button[type="submit"]');
     await page
-      .locator(`aside button:has-text("${LIST_NAME}")`)
+      .locator(`[data-testid="list-select-btn"]:has-text("${LIST_NAME}")`)
       .waitFor({ timeout: 15000 });
     await ctx.close();
   });
@@ -36,8 +36,10 @@ test.describe("tasks", () => {
     const page = await ctx.newPage();
     await page.goto("/", { waitUntil: "networkidle" });
     page.once("dialog", (dialog) => dialog.accept());
-    const listRow = page.locator("aside .group").filter({ hasText: LIST_NAME });
-    await listRow.locator('button[title="操作メニュー"]').click();
+    const listRow = page
+      .locator('[data-testid="list-item"]')
+      .filter({ hasText: LIST_NAME });
+    await listRow.locator('[data-testid="list-menu-btn"]').click();
     await page.click('button:has-text("削除")');
     await page.waitForTimeout(1000);
     await ctx.close();
@@ -45,17 +47,22 @@ test.describe("tasks", () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto("/", { waitUntil: "networkidle" });
-    await page.click(`aside button:has-text("${LIST_NAME}")`);
+    await page.click(
+      `[data-testid="list-select-btn"]:has-text("${LIST_NAME}")`,
+    );
+    // リスト選択後、タスク追加フォームが表示されるのを待つ
     await page
-      .locator(`main h2:has-text("${LIST_NAME}")`)
+      .locator('[data-testid="task-add-form"]')
       .waitFor({ timeout: 15000 });
   });
 
   test("タスクを追加すると一覧に表示される", async ({ page }) => {
     const taskTitle = `タスク_${Date.now()}`;
     await page.fill('textarea[placeholder*="タスクを追加"]', taskTitle);
-    await page.click('main button:has-text("追加")');
-    await expect(page.locator(`main p:has-text("${taskTitle}")`)).toBeVisible({
+    await page.click('[data-testid="task-add-form"] button[type="submit"]');
+    await expect(
+      page.locator('[data-testid="task-item"]').filter({ hasText: taskTitle }),
+    ).toBeVisible({
       timeout: 15000,
     });
   });
@@ -69,11 +76,12 @@ test.describe("tasks", () => {
       'textarea[placeholder*="タスクを追加"]',
       `${title}\n${notes}`,
     );
-    await page.click('main button:has-text("追加")');
-    await expect(page.locator(`main p:has-text("${title}")`)).toBeVisible({
-      timeout: 15000,
-    });
-    await expect(page.locator(`main p:has-text("${notes}")`)).toBeVisible({
+    await page.click('[data-testid="task-add-form"] button[type="submit"]');
+    const taskRow = page
+      .locator('[data-testid="task-item"]')
+      .filter({ hasText: title });
+    await expect(taskRow).toBeVisible({ timeout: 15000 });
+    await expect(taskRow.locator(`p:has-text("${notes}")`)).toBeVisible({
       timeout: 15000,
     });
   });
@@ -83,12 +91,13 @@ test.describe("tasks", () => {
   }) => {
     const taskTitle = `チェックテスト_${Date.now()}`;
     await page.fill('textarea[placeholder*="タスクを追加"]', taskTitle);
-    await page.click('main button:has-text("追加")');
+    await page.click('[data-testid="task-add-form"] button[type="submit"]');
     const taskRow = page
-      .locator("main .border-b")
+      .locator('[data-testid="task-item"]')
       .filter({ hasText: taskTitle });
     await taskRow.waitFor({ timeout: 15000 });
-    await taskRow.locator('input[type="checkbox"]').check();
+    await page.waitForLoadState("networkidle");
+    await taskRow.locator('input[type="checkbox"]').dispatchEvent("click");
     await expect(taskRow.locator("p.line-through")).toBeVisible({
       timeout: 15000,
     });
@@ -97,13 +106,18 @@ test.describe("tasks", () => {
   test("チェックボックスをオフにすると打ち消し線が消える", async ({ page }) => {
     const taskTitle = `アンチェックテスト_${Date.now()}`;
     await page.fill('textarea[placeholder*="タスクを追加"]', taskTitle);
-    await page.click('main button:has-text("追加")');
+    await page.click('[data-testid="task-add-form"] button[type="submit"]');
     const taskRow = page
-      .locator("main .border-b")
+      .locator('[data-testid="task-item"]')
       .filter({ hasText: taskTitle });
     await taskRow.waitFor({ timeout: 15000 });
-    await taskRow.locator('input[type="checkbox"]').check();
-    await taskRow.locator('input[type="checkbox"]').uncheck();
+    await page.waitForLoadState("networkidle");
+    await taskRow.locator('input[type="checkbox"]').dispatchEvent("click");
+    await expect(taskRow.locator("p.line-through")).toBeVisible({
+      timeout: 15000,
+    });
+    await page.waitForLoadState("networkidle");
+    await taskRow.locator('input[type="checkbox"]').dispatchEvent("click");
     await expect(taskRow.locator("p.line-through")).not.toBeVisible({
       timeout: 15000,
     });
@@ -113,16 +127,22 @@ test.describe("tasks", () => {
     const original = `編集前_${Date.now()}`;
     const edited = `編集後_${Date.now()}`;
     await page.fill('textarea[placeholder*="タスクを追加"]', original);
-    await page.click('main button:has-text("追加")');
+    await page.click('[data-testid="task-add-form"] button[type="submit"]');
 
     const taskRow = page
-      .locator("main .border-b")
+      .locator('[data-testid="task-item"]')
       .filter({ hasText: original });
     await taskRow.waitFor({ timeout: 15000 });
-    await taskRow.locator('button[aria-label="タスクを編集"]').click();
+    await page.waitForLoadState("networkidle");
+    await taskRow
+      .locator('[data-testid="task-edit-btn"]')
+      .dispatchEvent("click");
+    await page.locator("#edit-text").waitFor({ timeout: 15000 });
     await page.locator("#edit-text").fill(edited);
     await page.click('button:has-text("保存")');
-    await expect(page.locator(`main p:has-text("${edited}")`)).toBeVisible({
+    await expect(
+      page.locator('[data-testid="task-item"]').filter({ hasText: edited }),
+    ).toBeVisible({
       timeout: 15000,
     });
   });

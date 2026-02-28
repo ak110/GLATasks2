@@ -32,12 +32,14 @@
 </script>
 
 <div
-    class="group flex items-center border-b border-gray-100"
+    class="group flex items-center border-b border-gray-200"
     class:bg-blue-50={isSelected}
+    data-testid="list-item"
 >
     <button
         class="min-w-0 flex-1 cursor-pointer truncate px-4 py-2.5 text-left"
         class:font-medium={isSelected}
+        data-testid="list-select-btn"
         onclick={() => onSelect(list.id)}
     >
         {list.title}
@@ -52,12 +54,13 @@
             }}
             title="操作メニュー"
             aria-label="操作メニュー"
+            data-testid="list-menu-btn"
         >
             ⋮
         </button>
         {#if openMenuId === list.id}
             <div
-                class="absolute top-full right-0 z-20 min-w-max rounded border bg-white py-1 shadow-lg"
+                class="absolute top-full right-0 z-20 min-w-max rounded border border-gray-200 bg-white py-1 shadow-lg"
             >
                 <button
                     class="block w-full cursor-pointer px-4 py-1.5 text-left hover:bg-gray-100"
@@ -89,7 +92,7 @@
                         非表示にする
                     </button>
                 {/if}
-                <hr class="my-1 border-gray-100" />
+                <hr class="my-1 border-gray-200" />
                 <button
                     class="block w-full cursor-pointer px-4 py-1.5 text-left text-red-600 hover:bg-red-50"
                     onclick={() => {
