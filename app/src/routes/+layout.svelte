@@ -35,7 +35,7 @@
 </script>
 
 <QueryClientProvider client={queryClient}>
-    <div class="min-h-screen bg-gray-100">
+    <div class="min-h-screen bg-gray-50">
         {@render children()}
     </div>
 </QueryClientProvider>

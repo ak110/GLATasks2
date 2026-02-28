@@ -36,7 +36,7 @@
     class:bg-blue-50={isSelected}
 >
     <button
-        class="min-w-0 flex-1 cursor-pointer truncate px-3 py-2 text-left text-sm"
+        class="min-w-0 flex-1 cursor-pointer truncate px-4 py-2.5 text-left"
         class:font-medium={isSelected}
         onclick={() => onSelect(list.id)}
     >
@@ -45,7 +45,7 @@
     <!-- ⋮ メニュー -->
     <div class="relative flex-shrink-0">
         <button
-            class="cursor-pointer px-2 py-2 text-xs text-gray-400 hover:text-gray-700 sm:opacity-0 sm:group-hover:opacity-100"
+            class="cursor-pointer px-2 py-2.5 text-xs text-gray-400 hover:text-gray-700 sm:opacity-0 sm:group-hover:opacity-100"
             onclick={(e) => {
                 e.stopPropagation();
                 onToggleMenu(list.id);
@@ -60,7 +60,7 @@
                 class="absolute top-full right-0 z-20 min-w-max rounded border bg-white py-1 shadow-lg"
             >
                 <button
-                    class="block w-full cursor-pointer px-4 py-1.5 text-left text-sm hover:bg-gray-100"
+                    class="block w-full cursor-pointer px-4 py-1.5 text-left hover:bg-gray-100"
                     onclick={() => {
                         onRename(list.id, list.title);
                         onToggleMenu(list.id);
@@ -70,7 +70,7 @@
                 </button>
                 {#if showType === "hidden"}
                     <button
-                        class="block w-full cursor-pointer px-4 py-1.5 text-left text-sm hover:bg-gray-100"
+                        class="block w-full cursor-pointer px-4 py-1.5 text-left hover:bg-gray-100"
                         onclick={() => {
                             onShow(list.id);
                             onToggleMenu(list.id);
@@ -80,7 +80,7 @@
                     </button>
                 {:else}
                     <button
-                        class="block w-full cursor-pointer px-4 py-1.5 text-left text-sm hover:bg-gray-100"
+                        class="block w-full cursor-pointer px-4 py-1.5 text-left hover:bg-gray-100"
                         onclick={() => {
                             onHide(list.id);
                             onToggleMenu(list.id);
@@ -91,7 +91,7 @@
                 {/if}
                 <hr class="my-1 border-gray-100" />
                 <button
-                    class="block w-full cursor-pointer px-4 py-1.5 text-left text-sm text-red-600 hover:bg-red-50"
+                    class="block w-full cursor-pointer px-4 py-1.5 text-left text-red-600 hover:bg-red-50"
                     onclick={() => {
                         onDelete(list.id);
                         onToggleMenu(list.id);

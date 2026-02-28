@@ -21,7 +21,7 @@
 >
     {#if mobileView === "tasks"}
         <button
-            class="cursor-pointer text-sm text-gray-300 hover:text-white sm:hidden"
+            class="cursor-pointer text-gray-300 hover:text-white sm:hidden"
             onclick={onBackToLists}
             aria-label="リスト一覧に戻る">← リスト</button
         >
@@ -37,7 +37,7 @@
                 onChangeShowType(
                     e.currentTarget.value as "list" | "hidden" | "all",
                 )}
-            class="cursor-pointer rounded bg-gray-700 px-2 py-1 text-sm text-white focus:outline-none"
+            class="cursor-pointer rounded bg-gray-700 px-2 py-1 text-white focus:outline-none"
         >
             <option value="list">表示中</option>
             <option value="hidden">非表示</option>

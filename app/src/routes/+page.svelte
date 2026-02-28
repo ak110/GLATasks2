@@ -319,7 +319,9 @@
 />
 
 <!-- ボディ: サイドバー + メインコンテンツ -->
-<div class="flex h-[calc(100vh-3rem)]">
+<div
+    class="mx-auto flex h-[calc(100vh-3rem)] w-full px-3 sm:max-w-[540px] md:max-w-[720px] lg:max-w-[960px] xl:max-w-[1140px] 2xl:max-w-[1320px]"
+>
     <ListSidebar
         {lists}
         {selectedListId}
@@ -341,20 +343,22 @@
 
     <!-- メインコンテンツ: 選択リストのタスク -->
     <main
-        class="flex-1 flex-col overflow-hidden sm:flex"
+        class="flex-1 flex-col overflow-hidden bg-white sm:flex"
         class:flex={mobileView === "tasks"}
         class:hidden={mobileView !== "tasks"}
     >
         {#if selectedListId !== null}
             {@const selectedList = lists.find((l) => l.id === selectedListId)}
             {#if selectedList}
-                <div class="flex items-center border-b bg-gray-50 px-4 py-2">
+                <div
+                    class="flex items-center border-b border-gray-100 bg-blue-50 px-4 py-3"
+                >
                     <h2 class="flex-1 font-semibold text-gray-800">
                         {selectedList.title}
                     </h2>
                     <button
                         onclick={() => clearList(selectedListId!)}
-                        class="cursor-pointer text-xs text-gray-400 hover:text-gray-600"
+                        class="cursor-pointer text-xs text-gray-500 hover:text-gray-600"
                         title="完了済みタスクを非表示にする"
                         >完了済みを非表示</button
                     >
@@ -371,7 +375,7 @@
             <TaskAddForm bind:value={addTaskText} onSubmit={addTask} />
         {:else}
             <div class="flex flex-1 items-center justify-center">
-                <p class="text-sm text-gray-400">
+                <p class=" text-gray-400">
                     サイドバーからリストを選択してください
                 </p>
             </div>

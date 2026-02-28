@@ -44,20 +44,20 @@
         role="dialog"
         aria-modal="true"
     >
-        <div class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+        <div class="w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl">
             <h2 class="mb-4 text-lg font-semibold text-gray-800">
                 タスクの編集
             </h2>
             <div class="mb-4">
                 <label
-                    class="mb-1 block text-sm font-medium text-gray-700"
+                    class="mb-1 block font-medium text-gray-700"
                     for="edit-text">内容</label
                 >
                 <textarea
                     id="edit-text"
-                    rows={6}
+                    rows={10}
                     bind:value={localText}
-                    class="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+                    class="w-full rounded border border-gray-200 px-3 py-2 wrap-break-word break-all focus:border-blue-500 focus:outline-none"
                 ></textarea>
                 <p class="mt-1 text-xs text-gray-500">
                     1行目: タイトル、3行目以降: メモ（空行で区切る）
@@ -65,13 +65,13 @@
             </div>
             <div class="mb-4">
                 <label
-                    class="mb-1 block text-sm font-medium text-gray-700"
+                    class="mb-1 block font-medium text-gray-700"
                     for="edit-move-to">リスト</label
                 >
                 <select
                     id="edit-move-to"
                     bind:value={localMoveTo}
-                    class="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+                    class="w-full rounded border border-gray-200 px-3 py-2 wrap-break-word break-all focus:border-blue-500 focus:outline-none"
                 >
                     {#each lists as l (l.id)}
                         <option value={String(l.id)}>{l.title}</option>
@@ -85,19 +85,19 @@
                     bind:checked={localKeepOrder}
                     class="cursor-pointer"
                 />
-                <label for="edit-keep-order" class="text-sm text-gray-700"
+                <label for="edit-keep-order" class=" text-gray-700"
                     >並び順を維持する</label
                 >
             </div>
             <div class="flex gap-3">
                 <button
                     onclick={handleSubmit}
-                    class="flex-1 cursor-pointer rounded bg-blue-600 py-2 text-sm text-white hover:bg-blue-700 focus:outline-none"
+                    class="flex-1 cursor-pointer rounded bg-blue-600 py-2 text-white hover:bg-blue-700 focus:outline-none"
                     >保存</button
                 >
                 <button
                     onclick={onClose}
-                    class="flex-1 cursor-pointer rounded bg-gray-200 py-2 text-sm text-gray-700 hover:bg-gray-300 focus:outline-none"
+                    class="flex-1 cursor-pointer rounded bg-gray-200 py-2 text-gray-700 hover:bg-gray-300 focus:outline-none"
                     >キャンセル</button
                 >
             </div>

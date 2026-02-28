@@ -22,14 +22,14 @@
     }
 </script>
 
-<div class="border-t bg-white p-3">
+<div class="border-t border-gray-100 bg-white p-4">
     <form onsubmit={handleSubmit}>
         <textarea
             bind:value
             placeholder="タスクを追加... (Shift+Enter で改行、Enter で送信)"
             rows={2}
             onkeydown={handleKeydown}
-            class="w-full resize-none rounded border border-gray-200 px-3 py-2 text-sm focus:border-blue-400 focus:outline-none"
+            class="w-full resize-none rounded border border-gray-200 px-3 py-2 focus:border-blue-400 focus:outline-none"
         ></textarea>
         <button
             type="submit"

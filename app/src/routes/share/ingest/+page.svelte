@@ -9,21 +9,21 @@
 
 <div class="flex min-h-screen items-center justify-center bg-gray-100 p-4">
     <div class="w-full max-w-lg rounded-lg bg-white p-6 shadow">
-        <h1 class="mb-4 text-xl font-bold text-gray-800">タスクを追加</h1>
+        <h1 class="mb-4 font-bold text-gray-800">タスクを追加</h1>
         {#if form?.success}
-            <p class="mb-4 rounded bg-green-100 p-3 text-sm text-green-700">
+            <p class="mb-4 rounded bg-green-100 p-3 text-green-700">
                 タスクを追加しました。
             </p>
         {/if}
         {#if form?.error}
-            <p class="mb-4 rounded bg-red-100 p-3 text-sm text-red-700">
+            <p class="mb-4 rounded bg-red-100 p-3 text-red-700">
                 {form.error}
             </p>
         {/if}
         <form method="POST">
             <div class="mb-4">
                 <label
-                    class="mb-1 block text-sm font-medium text-gray-700"
+                    class="mb-1 block font-medium text-gray-700"
                     for="list_id">リスト</label
                 >
                 <select
@@ -38,9 +38,8 @@
                 </select>
             </div>
             <div class="mb-4">
-                <label
-                    class="mb-1 block text-sm font-medium text-gray-700"
-                    for="text">テキスト</label
+                <label class="mb-1 block font-medium text-gray-700" for="text"
+                    >テキスト</label
                 >
                 <textarea
                     id="text"

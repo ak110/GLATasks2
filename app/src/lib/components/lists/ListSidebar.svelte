@@ -50,7 +50,7 @@
 </script>
 
 <aside
-    class="flex-col border-r bg-white sm:flex sm:w-56 sm:shrink-0"
+    class="flex-col border-r border-gray-100 bg-white sm:flex sm:w-56 sm:shrink-0"
     class:flex={mobileView === "lists"}
     class:w-full={mobileView === "lists"}
     class:hidden={mobileView !== "lists"}
@@ -71,21 +71,21 @@
             />
         {/each}
         {#if lists.length === 0 && !isLoading}
-            <p class="p-4 text-sm text-gray-400">リストなし</p>
+            <p class="p-4 text-gray-400">リストなし</p>
         {/if}
     </div>
     <!-- リスト追加フォーム -->
-    <div class="border-t p-2">
-        <form onsubmit={handleAddList} class="flex gap-1">
+    <div class="border-t border-gray-100 p-3">
+        <form onsubmit={handleAddList} class="flex gap-2">
             <input
                 type="text"
                 bind:value={addListTitle}
                 placeholder="新しいリスト"
-                class="min-w-0 flex-1 rounded border border-gray-200 px-2 py-1 text-sm focus:border-blue-400 focus:outline-none"
+                class="min-w-0 flex-1 rounded border border-gray-200 px-2.5 py-1.5 focus:border-blue-400 focus:outline-none"
             />
             <button
                 type="submit"
-                class="cursor-pointer rounded bg-blue-600 px-2 py-1 text-xs text-white hover:bg-blue-700"
+                class="cursor-pointer rounded bg-blue-600 px-3 py-1.5 text-xs text-white hover:bg-blue-700"
                 >追加</button
             >
         </form>

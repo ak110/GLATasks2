@@ -10,14 +10,14 @@
             GLATasks - ユーザー登録
         </h1>
         {#if form?.error}
-            <p class="mb-4 rounded bg-red-100 p-3 text-sm text-red-700">
+            <p class="mb-4 rounded bg-red-100 p-3 text-red-700">
                 {form.error}
             </p>
         {/if}
         <form method="POST">
             <div class="mb-4">
                 <label
-                    class="mb-1 block text-sm font-medium text-gray-700"
+                    class="mb-1 block font-medium text-gray-700"
                     for="user_id">ユーザーID</label
                 >
                 <input
@@ -31,7 +31,7 @@
             </div>
             <div class="mb-4">
                 <label
-                    class="mb-1 block text-sm font-medium text-gray-700"
+                    class="mb-1 block font-medium text-gray-700"
                     for="password">パスワード</label
                 >
                 <input
@@ -45,7 +45,7 @@
             </div>
             <div class="mb-6">
                 <label
-                    class="mb-1 block text-sm font-medium text-gray-700"
+                    class="mb-1 block font-medium text-gray-700"
                     for="password_confirm">パスワード（確認）</label
                 >
                 <input
@@ -64,7 +64,7 @@
                 登録
             </button>
         </form>
-        <p class="mt-4 text-center text-sm text-gray-600">
+        <p class="mt-4 text-center text-gray-600">
             アカウントをお持ちの方は
             <a href="/auth/login" class="text-blue-600 hover:underline"
                 >ログイン</a
