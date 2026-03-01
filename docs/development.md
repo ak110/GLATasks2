@@ -28,28 +28,28 @@ make test  # OK
 
 ## make コマンド一覧
 
-| コマンド                   | 説明                                                                |
-| -------------------------- | ------------------------------------------------------------------- |
-| `make help`                | Makefile の内容を表示                                               |
-| `make sync`                | 最新化（docker pull + git fetch + rebase）                          |
-| `make deploy`              | ビルド → 停止 → 起動                                                |
-| `make build`               | Docker イメージビルド                                               |
-| `make start` / `make stop` | 起動 / 停止                                                         |
-| `make restart-app`         | app コンテナのみ再起動                                              |
-| `make start-app`           | app コンテナの停止 → 起動                                           |
-| `make format`              | コード整形 + 軽量 lint（自動修正あり）                              |
-| `make test`                | format + lint + 型チェック + unit test + e2e（これだけ実行すればOK） |
-| `make test-unit`           | Vitest ユニットテストのみ                                           |
-| `make test-e2e`            | Playwright e2e テストのみ                                           |
-| `make update`              | 依存パッケージ更新 + テスト                                         |
-| `make migrate`             | DB マイグレーション実行                                             |
-| `make db-studio`           | Drizzle Studio 起動                                                 |
-| `make sql`                 | MariaDB コンソール                                                  |
-| `make shell`               | app コンテナの bash シェル                                          |
-| `make node-shell`          | Node コンテナでの作業用シェル                                       |
-| `make logs` / `make logs-app` | 全サービス / app のみのログ                                      |
-| `make ps`                  | コンテナ状態確認                                                    |
-| `make healthcheck`         | ヘルスチェック                                                      |
+| コマンド                      | 説明                                                                 |
+| ----------------------------- | -------------------------------------------------------------------- |
+| `make help`                   | Makefile の内容を表示                                                |
+| `make sync`                   | 最新化（docker pull + git fetch + rebase）                           |
+| `make deploy`                 | ビルド → 停止 → 起動                                                 |
+| `make build`                  | Docker イメージビルド                                                |
+| `make start` / `make stop`    | 起動 / 停止                                                          |
+| `make restart-app`            | app コンテナのみ再起動                                               |
+| `make start-app`              | app コンテナの停止 → 起動                                            |
+| `make format`                 | コード整形 + 軽量 lint（自動修正あり）                               |
+| `make test`                   | format + lint + 型チェック + unit test + e2e（これだけ実行すればOK） |
+| `make test-unit`              | Vitest ユニットテストのみ                                            |
+| `make test-e2e`               | Playwright e2e テストのみ                                            |
+| `make update`                 | 依存パッケージ更新 + テスト                                          |
+| `make migrate`                | DB マイグレーション実行                                              |
+| `make db-studio`              | Drizzle Studio 起動                                                  |
+| `make sql`                    | MariaDB コンソール                                                   |
+| `make shell`                  | app コンテナの bash シェル                                           |
+| `make node-shell`             | Node コンテナでの作業用シェル                                        |
+| `make logs` / `make logs-app` | 全サービス / app のみのログ                                          |
+| `make ps`                     | コンテナ状態確認                                                     |
+| `make healthcheck`            | ヘルスチェック                                                       |
 
 ## Docker サービス構成
 

@@ -6,18 +6,18 @@ Google Tasks の canvas ビューが廃止されたため自作した低機能 W
 
 ## スタック
 
-| レイヤー         | 技術                   | 役割                                    |
-| ---------------- | ---------------------- | --------------------------------------- |
-| アプリケーション | SvelteKit              | UI・ルーティング・SSR・API・DB アクセス |
-| API              | tRPC v11               | 型安全な RPC（暗号化ミドルウェア付き）  |
-| バリデーション   | Zod                    | スキーマバリデーション                  |
-| データ取得       | TanStack Svelte Query  | クライアント側キャッシュ・状態管理      |
-| ORM              | Drizzle ORM            | DB アクセス（型安全）                   |
-| DB               | MariaDB                | データ永続化                            |
-| リバースプロキシ | nginx                  | HTTPS 終端                              |
-| CSS              | Tailwind CSS           | スタイリング                            |
-| 暗号化           | Web Crypto API         | ブラウザ ↔ SvelteKit 間 AES-GCM         |
-| 認証             | JWT/HS256 (`jose`)     | Cookie セッション管理                   |
+| レイヤー         | 技術                  | 役割                                    |
+| ---------------- | --------------------- | --------------------------------------- |
+| アプリケーション | SvelteKit             | UI・ルーティング・SSR・API・DB アクセス |
+| API              | tRPC v11              | 型安全な RPC（暗号化ミドルウェア付き）  |
+| バリデーション   | Zod                   | スキーマバリデーション                  |
+| データ取得       | TanStack Svelte Query | クライアント側キャッシュ・状態管理      |
+| ORM              | Drizzle ORM           | DB アクセス（型安全）                   |
+| DB               | MariaDB               | データ永続化                            |
+| リバースプロキシ | nginx                 | HTTPS 終端                              |
+| CSS              | Tailwind CSS          | スタイリング                            |
+| 暗号化           | Web Crypto API        | ブラウザ ↔ SvelteKit 間 AES-GCM         |
+| 認証             | JWT/HS256 (`jose`)    | Cookie セッション管理                   |
 
 ## アーキテクチャ図
 
@@ -117,25 +117,25 @@ Chrome 拡張のポップアップ内 iframe からのアクセスを許可す�
 
 ### list
 
-| カラム       | 型           | 説明                         |
-| ------------ | ------------ | ---------------------------- |
-| id           | INT PK       | 内部 ID                      |
-| user_id      | INT FK→user  | 所有ユーザー                 |
+| カラム       | 型           | 説明                                               |
+| ------------ | ------------ | -------------------------------------------------- |
+| id           | INT PK       | 内部 ID                                            |
+| user_id      | INT FK→user  | 所有ユーザー                                       |
 | status       | VARCHAR(255) | `show` / `hidden` / `active`（デフォルト: `show`） |
-| title        | VARCHAR(255) | リスト名                     |
-| last_updated | TIMESTAMP    | 最終更新日時（UTC）          |
+| title        | VARCHAR(255) | リスト名                                           |
+| last_updated | TIMESTAMP    | 最終更新日時（UTC）                                |
 
 ### task
 
-| カラム    | 型             | 説明                                   |
-| --------- | -------------- | -------------------------------------- |
-| id        | INT PK         | 内部 ID                                |
-| list_id   | INT FK→list    | 所属リスト                             |
+| カラム    | 型             | 説明                                                  |
+| --------- | -------------- | ----------------------------------------------------- |
+| id        | INT PK         | 内部 ID                                               |
+| list_id   | INT FK→list    | 所属リスト                                            |
 | status_id | INT            | 0=needsAction, 1=completed, 2=hidden（デフォルト: 0） |
-| text      | TEXT           | 内容（1行目=タイトル, 2行目以降=メモ） |
-| created   | TIMESTAMP      | 作成日時（UTC）                        |
-| updated   | TIMESTAMP      | 更新日時（UTC、並び順に使用、降順）    |
-| completed | TIMESTAMP NULL | 完了日時（UTC）                        |
+| text      | TEXT           | 内容（1行目=タイトル, 2行目以降=メモ）                |
+| created   | TIMESTAMP      | 作成日時（UTC）                                       |
+| updated   | TIMESTAMP      | 更新日時（UTC、並び順に使用、降順）                   |
+| completed | TIMESTAMP NULL | 完了日時（UTC）                                       |
 
 ## ディレクトリ構造
 
