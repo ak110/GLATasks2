@@ -86,7 +86,7 @@ format:  # 整形 + 軽量lint（自動修正あり）
 	pre-commit run --all-files
 
 test:  # format + lint + 型チェック + pre-commit + unit test + e2eテスト
-	SKIP=pnpm-format pre-commit run --all-files
+	pre-commit run --all-files
 	$(call RUN_NODE, pnpm run test, --rm)
 	$(MAKE) test-unit
 	$(MAKE) test-e2e
