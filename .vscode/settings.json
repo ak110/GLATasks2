@@ -29,9 +29,6 @@
   "[markdown]": {
     "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
   },
-  "[python]": {
-    "editor.defaultFormatter": "charliermarsh.ruff"
-  },
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
@@ -39,25 +36,14 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "explorer.fileNesting.patterns": {
-    "package.json": "pnpm-lock.yaml, pnpm-workspace.yaml",
-    "pyproject.toml": "uv.lock"
+    "package.json": "pnpm-lock.yaml, pnpm-workspace.yaml"
   },
   "files.exclude": {
     "**/.ruff_cache": true,
     "**/.cache": true
   },
-  "flake8.enabled": false,
-  "mypy-type-checker.importStrategy": "fromEnvironment",
   "npm.enableRunFromFolder": true,
   "npm.packageManager": "pnpm",
-  "pylint.enabled": true,
-  "pylint.importStrategy": "fromEnvironment",
-  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python3",
-  "python.testing.pytestEnabled": true,
-  "python.testing.unittestEnabled": false,
-  "ruff.enable": true,
-  "ruff.importStrategy": "fromEnvironment",
-  "ruff.lint.enable": true,
   "search.exclude": {
     "**/.cache": true,
     "**/.local": true,

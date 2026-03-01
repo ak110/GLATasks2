@@ -58,4 +58,4 @@
     - MD040/fenced-code-language: Fenced code blocks should have a language specified
 - 図はMermaid記法で書く
 - 別のMarkdownファイルへのリンクは、基本的に`[プロジェクトルートからのパス](記述個所からの相対パス)`で書く。
-- lintの実行方法: `pre-commit run --files <file>`
+- format/lintの実行方法: `uvx pre-commit run --files <file>`
