@@ -59,12 +59,7 @@ test.describe("share/ingest", () => {
     expect(textareaValue).toContain(url);
   });
 
-  test("in_popup=1 のとき閉じるボタンが表示される", async ({ page }) => {
-    await page.goto("/share/ingest?title=test&in_popup=1");
-    await expect(page.locator('button:has-text("閉じる")')).toBeVisible();
-  });
-
-  test("in_popup なしのとき閉じるボタンが表示されない", async ({ page }) => {
+  test("閉じるボタンが存在しない", async ({ page }) => {
     await page.goto("/share/ingest?title=test");
     await expect(page.locator('button:has-text("閉じる")')).not.toBeVisible();
   });

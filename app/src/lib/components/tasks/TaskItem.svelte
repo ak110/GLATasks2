@@ -29,6 +29,7 @@
     <div
         class="min-w-0 flex-1 wrap-break-word break-all"
         class:line-through={task.status === "completed"}
+        data-testid="task-text"
     >
         <p
             class="leading-tight"

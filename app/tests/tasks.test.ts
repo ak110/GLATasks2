@@ -98,7 +98,9 @@ test.describe("tasks", () => {
     await taskRow.waitFor({ timeout: 15000 });
     await page.waitForLoadState("networkidle");
     await taskRow.locator('input[type="checkbox"]').dispatchEvent("click");
-    await expect(taskRow.locator("p.line-through")).toBeVisible({
+    await expect(
+      taskRow.locator('[data-testid="task-text"].line-through'),
+    ).toBeVisible({
       timeout: 15000,
     });
   });
@@ -113,12 +115,16 @@ test.describe("tasks", () => {
     await taskRow.waitFor({ timeout: 15000 });
     await page.waitForLoadState("networkidle");
     await taskRow.locator('input[type="checkbox"]').dispatchEvent("click");
-    await expect(taskRow.locator("p.line-through")).toBeVisible({
+    await expect(
+      taskRow.locator('[data-testid="task-text"].line-through'),
+    ).toBeVisible({
       timeout: 15000,
     });
     await page.waitForLoadState("networkidle");
     await taskRow.locator('input[type="checkbox"]').dispatchEvent("click");
-    await expect(taskRow.locator("p.line-through")).not.toBeVisible({
+    await expect(
+      taskRow.locator('[data-testid="task-text"].line-through'),
+    ).not.toBeVisible({
       timeout: 15000,
     });
   });

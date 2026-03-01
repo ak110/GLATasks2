@@ -50,22 +50,13 @@
                     class="w-full rounded border border-gray-200 px-3 py-2 focus:border-blue-500 focus:outline-none"
                 ></textarea>
             </div>
-            <div class="flex gap-2">
+            <div class="flex justify-end">
                 <button
                     type="submit"
-                    class="flex-1 cursor-pointer rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:outline-none"
+                    class="cursor-pointer rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:outline-none"
                 >
                     追加
                 </button>
-                {#if data.inPopup}
-                    <button
-                        type="button"
-                        onclick={() => globalThis.close()}
-                        class="flex-1 cursor-pointer rounded bg-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-400 focus:outline-none"
-                    >
-                        閉じる
-                    </button>
-                {/if}
             </div>
         </form>
     </div>

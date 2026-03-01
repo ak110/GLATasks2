@@ -5,10 +5,8 @@ import type { Actions, PageServerLoad } from "./$types";
 export const load: PageServerLoad = async ({ locals, url }) => {
   const title = url.searchParams.get("title") ?? "";
   const pageUrl = url.searchParams.get("url") ?? "";
-  const inPopup = url.searchParams.get("in_popup") === "1";
-
   const lists = await api.getLists(locals.user_id!, "list");
-  return { title, pageUrl, inPopup, lists };
+  return { title, pageUrl, lists };
 };
 
 export const actions: Actions = {
