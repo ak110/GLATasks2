@@ -12,7 +12,9 @@
 
 - コンポーネントファイルは `app/src/` 以下に配置
 - サーバーサイドの load 関数（`+page.server.ts`）でデータ取得を行い、クライアントに渡す
-- API 呼び出しは BFF ルート（`src/routes/api/`）経由で行い、URL は直書きする
+- API 呼び出しは tRPC 経由で行う（`src/lib/server/trpc.ts` でルーター定義、`src/lib/trpc.ts` でクライアント）
+- 入力バリデーションには Zod スキーマ（`src/lib/schemas.ts`）を使用する
+- クライアント側のデータ取得には TanStack Svelte Query を使用する
 - JSDocコメントを記述する
   - ファイルの先頭に`@fileoverview`で概要を記述
   - 関数・クラス・メソッドには機能を説明するコメントを記述
@@ -20,6 +22,13 @@
 - パッケージ管理には`pnpm`を使う
 - `make format`でprettier + eslintをまとめて実行できる
 - `make test`でformat + lint + type check + e2eテストをまとめて実行できる
+
+### コンポーネント構造
+
+- `app/src/lib/components/` 配下に機能別ディレクトリで分類する
+  - `layout/` — ヘッダーなどのレイアウト部品
+  - `lists/` — リスト関連コンポーネント
+  - `tasks/` — タスク関連コンポーネント
 
 ### Tailwind CSS の規約
 
@@ -33,5 +42,6 @@
 - できるだけmarkdownlintが通るように書く
   - 特に注意するルール:
     - MD040/fenced-code-language: Fenced code blocks should have a language specified
+- 図はMermaid記法で書く
 - 別のMarkdownファイルへのリンクは、基本的に`[プロジェクトルートからのパス](記述個所からの相対パス)`で書く。
 - lintの実行方法: `pre-commit run --files <file>`

@@ -28,18 +28,28 @@ make test  # OK
 
 ## make コマンド一覧
 
-| コマンド                   | 説明                                                     |
-| -------------------------- | -------------------------------------------------------- |
-| `make deploy`              | ビルド → 停止 → 起動                                     |
-| `make start` / `make stop` | 起動 / 停止                                              |
-| `make format`              | コード整形 + 軽量 lint（自動修正あり）                   |
-| `make test`                | format + lint + 型チェック + e2e（これだけ実行すればOK） |
-| `make test-e2e`            | Playwright e2e テストのみ                                |
-| `make update`              | 依存パッケージ更新 + テスト                              |
-| `make sql`                 | MariaDB コンソール                                       |
-| `make logs`                | 全サービスのログ                                         |
-| `make ps`                  | コンテナ状態確認                                         |
-| `make healthcheck`         | ヘルスチェック                                           |
+| コマンド                   | 説明                                                                |
+| -------------------------- | ------------------------------------------------------------------- |
+| `make help`                | Makefile の内容を表示                                               |
+| `make sync`                | 最新化（docker pull + git fetch + rebase）                          |
+| `make deploy`              | ビルド → 停止 → 起動                                                |
+| `make build`               | Docker イメージビルド                                               |
+| `make start` / `make stop` | 起動 / 停止                                                         |
+| `make restart-app`         | app コンテナのみ再起動                                              |
+| `make start-app`           | app コンテナの停止 → 起動                                           |
+| `make format`              | コード整形 + 軽量 lint（自動修正あり）                              |
+| `make test`                | format + lint + 型チェック + unit test + e2e（これだけ実行すればOK） |
+| `make test-unit`           | Vitest ユニットテストのみ                                           |
+| `make test-e2e`            | Playwright e2e テストのみ                                           |
+| `make update`              | 依存パッケージ更新 + テスト                                         |
+| `make migrate`             | DB マイグレーション実行                                             |
+| `make db-studio`           | Drizzle Studio 起動                                                 |
+| `make sql`                 | MariaDB コンソール                                                  |
+| `make shell`               | app コンテナの bash シェル                                          |
+| `make node-shell`          | Node コンテナでの作業用シェル                                       |
+| `make logs` / `make logs-app` | 全サービス / app のみのログ                                      |
+| `make ps`                  | コンテナ状態確認                                                    |
+| `make healthcheck`         | ヘルスチェック                                                      |
 
 ## Docker サービス構成
 
@@ -65,6 +75,16 @@ make test  # OK
 - `app/src/lib/crypto.ts`（ブラウザ側 AES-GCM）
 - `app/src/lib/server/crypto.ts`（サーバー側 AES-GCM）
 
+## ユニットテスト
+
+Vitest を使ったユニットテストを `make test-unit` で実行できる。
+
+```bash
+make test-unit
+```
+
+テストコードは `app/src/` 配下に `*.test.ts` として配置する（例: `app/src/lib/crypto.test.ts`）。
+
 ## e2e テスト
 
 Playwright を使った e2e テストを `make test-e2e` で実行できる。
@@ -81,7 +101,7 @@ nginx 経由の HTTPS（port 38180）でテストするため、開発環境が�
 - `tasks.test.ts` — タスク CRUD（追加・multiline・toggle・編集・移動）
 - `share.test.ts` — share/ingest ページ（Chrome 拡張エミュレート）
 
-テストユーザーは `app/tests/global-setup.ts` で初回自動作成される（`e2etest` / `e2etest_password`）。
+テストユーザーは `app/tests/global-setup.ts` で初回自動作成される（`e2etest` / `e2etestpass123`）。
 
 ### Playwright テスト実装の注意点
 
