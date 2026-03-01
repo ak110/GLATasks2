@@ -25,7 +25,7 @@ https://glatasks.tqzh.tk/share/ingest?title={title}&url={url}
 
 4. このディレクトリ（`chrome_extension`）を選択
 
-5. 拡張機能がインストールされ、ツールバーにアイコンが表示されます
+5. 拡張機能がインストールされ、ツールバーにアイコンが表示される
 
 ## 使用方法
 
@@ -34,14 +34,14 @@ https://glatasks.tqzh.tk/share/ingest?title={title}&url={url}
 1. 保存したいページを開く
 2. ページ上で右クリック
 3. 「GLATasksに保存する」を選択
-4. 新しいタブでGLATasksの取り込みページが開きます
+4. 新しいタブでGLATasksの取り込みページが開く
 
 ### 方法2: 拡張機能アイコン
 
 1. 保存したいページを開く
 2. ツールバーの「Save To GLATasks」アイコンをクリック
 3. ポップアップが表示されるので「GLATasksに保存する」ボタンをクリック
-4. 新しいタブでGLATasksの取り込みページが開きます
+4. 新しいタブでGLATasksの取り込みページが開く
 
 ## ファイル構成
 

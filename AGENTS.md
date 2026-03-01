@@ -90,7 +90,7 @@
 
 ### tRPC observable リンクの async ハンドラ
 
-- `observable` の `next` コールバックが `async` の場合、`complete` が非同期処理完了前に発火する。
+- `observable` の `next` コールバックが `async` の場合、`complete` が非同期の処理完了前に発火する。
 - `pending` で Promise を追跡し、`complete` 時に `then()` で待つ必要がある。
 
 ### JavaScript の `String.split(sep, limit)` の罠

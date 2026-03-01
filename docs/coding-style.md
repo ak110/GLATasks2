@@ -25,7 +25,7 @@
 ## SvelteKit コーディングスタイル
 
 - コンポーネントファイルは `app/src/` 以下に配置
-- サーバーサイドの load 関数（`+page.server.ts`）でデータ取得を行い、クライアントに渡す
+- サーバーサイドの load 関数（`+page.server.ts`）でデータを取得し、クライアントに渡す
 - API 呼び出しは tRPC 経由で行う（`src/lib/server/trpc.ts` でルーター定義、`src/lib/trpc.ts` でクライアント）
 - 入力バリデーションには Zod スキーマ（`src/lib/schemas.ts`）を使用する
 - クライアント側のデータ取得には TanStack Svelte Query を使用する

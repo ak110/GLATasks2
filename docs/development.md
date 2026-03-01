@@ -11,7 +11,7 @@ make test  # OK
 
 `app/` に移動して実行すると `${PWD}` がずれて Makefile 内のパス解決が狂うため、必ずルートから実行する。
 
-## 開発環境構築手順
+## 開発環境の構築手順
 
 1. 本リポジトリをcloneする。
 2. [pre-commit](https://pre-commit.com/)フックをインストールする。

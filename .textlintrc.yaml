@@ -4,11 +4,7 @@ rules:
     sentence-length: false
   preset-ja-technical-writing:
     ja-no-mixed-period: false
-    ja-no-redundant-expression: false
     ja-unnatural-alphabet: false
     no-doubled-joshi: false
     no-exclamation-question-mark: false
-    no-mix-dearu-desumasu:
-      preferInList: ""
-    max-kanji-continuous-len: false
     sentence-length: false
