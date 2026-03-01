@@ -22,6 +22,19 @@
         {/if}
         <form method="POST">
             <div class="mb-4">
+                <label class="mb-1 block font-medium text-gray-700" for="text"
+                    >内容</label
+                >
+                <textarea
+                    id="text"
+                    name="text"
+                    rows={5}
+                    required
+                    value={defaultText}
+                    class="w-full rounded border border-gray-200 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                ></textarea>
+            </div>
+            <div class="mb-4">
                 <label
                     class="mb-1 block font-medium text-gray-700"
                     for="list_id">リスト</label
@@ -36,19 +49,6 @@
                         <option value={list.id}>{list.title}</option>
                     {/each}
                 </select>
-            </div>
-            <div class="mb-4">
-                <label class="mb-1 block font-medium text-gray-700" for="text"
-                    >テキスト</label
-                >
-                <textarea
-                    id="text"
-                    name="text"
-                    rows={5}
-                    required
-                    value={defaultText}
-                    class="w-full rounded border border-gray-200 px-3 py-2 focus:border-blue-500 focus:outline-none"
-                ></textarea>
             </div>
             <div class="flex justify-end">
                 <button

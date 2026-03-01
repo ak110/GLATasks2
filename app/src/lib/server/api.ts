@@ -305,7 +305,7 @@ export async function postTask(
   text: string,
 ): Promise<void> {
   await getOwnedList(listId, userId);
-  const cleanText = text.replace(/^[\r\n]+/, "").trimEnd();
+  const cleanText = text.trimEnd();
   const db = getDb();
   const now = new Date();
   await db.insert(tasks).values({
@@ -339,7 +339,7 @@ export async function patchTask(
   const updates: Record<string, unknown> = {};
 
   if ("text" in data) {
-    updates.text = data.text;
+    updates.text = (data.text as string).trimEnd();
     if (!data.keep_order) updates.updated = new Date();
   }
   if ("status" in data) {

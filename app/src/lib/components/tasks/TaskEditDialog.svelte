@@ -81,9 +81,6 @@
                         }}
                         class="w-full rounded border border-gray-200 px-3 py-2 wrap-break-word break-all focus:border-blue-500 focus:outline-none"
                     ></textarea>
-                    <p class="mt-1 text-sm text-gray-500">
-                        1行目: タイトル、3行目以降: メモ（空行で区切る）
-                    </p>
                 </div>
                 <div class="mb-4">
                     <label
