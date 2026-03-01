@@ -3,18 +3,13 @@
 
     const { data, form }: { data: PageData; form: ActionData } = $props();
     const defaultText = $derived(
-        data.title + (data.pageUrl ? "\n\n" + data.pageUrl : ""),
+        [data.title, data.text, data.pageUrl].filter(Boolean).join("\n\n"),
     );
 </script>
 
 <div class="flex min-h-screen items-center justify-center bg-gray-100 p-4">
     <div class="w-full max-w-lg rounded-lg bg-white p-6 shadow">
         <h1 class="mb-4 font-bold text-gray-800">タスクを追加</h1>
-        {#if form?.success}
-            <p class="mb-4 rounded bg-green-100 p-3 text-green-700">
-                タスクを追加しました。
-            </p>
-        {/if}
         {#if form?.error}
             <p class="mb-4 rounded bg-red-100 p-3 text-red-700">
                 {form.error}

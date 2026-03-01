@@ -44,6 +44,7 @@
         text: string;
         moveTo: string;
         keepOrder: boolean;
+        completed: boolean;
     };
     let editDialog = $state<EditDialog>({
         open: false,
@@ -52,6 +53,7 @@
         text: "",
         moveTo: "",
         keepOrder: false,
+        completed: false,
     });
 
     const queryClient = useQueryClient();
@@ -179,9 +181,22 @@
     });
     const isLoading = $derived($listsQuery.isLoading || $tasksQuery.isLoading);
 
-    // リストデータ到着時に localStorage から選択状態を復元（初回のみ）
+    // リストデータ到着時に選択状態を復元（初回のみ）
+    // URL パラメータ `list` > localStorage > 先頭リストの優先順
     $effect(() => {
         if (lists.length > 0 && selectedListId === null) {
+            // URL パラメータ（share/ingest からのリダイレクト等）
+            const urlListId = Number(
+                new URLSearchParams(window.location.search).get("list"),
+            );
+            if (urlListId && lists.some((l) => l.id === urlListId)) {
+                selectedListId = urlListId;
+                localStorage.setItem("selectedList", String(urlListId));
+                history.replaceState({}, "", window.location.pathname);
+                return;
+            }
+
+            // localStorage フォールバック
             const saved = localStorage.getItem("selectedList");
             const savedId = saved ? parseInt(saved) : null;
             const initial = lists.find((l) => l.id === savedId) ?? lists[0];
@@ -246,6 +261,7 @@
             text,
             moveTo: String(selectedListId!),
             keepOrder: false,
+            completed: task.status === "completed",
         };
     }
 
@@ -253,14 +269,25 @@
         text: string;
         moveTo: string;
         keepOrder: boolean;
+        completed: boolean;
     }) {
-        const { listId, taskId } = editDialog;
+        const { listId, taskId, completed: wasCompleted } = editDialog;
+
+        // 完了状態の変更（toggleTask と同じロジック）
+        const statusChange =
+            data.completed !== wasCompleted
+                ? data.completed
+                    ? { status: "completed" as const }
+                    : { status: "needsAction" as const, completed: null }
+                : {};
+
         await $updateTaskMutation.mutateAsync({
             listId,
             taskId,
             text: data.text,
             move_to: Number(data.moveTo),
             keep_order: data.keepOrder,
+            ...statusChange,
         });
         editDialog.open = false;
 
@@ -387,6 +414,7 @@
     text={editDialog.text}
     moveTo={editDialog.moveTo}
     keepOrder={editDialog.keepOrder}
+    completed={editDialog.completed}
     onSubmit={submitTaskEdit}
     onClose={() => (editDialog.open = false)}
 />

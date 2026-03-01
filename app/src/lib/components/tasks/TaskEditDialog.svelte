@@ -4,21 +4,32 @@
         text: string;
         moveTo: string;
         keepOrder: boolean;
+        completed: boolean;
         lists: Array<{ id: number; title: string }>;
         onSubmit: (data: {
             text: string;
             moveTo: string;
             keepOrder: boolean;
+            completed: boolean;
         }) => void;
         onClose: () => void;
     };
 
-    let { open, text, moveTo, keepOrder, lists, onSubmit, onClose }: Props =
-        $props();
+    let {
+        open,
+        text,
+        moveTo,
+        keepOrder,
+        completed,
+        lists,
+        onSubmit,
+        onClose,
+    }: Props = $props();
 
     let localText = $state("");
     let localMoveTo = $state("");
     let localKeepOrder = $state(false);
+    let localCompleted = $state(false);
     let textareaEl = $state<HTMLTextAreaElement | null>(null);
     let closeButtonEl = $state<HTMLButtonElement | null>(null);
 
@@ -28,6 +39,7 @@
             localText = text;
             localMoveTo = moveTo;
             localKeepOrder = keepOrder;
+            localCompleted = completed;
             // tick 後にフォーカス
             queueMicrotask(() => textareaEl?.focus());
         }
@@ -38,6 +50,7 @@
             text: localText,
             moveTo: localMoveTo,
             keepOrder: localKeepOrder,
+            completed: localCompleted,
         });
     }
 </script>
@@ -97,6 +110,17 @@
                         {/each}
                     </select>
                 </div>
+                <div class="mb-2 flex items-center gap-2">
+                    <input
+                        id="edit-completed"
+                        type="checkbox"
+                        bind:checked={localCompleted}
+                        class="cursor-pointer"
+                    />
+                    <label for="edit-completed" class="text-gray-700"
+                        >完了</label
+                    >
+                </div>
                 <div class="mb-6 flex items-center gap-2">
                     <input
                         id="edit-keep-order"
@@ -104,7 +128,7 @@
                         bind:checked={localKeepOrder}
                         class="cursor-pointer"
                     />
-                    <label for="edit-keep-order" class=" text-gray-700"
+                    <label for="edit-keep-order" class="text-gray-700"
                         >並び順を維持する</label
                     >
                 </div>

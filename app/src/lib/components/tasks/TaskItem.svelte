@@ -47,10 +47,23 @@
             </p>
         {/if}
     </div>
-    <button
-        onclick={() => onEdit(task)}
-        class="shrink-0 cursor-pointer text-gray-500 hover:text-gray-600"
-        data-testid="task-edit-btn"
-        aria-label="タスクを編集">✏️</button
-    >
+    <div class="flex shrink-0 flex-col gap-1">
+        <button
+            onclick={() => onEdit(task)}
+            class="cursor-pointer text-gray-500 hover:text-gray-600"
+            data-testid="task-edit-btn"
+            aria-label="タスクを編集">✏️</button
+        >
+        <button
+            onclick={() => {
+                const full = task.notes
+                    ? `${task.title}\n${task.notes}`
+                    : task.title;
+                navigator.clipboard.writeText(full);
+            }}
+            class="cursor-pointer text-gray-500 hover:text-gray-600"
+            data-testid="task-copy-btn"
+            aria-label="タスクをコピー">📋</button
+        >
+    </div>
 </div>
