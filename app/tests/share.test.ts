@@ -64,7 +64,9 @@ test.describe("share/ingest", () => {
     await expect(page.locator('button:has-text("閉じる")')).not.toBeVisible();
   });
 
-  test("フォームを送信するとタスクが追加される", async ({ page }) => {
+  test("フォームを送信するとメインページへリダイレクトされる", async ({
+    page,
+  }) => {
     await page.goto("/share/ingest?title=ingestテスト");
     // リストが選択肢として現れるまで待機
     await expect(page.locator("#list_id option")).not.toHaveCount(0, {
@@ -72,8 +74,22 @@ test.describe("share/ingest", () => {
     });
     await page.locator("#list_id").selectOption({ index: 0 });
     await page.click('button[type="submit"]');
-    await expect(page.locator("text=タスクを追加しました")).toBeVisible({
-      timeout: 10000,
-    });
+    // リダイレクト先（メインページ）に遷移することを確認
+    await page.waitForURL(/\/(\?list=\d+)?$/, { timeout: 10000 });
+    // メインページのタスク一覧が表示される
+    await expect(page.locator("main")).toBeVisible({ timeout: 10000 });
+  });
+
+  test("text パラメータがフォームに反映される", async ({ page }) => {
+    const title = "テストページ";
+    const text = "共有テキスト";
+    const url = "https://example.com/test";
+    await page.goto(
+      `/share/ingest?title=${encodeURIComponent(title)}&text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
+    );
+    const textareaValue = await page.locator("#text").inputValue();
+    expect(textareaValue).toContain(title);
+    expect(textareaValue).toContain(text);
+    expect(textareaValue).toContain(url);
   });
 });

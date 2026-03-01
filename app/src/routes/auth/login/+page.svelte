@@ -16,8 +16,9 @@
         {/if}
         <form method="POST">
             <div class="mb-4">
-                <label class="mb-1 block font-medium text-gray-700" for="user"
-                    >ユーザーID</label
+                <label
+                    class="mb-1 block cursor-pointer font-medium text-gray-700"
+                    for="user">ユーザーID</label
                 >
                 <input
                     id="user"
@@ -30,7 +31,7 @@
             </div>
             <div class="mb-6">
                 <label
-                    class="mb-1 block font-medium text-gray-700"
+                    class="mb-1 block cursor-pointer font-medium text-gray-700"
                     for="password">パスワード</label
                 >
                 <input

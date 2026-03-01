@@ -32,3 +32,7 @@ make stop
 ## Chrome拡張機能
 
 [./chrome_extension](./chrome_extension)
+
+## Android 共有
+
+PWA としてホーム画面に追加すると、Android の共有メニューから直接タスクを追加できる（Web Share Target API を使用）。

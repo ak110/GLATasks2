@@ -1,12 +1,13 @@
-import { fail } from "@sveltejs/kit";
+import { fail, redirect } from "@sveltejs/kit";
 import * as api from "$lib/server/api";
 import type { Actions, PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ locals, url }) => {
   const title = url.searchParams.get("title") ?? "";
+  const text = url.searchParams.get("text") ?? "";
   const pageUrl = url.searchParams.get("url") ?? "";
   const lists = await api.getLists(locals.user_id!, "list");
-  return { title, pageUrl, lists };
+  return { title, text, pageUrl, lists };
 };
 
 export const actions: Actions = {
@@ -27,6 +28,6 @@ export const actions: Actions = {
       return fail(500, { error: msg });
     }
 
-    return { success: true };
+    redirect(303, "/?list=" + listId);
   },
 };

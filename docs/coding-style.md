@@ -48,6 +48,7 @@
 
 - ボーダー色は `border-gray-200` を基本とする（デフォルトの `border` は黒が強すぎるため）
 - e2e テストのセレクタには CSS クラスではなく `data-testid` 属性を使用する
+- クリック可能な要素（`<label>`、`<button>`、`<a>`、`<input type="checkbox">` など）には `cursor-pointer` を付与する
 
 ## Markdown記述スタイル
 
