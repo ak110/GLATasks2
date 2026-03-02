@@ -1,17 +1,22 @@
 /**
- * @fileoverview Web Audio API ビープ音ユーティリティ（タイマー完了通知用）
+ * @fileoverview Web Audio API ビープ音ユーティリティ（タイマー通知用）
+ *
+ * AudioContext が利用できない環境では警告ログを出力して何もしない。
  */
 
 /**
  * 440Hz のビープ音を指定回数再生する。
- * AudioContext が利用できない環境では何もしない。
+ * AudioContext が利用できない環境では警告ログを出力する。
  */
-export async function playBeep(count = 5): Promise<void> {
-  if (typeof AudioContext === "undefined") return;
+export async function playBeep(count = 5, interval = 200): Promise<void> {
+  if (typeof AudioContext === "undefined") {
+    console.warn("AudioContext が利用できないためビープ音を再生できません");
+    return;
+  }
   const ctx = new AudioContext();
   try {
     for (let i = 0; i < count; i++) {
-      if (i > 0) await sleep(200);
+      if (i > 0) await sleep(interval);
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.frequency.value = 440;
@@ -27,24 +32,11 @@ export async function playBeep(count = 5): Promise<void> {
   }
 }
 
+/** タイマー開始時の確認ビープ（2回・短い間隔でタブミュートに気付かせる） */
+export async function playStartBeep(): Promise<void> {
+  await playBeep(2, 100);
+}
+
 function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
-}
-
-/** タイマー完了を通知する（ビープ音 + システム通知） */
-export async function notifyTimerComplete(): Promise<void> {
-  playBeep(5);
-  // タブミュート対策: システム通知でフォールバック
-  if ("Notification" in globalThis && Notification.permission === "granted") {
-    new Notification("タイマー完了", { body: "タイマーが終了しました" });
-  }
-}
-
-/** 通知許可をリクエストする */
-export async function requestNotificationPermission(): Promise<boolean> {
-  if (!("Notification" in globalThis)) return false;
-  if (Notification.permission === "granted") return true;
-  if (Notification.permission === "denied") return false;
-  const result = await Notification.requestPermission();
-  return result === "granted";
 }

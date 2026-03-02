@@ -3,16 +3,19 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { playBeep } from "./beep";
+import { playBeep, playStartBeep } from "./beep";
 
 describe("playBeep", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
   });
 
-  it("AudioContext が無い環境では何もしない", async () => {
-    // vitest (Node.js) には AudioContext が無いのでそのまま完了するはず
+  it("AudioContext が無い環境では警告ログを出力する", async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     await expect(playBeep()).resolves.toBeUndefined();
+    expect(warnSpy).toHaveBeenCalledWith(
+      "AudioContext が利用できないためビープ音を再生できません",
+    );
   });
 
   it("AudioContext がある環境でビープ音を再生する", async () => {
@@ -49,5 +52,17 @@ describe("playBeep", () => {
     expect(closeFn).toHaveBeenCalledOnce();
 
     vi.unstubAllGlobals();
+  });
+});
+
+describe("playStartBeep", () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("AudioContext が無い環境では警告ログを出力する", async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    await expect(playStartBeep()).resolves.toBeUndefined();
+    expect(warnSpy).toHaveBeenCalledOnce();
   });
 });

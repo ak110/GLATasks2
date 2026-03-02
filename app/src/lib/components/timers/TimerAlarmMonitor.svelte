@@ -2,7 +2,7 @@
     /**
      * @fileoverview グローバルタイマー完了監視コンポーネント
      *
-     * 全ページでタイマー完了時にビープ音 + システム通知を鳴らすため、
+     * 全ページでタイマー完了時にビープ音を鳴らすため、
      * +layout.svelte に配置される。UI は描画しない。
      * setTimeout で正確なタイミングにアラームをスケジュールする。
      */
@@ -65,8 +65,8 @@
         if (alarmedIds.has(timerId)) return;
         alarmedIds = new Set([...alarmedIds, timerId]);
 
-        // ビープ音 + システム通知
-        import("$lib/beep").then((m) => m.notifyTimerComplete());
+        // ビープ音
+        import("$lib/beep").then((m) => m.playBeep());
 
         // サーバーに停止報告（失敗時は alarmedIds から除去して再試行可能に）
         trpc.timers.stop

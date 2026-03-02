@@ -10,7 +10,7 @@
         useQueryClient,
     } from "@tanstack/svelte-query";
     import { trpc } from "$lib/trpc";
-    import { requestNotificationPermission } from "$lib/beep";
+    import { playStartBeep } from "$lib/beep";
     import TimerCard from "$lib/components/timers/TimerCard.svelte";
     import TimerCreateDialog from "$lib/components/timers/TimerCreateDialog.svelte";
 
@@ -105,8 +105,8 @@
         mutationFn: (timerId: number) => trpc.timers.start.mutate({ timerId }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["timers"] });
-            // タブミュート対策: ユーザーアクション起因で通知許可をリクエスト
-            requestNotificationPermission();
+            // タブミュート対策: スタート時にビープ音で気付かせる
+            playStartBeep();
         },
     });
 
