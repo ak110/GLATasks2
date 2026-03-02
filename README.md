@@ -3,7 +3,7 @@
 [![Test](https://github.com/ak110/GLATasks2/actions/workflows/test.yml/badge.svg)](https://github.com/ak110/GLATasks2/actions/workflows/test.yml)
 [![Deploy](https://github.com/ak110/GLATasks2/actions/workflows/deploy.yml/badge.svg)](https://github.com/ak110/GLATasks2/actions/workflows/deploy.yml)
 
-Google Tasksのcanvasビューが無くなって困ったので自作し始めた低機能Webアプリ。
+Google Tasksのcanvasビューが無くなって困ったので自作し始めた低機能Webアプリ。タスク管理に加え、カウントダウンタイマー機能も搭載。
 
 ## 技術スタック
 

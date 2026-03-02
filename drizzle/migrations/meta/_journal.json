@@ -15,6 +15,13 @@
       "when": 1772273636108,
       "tag": "0001_bizarre_chronomancer",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1772434918625,
+      "tag": "0002_dark_whirlwind",
+      "breakpoints": true
     }
   ]
 }

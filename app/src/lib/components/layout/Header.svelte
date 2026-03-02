@@ -27,6 +27,9 @@
         >
     {/if}
     <a href="/" class="font-bold hover:text-gray-300">GLATasks</a>
+    <span class="text-gray-400">|</span>
+    <a href="/timers" class="text-sm text-gray-300 hover:text-white">タイマー</a
+    >
     {#if isLoading}
         <span class="text-sm text-gray-400">読み込み中...</span>
     {/if}

@@ -8,6 +8,7 @@ import {
   varchar,
   text,
   timestamp,
+  tinyint,
 } from "drizzle-orm/mysql-core";
 
 /** user テーブル */
@@ -37,4 +38,19 @@ export const tasks = mysqlTable("task", {
   created: timestamp("created").notNull(),
   updated: timestamp("updated").notNull(),
   completed: timestamp("completed"),
+});
+
+/** timer テーブル */
+export const timers = mysqlTable("timer", {
+  id: int("id").primaryKey().autoincrement(),
+  user_id: int("user_id").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  base_seconds: int("base_seconds").notNull(),
+  adjust_minutes: int("adjust_minutes").notNull().default(5),
+  running: tinyint("running").notNull().default(0),
+  remaining_seconds: int("remaining_seconds").notNull(),
+  started_at: timestamp("started_at"),
+  sort_order: int("sort_order").notNull().default(0),
+  created: timestamp("created").notNull(),
+  updated: timestamp("updated").notNull(),
 });

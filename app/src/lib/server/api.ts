@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs";
 import { and, desc, eq } from "drizzle-orm";
 
 import { getDb } from "./db";
-import { lists, tasks, users } from "./schema";
+import { lists, tasks, timers, users } from "./schema";
 
 // ── 型定義 ──
 
@@ -34,6 +34,17 @@ export type TaskPatchResult = {
 export type UserInfo = {
   id: number;
   user: string;
+};
+
+export type TimerInfo = {
+  id: number;
+  name: string;
+  base_seconds: number;
+  adjust_minutes: number;
+  running: boolean;
+  remaining_seconds: number;
+  started_at: string | null;
+  sort_order: number;
 };
 
 export type GetTasksResult =
@@ -388,4 +399,229 @@ export async function patchTask(
     title: splitTitle(updated.text),
     notes: splitNotes(updated.text),
   };
+}
+
+// ── タイマー操作 ──
+
+/** タイマーの所有権チェック */
+async function getOwnedTimer(timerId: number, userId: number) {
+  const db = getDb();
+  const rows = await db
+    .select()
+    .from(timers)
+    .where(and(eq(timers.id, timerId), eq(timers.user_id, userId)))
+    .limit(1);
+  if (rows.length === 0) throw new Error("not_found_or_forbidden");
+  return rows[0];
+}
+
+/**
+ * running 中のタイマーが 0 以下なら自動停止する。
+ * 全クライアントが閉じていても DB の正しさを保証する。
+ */
+async function autoStopIfExpired(
+  timer: typeof timers.$inferSelect,
+): Promise<typeof timers.$inferSelect> {
+  if (!timer.running || !timer.started_at) return timer;
+  const elapsed = Math.floor((Date.now() - timer.started_at.getTime()) / 1000);
+  const remaining = timer.remaining_seconds - elapsed;
+  if (remaining > 0) return timer;
+  // 期限切れ → 自動停止
+  const db = getDb();
+  await db
+    .update(timers)
+    .set({
+      running: 0,
+      remaining_seconds: 0,
+      started_at: null,
+      updated: new Date(),
+    })
+    .where(eq(timers.id, timer.id));
+  return { ...timer, running: 0, remaining_seconds: 0, started_at: null };
+}
+
+/** DB の timer 行を TimerInfo に変換する */
+function toTimerInfo(row: typeof timers.$inferSelect): TimerInfo {
+  return {
+    id: row.id,
+    name: row.name,
+    base_seconds: row.base_seconds,
+    adjust_minutes: row.adjust_minutes,
+    running: row.running === 1,
+    remaining_seconds: row.remaining_seconds,
+    started_at: row.started_at ? toUtcIso(row.started_at) : null,
+    sort_order: row.sort_order,
+  };
+}
+
+/** タイマー一覧取得 + サーバー時刻返却 */
+export async function getTimers(
+  userId: number,
+): Promise<{ timers: TimerInfo[]; server_time: string }> {
+  const db = getDb();
+  const rows = await db
+    .select()
+    .from(timers)
+    .where(eq(timers.user_id, userId))
+    .orderBy(timers.sort_order, timers.created);
+  // 期限切れタイマーを自動停止
+  const processed = await Promise.all(rows.map(autoStopIfExpired));
+  return {
+    timers: processed.map(toTimerInfo),
+    server_time: new Date().toISOString(),
+  };
+}
+
+/** タイマーを作成する */
+export async function createTimer(
+  userId: number,
+  name: string,
+  baseSeconds: number,
+  adjustMinutes: number,
+): Promise<void> {
+  const db = getDb();
+  const now = new Date();
+  await db.insert(timers).values({
+    user_id: userId,
+    name,
+    base_seconds: baseSeconds,
+    adjust_minutes: adjustMinutes,
+    remaining_seconds: baseSeconds,
+    created: now,
+    updated: now,
+  });
+}
+
+/** タイマー設定を変更する */
+export async function updateTimer(
+  userId: number,
+  timerId: number,
+  data: { name?: string; base_seconds?: number; adjust_minutes?: number },
+): Promise<void> {
+  await getOwnedTimer(timerId, userId);
+  const db = getDb();
+  const updates: Record<string, unknown> = { updated: new Date() };
+  if (data.name !== undefined) updates.name = data.name;
+  if (data.base_seconds !== undefined) updates.base_seconds = data.base_seconds;
+  if (data.adjust_minutes !== undefined)
+    updates.adjust_minutes = data.adjust_minutes;
+  await db.update(timers).set(updates).where(eq(timers.id, timerId));
+}
+
+/** タイマーを削除する */
+export async function deleteTimer(
+  userId: number,
+  timerId: number,
+): Promise<void> {
+  await getOwnedTimer(timerId, userId);
+  const db = getDb();
+  await db.delete(timers).where(eq(timers.id, timerId));
+}
+
+/** タイマーを開始する */
+export async function startTimer(
+  userId: number,
+  timerId: number,
+): Promise<void> {
+  const timer = await getOwnedTimer(timerId, userId);
+  if (timer.running) return;
+  if (timer.remaining_seconds <= 0) return;
+  const db = getDb();
+  await db
+    .update(timers)
+    .set({ running: 1, started_at: new Date(), updated: new Date() })
+    .where(eq(timers.id, timerId));
+}
+
+/** タイマーを一時停止する */
+export async function pauseTimer(
+  userId: number,
+  timerId: number,
+): Promise<void> {
+  const timer = await getOwnedTimer(timerId, userId);
+  if (!timer.running || !timer.started_at) return;
+  const elapsed = Math.floor((Date.now() - timer.started_at.getTime()) / 1000);
+  const remaining = Math.max(0, timer.remaining_seconds - elapsed);
+  const db = getDb();
+  await db
+    .update(timers)
+    .set({
+      running: 0,
+      remaining_seconds: remaining,
+      started_at: null,
+      updated: new Date(),
+    })
+    .where(eq(timers.id, timerId));
+}
+
+/** タイマーをリセットする（base_seconds に戻す） */
+export async function resetTimer(
+  userId: number,
+  timerId: number,
+): Promise<void> {
+  const timer = await getOwnedTimer(timerId, userId);
+  const db = getDb();
+  await db
+    .update(timers)
+    .set({
+      running: 0,
+      remaining_seconds: timer.base_seconds,
+      started_at: null,
+      updated: new Date(),
+    })
+    .where(eq(timers.id, timerId));
+}
+
+/** タイマーの残り時間を延長/削減する */
+export async function adjustTimer(
+  userId: number,
+  timerId: number,
+  minutes: number,
+): Promise<void> {
+  const timer = await getOwnedTimer(timerId, userId);
+  let currentRemaining = timer.remaining_seconds;
+  // running 中は経過時間を考慮
+  if (timer.running && timer.started_at) {
+    const elapsed = Math.floor(
+      (Date.now() - timer.started_at.getTime()) / 1000,
+    );
+    currentRemaining -= elapsed;
+  }
+  const newRemaining = Math.max(0, currentRemaining + minutes * 60);
+  const db = getDb();
+  if (timer.running && timer.started_at) {
+    // running 中: started_at を現在時刻にリセットし、remaining_seconds を新しい値に
+    await db
+      .update(timers)
+      .set({
+        remaining_seconds: newRemaining,
+        started_at: newRemaining > 0 ? new Date() : null,
+        running: newRemaining > 0 ? 1 : 0,
+        updated: new Date(),
+      })
+      .where(eq(timers.id, timerId));
+  } else {
+    await db
+      .update(timers)
+      .set({ remaining_seconds: newRemaining, updated: new Date() })
+      .where(eq(timers.id, timerId));
+  }
+}
+
+/** タイマーを停止する（0秒到達時） */
+export async function stopTimer(
+  userId: number,
+  timerId: number,
+): Promise<void> {
+  await getOwnedTimer(timerId, userId);
+  const db = getDb();
+  await db
+    .update(timers)
+    .set({
+      running: 0,
+      remaining_seconds: 0,
+      started_at: null,
+      updated: new Date(),
+    })
+    .where(eq(timers.id, timerId));
 }

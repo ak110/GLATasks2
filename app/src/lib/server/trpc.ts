@@ -7,11 +7,15 @@ import type { RequestEvent } from "@sveltejs/kit";
 import {
   CreateListSchema,
   CreateTaskSchema,
+  CreateTimerSchema,
   GetListTasksSchema,
   RegisterUserSchema,
   ShowTypeSchema,
   UpdateListSchema,
   UpdateTaskSchema,
+  UpdateTimerSchema,
+  TimerIdSchema,
+  AdjustTimerSchema,
   LoginSchema,
 } from "$lib/schemas";
 import * as api from "./api";
@@ -198,6 +202,75 @@ export const appRouter = t.router({
       .mutation(async ({ ctx, input }) => {
         const { listId, taskId, ...data } = input;
         return api.patchTask(ctx.userId, listId, taskId, data);
+      }),
+  }),
+
+  // ── タイマー操作 ──
+  timers: t.router({
+    list: encryptedProcedure.query(async ({ ctx }) => {
+      return api.getTimers(ctx.userId);
+    }),
+
+    create: encryptedProcedure
+      .input(CreateTimerSchema)
+      .mutation(async ({ ctx, input }) => {
+        await api.createTimer(
+          ctx.userId,
+          input.name,
+          input.base_seconds,
+          input.adjust_minutes,
+        );
+        return { success: true };
+      }),
+
+    update: encryptedProcedure
+      .input(UpdateTimerSchema)
+      .mutation(async ({ ctx, input }) => {
+        const { timerId, ...data } = input;
+        await api.updateTimer(ctx.userId, timerId, data);
+        return { success: true };
+      }),
+
+    delete: encryptedProcedure
+      .input(TimerIdSchema)
+      .mutation(async ({ ctx, input }) => {
+        await api.deleteTimer(ctx.userId, input.timerId);
+        return { success: true };
+      }),
+
+    start: encryptedProcedure
+      .input(TimerIdSchema)
+      .mutation(async ({ ctx, input }) => {
+        await api.startTimer(ctx.userId, input.timerId);
+        return { success: true };
+      }),
+
+    pause: encryptedProcedure
+      .input(TimerIdSchema)
+      .mutation(async ({ ctx, input }) => {
+        await api.pauseTimer(ctx.userId, input.timerId);
+        return { success: true };
+      }),
+
+    reset: encryptedProcedure
+      .input(TimerIdSchema)
+      .mutation(async ({ ctx, input }) => {
+        await api.resetTimer(ctx.userId, input.timerId);
+        return { success: true };
+      }),
+
+    adjust: encryptedProcedure
+      .input(AdjustTimerSchema)
+      .mutation(async ({ ctx, input }) => {
+        await api.adjustTimer(ctx.userId, input.timerId, input.minutes);
+        return { success: true };
+      }),
+
+    stop: encryptedProcedure
+      .input(TimerIdSchema)
+      .mutation(async ({ ctx, input }) => {
+        await api.stopTimer(ctx.userId, input.timerId);
+        return { success: true };
       }),
   }),
 });

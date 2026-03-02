@@ -52,6 +52,30 @@ export const GetListTasksSchema = z.object({
   ifModifiedSince: z.string().datetime().optional(),
 });
 
+// ── タイマー操作スキーマ ──
+
+export const CreateTimerSchema = z.object({
+  name: z.string().min(1, "タイマー名は必須です").max(255),
+  base_seconds: z.number().int().positive("ベース時間は正の整数が必要です"),
+  adjust_minutes: z.number().int().min(1).max(999).default(5),
+});
+
+export const UpdateTimerSchema = z.object({
+  timerId: z.number().int().positive(),
+  name: z.string().min(1).max(255).optional(),
+  base_seconds: z.number().int().positive().optional(),
+  adjust_minutes: z.number().int().min(1).max(999).optional(),
+});
+
+export const TimerIdSchema = z.object({
+  timerId: z.number().int().positive(),
+});
+
+export const AdjustTimerSchema = z.object({
+  timerId: z.number().int().positive(),
+  minutes: z.number().int(),
+});
+
 // ── 認証スキーマ ──
 
 export const RegisterUserSchema = z.object({
@@ -80,5 +104,8 @@ export type UpdateTaskInput = z.infer<typeof UpdateTaskSchema>;
 export type CreateListInput = z.infer<typeof CreateListSchema>;
 export type UpdateListInput = z.infer<typeof UpdateListSchema>;
 export type GetListTasksInput = z.infer<typeof GetListTasksSchema>;
+export type CreateTimerInput = z.infer<typeof CreateTimerSchema>;
+export type UpdateTimerInput = z.infer<typeof UpdateTimerSchema>;
+export type AdjustTimerInput = z.infer<typeof AdjustTimerSchema>;
 export type RegisterUserInput = z.infer<typeof RegisterUserSchema>;
 export type LoginInput = z.infer<typeof LoginSchema>;
