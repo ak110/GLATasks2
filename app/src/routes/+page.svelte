@@ -341,12 +341,8 @@
     {mobileView}
     {showType}
     {isLoading}
-    hasSelectedList={selectedListId !== null}
     onBackToLists={() => (mobileView = "lists")}
     onChangeShowType={changeShowType}
-    onClearList={() => {
-        if (selectedListId !== null) clearList(selectedListId);
-    }}
 />
 
 <!-- ボディ: サイドバー + メインコンテンツ -->
@@ -382,11 +378,17 @@
             {@const selectedList = lists.find((l) => l.id === selectedListId)}
             {#if selectedList}
                 <div
-                    class="flex items-center border-b border-gray-200 bg-blue-50 px-4 py-3 sm:hidden"
+                    class="flex items-center justify-between border-b border-gray-200 bg-blue-50 px-4 py-3"
                 >
                     <h2 class="font-semibold text-gray-800">
                         {selectedList.title}
                     </h2>
+                    <button
+                        onclick={() => clearList(selectedListId!)}
+                        class="cursor-pointer text-sm text-gray-500 hover:text-gray-700"
+                        title="完了済みタスクを非表示にする"
+                        >完了済みを非表示</button
+                    >
                 </div>
             {/if}
 
