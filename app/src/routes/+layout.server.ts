@@ -15,5 +15,6 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 
   return {
     encrypt_key: getEncryptKey(),
+    logged_in: true,
   };
 };

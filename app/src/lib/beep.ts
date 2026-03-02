@@ -6,7 +6,7 @@
  * 440Hz のビープ音を指定回数再生する。
  * AudioContext が利用できない環境では何もしない。
  */
-export async function playBeep(count = 3): Promise<void> {
+export async function playBeep(count = 5): Promise<void> {
   if (typeof AudioContext === "undefined") return;
   const ctx = new AudioContext();
   try {
@@ -29,4 +29,22 @@ export async function playBeep(count = 3): Promise<void> {
 
 function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
+}
+
+/** タイマー完了を通知する（ビープ音 + システム通知） */
+export async function notifyTimerComplete(): Promise<void> {
+  playBeep(5);
+  // タブミュート対策: システム通知でフォールバック
+  if ("Notification" in globalThis && Notification.permission === "granted") {
+    new Notification("タイマー完了", { body: "タイマーが終了しました" });
+  }
+}
+
+/** 通知許可をリクエストする */
+export async function requestNotificationPermission(): Promise<boolean> {
+  if (!("Notification" in globalThis)) return false;
+  if (Notification.permission === "granted") return true;
+  if (Notification.permission === "denied") return false;
+  const result = await Notification.requestPermission();
+  return result === "granted";
 }

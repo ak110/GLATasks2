@@ -5,6 +5,7 @@
     import { queryClient } from "$lib/query-client";
     import { onMount } from "svelte";
     import { setEncryptKey } from "$lib/trpc";
+    import TimerAlarmMonitor from "$lib/components/timers/TimerAlarmMonitor.svelte";
     import type { LayoutData } from "./$types";
 
     const { children, data }: { children: Snippet; data: LayoutData } =
@@ -35,6 +36,9 @@
 </script>
 
 <QueryClientProvider client={queryClient}>
+    {#if data.logged_in}
+        <TimerAlarmMonitor />
+    {/if}
     <div class="min-h-screen bg-gray-50">
         {@render children()}
     </div>

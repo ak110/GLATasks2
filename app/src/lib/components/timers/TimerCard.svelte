@@ -21,7 +21,6 @@
         onPause: (timerId: number) => void;
         onReset: (timerId: number) => void;
         onAdjust: (timerId: number, minutes: number) => void;
-        onStop: (timerId: number) => void;
         onEdit: (timer: TimerInfo) => void;
         onDelete: (timerId: number) => void;
     };
@@ -33,13 +32,11 @@
         onPause,
         onReset,
         onAdjust,
-        onStop,
         onEdit,
         onDelete,
     }: Props = $props();
 
     let displaySeconds = $state(0);
-    let alarmPlayed = $state(false);
     let intervalId = $state<ReturnType<typeof setInterval> | null>(null);
 
     /** サーバー時刻補正された現在時刻（ms） */
@@ -65,23 +62,13 @@
         return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
     }
 
-    // 1秒ごとに表示更新
+    // 1秒ごとに表示更新（アラームは TimerAlarmMonitor が担当）
     $effect(() => {
-        // timer の状態変更でリセット
         displaySeconds = calcRemaining();
-        alarmPlayed = false;
 
         if (timer.running) {
             const id = setInterval(() => {
-                const remaining = calcRemaining();
-                displaySeconds = remaining;
-                // 0秒到達
-                if (remaining <= 0 && !alarmPlayed) {
-                    alarmPlayed = true;
-                    // ビープ音（動的 import でブラウザのみ）
-                    import("$lib/beep").then((m) => m.playBeep(3));
-                    onStop(timer.id);
-                }
+                displaySeconds = calcRemaining();
             }, 1000);
             intervalId = id;
             return () => clearInterval(id);

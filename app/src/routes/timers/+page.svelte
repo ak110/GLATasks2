@@ -10,6 +10,7 @@
         useQueryClient,
     } from "@tanstack/svelte-query";
     import { trpc } from "$lib/trpc";
+    import { requestNotificationPermission } from "$lib/beep";
     import TimerCard from "$lib/components/timers/TimerCard.svelte";
     import TimerCreateDialog from "$lib/components/timers/TimerCreateDialog.svelte";
 
@@ -102,8 +103,11 @@
 
     const startTimerMutation = createMutation({
         mutationFn: (timerId: number) => trpc.timers.start.mutate({ timerId }),
-        onSuccess: () =>
-            queryClient.invalidateQueries({ queryKey: ["timers"] }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["timers"] });
+            // タブミュート対策: ユーザーアクション起因で通知許可をリクエスト
+            requestNotificationPermission();
+        },
     });
 
     const pauseTimerMutation = createMutation({
@@ -121,12 +125,6 @@
     const adjustTimerMutation = createMutation({
         mutationFn: (input: { timerId: number; minutes: number }) =>
             trpc.timers.adjust.mutate(input),
-        onSuccess: () =>
-            queryClient.invalidateQueries({ queryKey: ["timers"] }),
-    });
-
-    const stopTimerMutation = createMutation({
-        mutationFn: (timerId: number) => trpc.timers.stop.mutate({ timerId }),
         onSuccess: () =>
             queryClient.invalidateQueries({ queryKey: ["timers"] }),
     });
@@ -236,7 +234,6 @@
                     onReset={(id) => $resetTimerMutation.mutate(id)}
                     onAdjust={(id, minutes) =>
                         $adjustTimerMutation.mutate({ timerId: id, minutes })}
-                    onStop={(id) => $stopTimerMutation.mutate(id)}
                     onEdit={openEditDialog}
                     onDelete={handleDelete}
                 />
