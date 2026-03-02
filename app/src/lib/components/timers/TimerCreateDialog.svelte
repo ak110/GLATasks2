@@ -61,13 +61,11 @@
     });
 
     function handleSubmit() {
-        const name = localName.trim();
-        if (!name) return;
         const baseSeconds =
             localHours * 3600 + localMinutes * 60 + localSeconds;
         if (baseSeconds <= 0) return;
         onSubmit({
-            name,
+            name: localName.trim(),
             base_seconds: baseSeconds,
             adjust_minutes: localAdjustMinutes,
         });
@@ -80,16 +78,25 @@
         role="dialog"
         aria-modal="true"
     >
-        <div class="mx-4 w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
-            <h2 class="mb-4 text-lg font-semibold">
-                {mode === "create" ? "タイマー追加" : "タイマー編集"}
-            </h2>
+        <div class="mx-4 w-full max-w-md rounded-lg bg-white shadow-xl">
+            <div class="flex items-center justify-between px-6 py-4">
+                <h2 class="text-lg font-semibold text-gray-800">
+                    {mode === "create" ? "タイマー追加" : "タイマー編集"}
+                </h2>
+                <button
+                    onclick={onClose}
+                    class="cursor-pointer rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                    aria-label="閉じる"
+                >
+                    ✕
+                </button>
+            </div>
             <form
                 onsubmit={(e) => {
                     e.preventDefault();
                     handleSubmit();
                 }}
-                class="flex flex-col gap-4"
+                class="flex flex-col gap-4 p-6"
             >
                 <div>
                     <label
@@ -160,16 +167,10 @@
                     />
                 </div>
 
-                <div class="flex justify-end gap-2">
-                    <button
-                        type="button"
-                        onclick={onClose}
-                        class="cursor-pointer rounded px-4 py-2 text-gray-600 hover:bg-gray-100"
-                        >キャンセル</button
-                    >
+                <div class="flex justify-end">
                     <button
                         type="submit"
-                        class="cursor-pointer rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+                        class="cursor-pointer rounded bg-blue-600 px-6 py-2 text-white hover:bg-blue-700"
                         data-testid="timer-submit-btn"
                         >{mode === "create" ? "追加" : "保存"}</button
                     >

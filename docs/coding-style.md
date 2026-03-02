@@ -49,6 +49,10 @@
 - ボーダー色は `border-gray-200` を基本とする（デフォルトの `border` は黒が強すぎるため）
 - e2e テストのセレクタには CSS クラスではなく `data-testid` 属性を使用する
 - クリック可能な要素（`<label>`、`<button>`、`<a>`、`<input type="checkbox">` など）には `cursor-pointer` を付与する
+- テキスト・絵文字ボタンには `rounded` + パディング + `hover:bg-*` を付与する
+  - 通常背景: `rounded p-1 hover:bg-gray-100`（アイコン）/ `rounded px-3 py-1.5 hover:bg-*`（テキスト付き）
+  - ダークヘッダー内: `hover:bg-gray-700`
+- ダイアログの共通パターン: ヘッダーにタイトル+✕閉じるボタン、キャンセルボタンは使わない
 
 ## Markdown記述スタイル
 

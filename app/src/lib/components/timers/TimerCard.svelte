@@ -89,9 +89,11 @@
 >
     <!-- ヘッダー: タイマー名 + 操作ボタン -->
     <div class="mb-3 flex items-center justify-between">
-        <h3 class="font-medium text-gray-800" data-testid="timer-name">
-            {timer.name}
-        </h3>
+        {#if timer.name}
+            <h3 class="font-medium text-gray-800" data-testid="timer-name">
+                {timer.name}
+            </h3>
+        {/if}
         <div class="flex gap-1">
             <button
                 onclick={() => onEdit(timer)}

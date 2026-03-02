@@ -59,13 +59,13 @@
     <div class="flex shrink-0 flex-col gap-1">
         <button
             onclick={() => onEdit(task)}
-            class="cursor-pointer text-gray-500 hover:text-gray-600"
+            class="cursor-pointer rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-600"
             data-testid="task-edit-btn"
             aria-label="タスクを編集">✏️</button
         >
         <button
             onclick={copyTask}
-            class="cursor-pointer text-gray-500 hover:text-gray-600"
+            class="cursor-pointer rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-600"
             data-testid="task-copy-btn"
             aria-label="タスクをコピー">📋</button
         >

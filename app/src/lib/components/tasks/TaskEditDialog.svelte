@@ -69,7 +69,7 @@
                 <button
                     bind:this={closeButtonEl}
                     onclick={onClose}
-                    class="cursor-pointer text-gray-400 hover:text-gray-600"
+                    class="cursor-pointer rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
                     aria-label="閉じる"
                 >
                     ✕

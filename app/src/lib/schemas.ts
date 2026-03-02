@@ -55,14 +55,14 @@ export const GetListTasksSchema = z.object({
 // ── タイマー操作スキーマ ──
 
 export const CreateTimerSchema = z.object({
-  name: z.string().min(1, "タイマー名は必須です").max(255),
+  name: z.string().trim().max(255),
   base_seconds: z.number().int().positive("ベース時間は正の整数が必要です"),
   adjust_minutes: z.number().int().min(1).max(999).default(5),
 });
 
 export const UpdateTimerSchema = z.object({
   timerId: z.number().int().positive(),
-  name: z.string().min(1).max(255).optional(),
+  name: z.string().trim().max(255).optional(),
   base_seconds: z.number().int().positive().optional(),
   adjust_minutes: z.number().int().min(1).max(999).optional(),
 });

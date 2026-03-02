@@ -21,14 +21,17 @@
 >
     {#if mobileView === "tasks"}
         <button
-            class="cursor-pointer text-gray-300 hover:text-white sm:hidden"
+            class="cursor-pointer rounded px-2 py-1 text-gray-300 hover:bg-gray-700 hover:text-white sm:hidden"
             onclick={onBackToLists}
             aria-label="リスト一覧に戻る">← リスト</button
         >
     {/if}
     <a href="/" class="font-bold hover:text-gray-300">GLATasks</a>
     <span class="text-gray-400">|</span>
-    <a href="/timers" class="text-sm text-gray-300 hover:text-white">タイマー</a
+    <a
+        href="/timers"
+        class="rounded px-2 py-1 text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
+        >タイマー</a
     >
     {#if isLoading}
         <span class="text-sm text-gray-400">読み込み中...</span>
@@ -49,7 +52,7 @@
         <form method="post" action="/auth/logout">
             <button
                 type="submit"
-                class="cursor-pointer rounded px-1.5 py-0.5 text-xs text-gray-300 hover:text-white"
+                class="cursor-pointer rounded px-1.5 py-0.5 text-xs text-gray-300 hover:bg-gray-700 hover:text-white"
                 >ログアウト</button
             >
         </form>
