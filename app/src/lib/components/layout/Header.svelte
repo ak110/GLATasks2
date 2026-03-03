@@ -1,31 +1,16 @@
 <script lang="ts">
     type Props = {
-        mobileView: "lists" | "tasks";
         showType: "list" | "hidden" | "all";
         isLoading: boolean;
-        onBackToLists: () => void;
         onChangeShowType: (type: "list" | "hidden" | "all") => void;
     };
 
-    let {
-        mobileView,
-        showType,
-        isLoading,
-        onBackToLists,
-        onChangeShowType,
-    }: Props = $props();
+    let { showType, isLoading, onChangeShowType }: Props = $props();
 </script>
 
 <header
     class="sticky top-0 z-10 flex h-12 items-center gap-3 bg-gray-800 px-4 text-white shadow"
 >
-    {#if mobileView === "tasks"}
-        <button
-            class="cursor-pointer rounded px-2 py-1 text-gray-300 hover:bg-gray-700 hover:text-white sm:hidden"
-            onclick={onBackToLists}
-            aria-label="リスト一覧に戻る">← リスト</button
-        >
-    {/if}
     <a href="/" class="font-bold hover:text-gray-300">GLATasks</a>
     <span class="text-gray-400">|</span>
     <a

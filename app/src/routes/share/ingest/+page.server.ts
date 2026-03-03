@@ -28,6 +28,6 @@ export const actions: Actions = {
       return fail(500, { error: msg });
     }
 
-    redirect(303, "/?list=" + listId);
+    redirect(303, "/#" + listId);
   },
 };

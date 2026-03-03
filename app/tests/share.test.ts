@@ -75,7 +75,7 @@ test.describe("share/ingest", () => {
     await page.locator("#list_id").selectOption({ index: 0 });
     await page.click('button[type="submit"]');
     // リダイレクト先（メインページ）に遷移することを確認
-    await page.waitForURL(/\/(\?list=\d+)?$/, { timeout: 10000 });
+    await page.waitForURL(/\/#\d+$/, { timeout: 10000 });
     // メインページのタスク一覧が表示される
     await expect(page.locator("main")).toBeVisible({ timeout: 10000 });
   });

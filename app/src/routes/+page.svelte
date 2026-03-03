@@ -35,7 +35,10 @@
     let addListTitle = $state("");
     let addTaskText = $state("");
     let openMenuId = $state<number | null>(null);
-    let mobileView = $state<"lists" | "tasks">("lists");
+    let hasHash = $state(false);
+    const mobileView = $derived(
+        hasHash ? ("tasks" as const) : ("lists" as const),
+    );
 
     type EditDialog = {
         open: boolean;
@@ -181,22 +184,59 @@
     });
     const isLoading = $derived($listsQuery.isLoading || $tasksQuery.isLoading);
 
+    // URLハッシュからリストIDを解析
+    function parseHashListId(): number | null {
+        const hash = window.location.hash;
+        if (!hash || hash === "#") return null;
+        const id = parseInt(hash.substring(1));
+        return isNaN(id) ? null : id;
+    }
+
+    // hashchange イベントで URL ハッシュと状態を同期
+    $effect(() => {
+        function onHashChange() {
+            const hashId = parseHashListId();
+            hasHash = hashId !== null;
+            if (hashId !== null) {
+                selectedListId = hashId;
+                localStorage.setItem("selectedList", String(hashId));
+            }
+        }
+        window.addEventListener("hashchange", onHashChange);
+        return () => window.removeEventListener("hashchange", onHashChange);
+    });
+
     // リストデータ到着時に選択状態を復元（初回のみ）
-    // URL パラメータ `list` > localStorage > 先頭リストの優先順
+    // URLハッシュ > URL パラメータ `list` > localStorage の優先順
     $effect(() => {
         if (lists.length > 0 && selectedListId === null) {
-            // URL パラメータ（share/ingest からのリダイレクト等）
+            // URLハッシュ（ブックマーク・直接アクセス等）
+            const hashId = parseHashListId();
+            if (hashId && lists.some((l) => l.id === hashId)) {
+                selectedListId = hashId;
+                hasHash = true;
+                localStorage.setItem("selectedList", String(hashId));
+                return;
+            }
+
+            // URL パラメータ（share/ingest からのリダイレクト等、互換性のため残す）
             const urlListId = Number(
                 new URLSearchParams(window.location.search).get("list"),
             );
             if (urlListId && lists.some((l) => l.id === urlListId)) {
                 selectedListId = urlListId;
                 localStorage.setItem("selectedList", String(urlListId));
-                history.replaceState({}, "", window.location.pathname);
+                // ?list= をハッシュに置換
+                history.replaceState(
+                    {},
+                    "",
+                    window.location.pathname + "#" + urlListId,
+                );
+                hasHash = true;
                 return;
             }
 
-            // localStorage フォールバック
+            // localStorage フォールバック（ハッシュは付けない → モバイルではリスト一覧から）
             const saved = localStorage.getItem("selectedList");
             const savedId = saved ? parseInt(saved) : null;
             const initial = lists.find((l) => l.id === savedId) ?? lists[0];
@@ -205,13 +245,26 @@
                 localStorage.setItem("selectedList", String(initial.id));
             }
         }
+
+        // 無効なハッシュ対策: リストデータにハッシュのIDが存在しなければハッシュを除去
+        if (lists.length > 0 && hasHash) {
+            const hashId = parseHashListId();
+            if (hashId && !lists.some((l) => l.id === hashId)) {
+                hasHash = false;
+                history.replaceState(
+                    {},
+                    "",
+                    window.location.pathname + window.location.search,
+                );
+            }
+        }
     });
 
     function selectList(listId: number) {
         selectedListId = listId;
-        localStorage.setItem("selectedList", String(listId));
         addTaskText = "";
-        mobileView = "tasks";
+        // ハッシュ更新 → hashchange イベントで hasHash と localStorage が同期される
+        location.hash = "#" + listId;
     }
 
     async function changeShowType(type: "list" | "hidden" | "all") {
@@ -333,17 +386,19 @@
     async function clearList(listId: number) {
         await $clearListMutation.mutateAsync(listId);
     }
+
+    /** モバイルでリスト一覧に戻る（pushState でハッシュを除去） */
+    function backToLists() {
+        // history.back() だと直接 /#ID にアクセスした場合にサイト外へ遷移するため pushState を使う
+        history.pushState(null, "", window.location.pathname);
+        // pushState は hashchange を発火しないため手動で同期
+        hasHash = false;
+    }
 </script>
 
 <svelte:window onclick={() => (openMenuId = null)} />
 
-<Header
-    {mobileView}
-    {showType}
-    {isLoading}
-    onBackToLists={() => (mobileView = "lists")}
-    onChangeShowType={changeShowType}
-/>
+<Header {showType} {isLoading} onChangeShowType={changeShowType} />
 
 <!-- ボディ: サイドバー + メインコンテンツ -->
 <div
@@ -380,9 +435,31 @@
                 <div
                     class="flex items-center justify-between border-b border-gray-200 bg-blue-50 px-4 py-3"
                 >
-                    <h2 class="font-semibold text-gray-800">
-                        {selectedList.title}
-                    </h2>
+                    <div class="flex items-center gap-1">
+                        <!-- モバイル用戻るボタン -->
+                        <button
+                            onclick={backToLists}
+                            class="cursor-pointer rounded p-1 text-gray-500 hover:bg-gray-200 hover:text-gray-700 sm:hidden"
+                            aria-label="リスト一覧に戻る"
+                        >
+                            <svg
+                                class="h-5 w-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M15 19l-7-7 7-7"
+                                />
+                            </svg>
+                        </button>
+                        <h2 class="font-semibold text-gray-800">
+                            {selectedList.title}
+                        </h2>
+                    </div>
                     <button
                         onclick={() => clearList(selectedListId!)}
                         class="cursor-pointer text-sm text-gray-500 hover:text-gray-700"
