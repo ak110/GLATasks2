@@ -2,14 +2,20 @@
     /**
      * @fileoverview グローバルタイマー完了監視コンポーネント
      *
-     * 全ページでタイマー完了時にビープ音とブラウザ通知を出すため、
-     * +layout.svelte に配置される。UI は描画しない。
+     * 全ページでタイマー完了時にビープ音・ブラウザ通知・トースト表示・
+     * favicon バッジ表示を行うため、+layout.svelte に配置される。
      * setTimeout で正確なタイミングにアラームをスケジュールする。
      */
 
     import { writable } from "svelte/store";
     import { createQuery, useQueryClient } from "@tanstack/svelte-query";
     import { trpc } from "$lib/trpc";
+    import { onMount } from "svelte";
+
+    type AlarmInfo = {
+        timerId: number;
+        timerName: string;
+    };
 
     type TimerInfo = {
         id: number;
@@ -34,6 +40,70 @@
 
     // アラーム再生済みタイマーIDのセット（二重再生防止）
     let alarmedIds = $state(new Set<number>());
+
+    // トースト通知用のアラーム一覧（✕で手動クリアのみ）
+    let alarms = $state<AlarmInfo[]>([]);
+
+    // favicon の元画像（onMount で読み込み）
+    let originalFaviconImg: HTMLImageElement | null = null;
+    // favicon バッジ付き Data URL のキャッシュ
+    let badgeFaviconUrl: string | null = null;
+    const FAVICON_PATH = "/static/img/favicon-32.png";
+
+    onMount(() => {
+        const img = new Image();
+        img.src = FAVICON_PATH;
+        img.onload = () => {
+            originalFaviconImg = img;
+        };
+    });
+
+    /** favicon に赤丸バッジを重ねた Data URL を生成する */
+    function createBadgeFavicon(img: HTMLImageElement): string {
+        const size = 32;
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d")!;
+        ctx.drawImage(img, 0, 0, size, size);
+        // 右上に赤丸バッジ
+        const r = 6;
+        ctx.beginPath();
+        ctx.arc(size - r, r, r, 0, Math.PI * 2);
+        ctx.fillStyle = "#ef4444";
+        ctx.fill();
+        return canvas.toDataURL("image/png");
+    }
+
+    /** favicon を更新する */
+    function updateFavicon(href: string) {
+        let link = document.querySelector(
+            'link[rel="icon"]',
+        ) as HTMLLinkElement | null;
+        if (link) {
+            link.href = href;
+        }
+    }
+
+    // alarms の有無に応じて favicon バッジを切り替え
+    $effect(() => {
+        if (alarms.length > 0) {
+            if (originalFaviconImg) {
+                if (!badgeFaviconUrl) {
+                    badgeFaviconUrl = createBadgeFavicon(originalFaviconImg);
+                }
+                updateFavicon(badgeFaviconUrl);
+            }
+        } else {
+            badgeFaviconUrl = null;
+            updateFavicon(FAVICON_PATH);
+        }
+    });
+
+    /** トースト通知を閉じる */
+    function dismissAlarm(timerId: number) {
+        alarms = alarms.filter((a) => a.timerId !== timerId);
+    }
 
     // タイマー一覧取得（/timers ページとキャッシュ共有）
     const timersQuery = createQuery<TimersResult>(
@@ -80,9 +150,10 @@
         if (alarmedIds.has(timerId)) return;
         alarmedIds = new Set([...alarmedIds, timerId]);
 
-        // ビープ音 + ブラウザ通知
+        // ビープ音 + ブラウザ通知 + トースト
         import("$lib/beep").then((m) => m.playBeep());
         showNotification(timerName);
+        alarms = [...alarms, { timerId, timerName }];
 
         // サーバーに停止報告（失敗時は alarmedIds から除去して再試行可能に）
         trpc.timers.stop
@@ -132,3 +203,26 @@
         };
     });
 </script>
+
+<!-- タイマー完了トースト通知 -->
+{#if alarms.length > 0}
+    <div class="fixed top-14 right-4 z-50 flex flex-col gap-2">
+        {#each alarms as alarm (alarm.timerId)}
+            <div
+                class="flex items-center gap-2 rounded-lg bg-red-500 text-white shadow-lg"
+            >
+                <a href="/timers" class="cursor-pointer px-4 py-3 font-medium">
+                    {alarm.timerName
+                        ? `${alarm.timerName} 完了`
+                        : "タイマー完了"}
+                </a>
+                <button
+                    class="cursor-pointer rounded p-1 pr-3 hover:bg-red-600"
+                    onclick={() => dismissAlarm(alarm.timerId)}
+                >
+                    ✕
+                </button>
+            </div>
+        {/each}
+    </div>
+{/if}
