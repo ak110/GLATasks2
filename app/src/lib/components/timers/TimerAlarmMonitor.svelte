@@ -2,7 +2,7 @@
     /**
      * @fileoverview グローバルタイマー完了監視コンポーネント
      *
-     * 全ページでタイマー完了時にビープ音を鳴らすため、
+     * 全ページでタイマー完了時にビープ音とブラウザ通知を出すため、
      * +layout.svelte に配置される。UI は描画しない。
      * setTimeout で正確なタイミングにアラームをスケジュールする。
      */
@@ -60,13 +60,29 @@
         return Math.max(0, timer.remaining_seconds * 1000 - elapsedMs);
     }
 
+    /** タイマー完了時にブラウザ通知を表示する */
+    function showNotification(timerName: string) {
+        if (
+            typeof Notification === "undefined" ||
+            Notification.permission !== "granted"
+        ) {
+            return;
+        }
+        const title = timerName ? `${timerName} 完了` : "タイマー完了";
+        new Notification(title, {
+            body: "タイマーが終了しました",
+            tag: "timer",
+        });
+    }
+
     /** タイマー完了時の処理 */
-    function handleAlarm(timerId: number) {
+    function handleAlarm(timerId: number, timerName: string) {
         if (alarmedIds.has(timerId)) return;
         alarmedIds = new Set([...alarmedIds, timerId]);
 
-        // ビープ音
+        // ビープ音 + ブラウザ通知
         import("$lib/beep").then((m) => m.playBeep());
+        showNotification(timerName);
 
         // サーバーに停止報告（失敗時は alarmedIds から除去して再試行可能に）
         trpc.timers.stop
@@ -99,9 +115,12 @@
             const remainingMs = calcRemainingMs(timer);
             if (remainingMs <= 0) {
                 // 既に時間切れ
-                handleAlarm(timer.id);
+                handleAlarm(timer.id, timer.name);
             } else {
-                const id = setTimeout(() => handleAlarm(timer.id), remainingMs);
+                const id = setTimeout(
+                    () => handleAlarm(timer.id, timer.name),
+                    remainingMs,
+                );
                 timeoutIds.push(id);
             }
         }

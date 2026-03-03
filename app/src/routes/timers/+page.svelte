@@ -107,6 +107,13 @@
             queryClient.invalidateQueries({ queryKey: ["timers"] });
             // タブミュート対策: スタート時にビープ音で気付かせる
             playStartBeep();
+            // タイマー完了通知のためにブラウザ通知の許可をリクエスト
+            if (
+                typeof Notification !== "undefined" &&
+                Notification.permission === "default"
+            ) {
+                Notification.requestPermission();
+            }
         },
     });
 

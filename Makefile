@@ -83,16 +83,13 @@ update:
 	$(MAKE) test
 
 format:  # 整形 + 軽量lint（自動修正あり）
-	pre-commit run --all-files
+	@# pre-commitはフォーマットによるエラーを考慮して2度まで実行
+	pre-commit run --all-files || pre-commit run --all-files
 
-test:  # format + lint + 型チェック + pre-commit + unit test + e2eテスト
-	pre-commit run --all-files
+test:  # format + lint + test + e2eテスト
+	$(MAKE) format
 	$(call RUN_NODE, pnpm run test, --rm)
-	$(MAKE) test-unit
 	$(MAKE) test-e2e
-
-test-unit:  # Vitestユニットテスト実行
-	$(call RUN_NODE, pnpm run test:unit, --rm)
 
 migrate:  # DBマイグレーション実行
 	docker compose exec app node --input-type=module --eval "\
