@@ -52,6 +52,10 @@
 - テキスト・絵文字ボタンには `rounded` + パディング + `hover:bg-*` を付与する
   - 通常背景: `rounded p-1 hover:bg-gray-100`（アイコン）/ `rounded px-3 py-1.5 hover:bg-*`（テキスト付き）
   - ダークヘッダー内: `hover:bg-gray-700`
+- ヘッダー: `sticky top-0 z-10 h-12 bg-gray-800` 固定。共通コンポーネント `Header.svelte` を使用する
+  - ナビリンク: `cursor-pointer rounded text-sm text-gray-300 hover:bg-gray-700 hover:text-white`
+  - アクティブナビ: `text-sm font-semibold text-gray-200`（リンクなし）
+- コンテンツ領域のアクションボタン: `cursor-pointer rounded bg-gray-100 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-200`
 - ダイアログの共通パターン: ヘッダーにタイトル+✕閉じるボタン、キャンセルボタンは使わない
 
 ## Markdown記述スタイル

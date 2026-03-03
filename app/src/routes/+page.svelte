@@ -398,7 +398,7 @@
 
 <svelte:window onclick={() => (openMenuId = null)} />
 
-<Header {showType} {isLoading} onChangeShowType={changeShowType} />
+<Header page="tasks" {showType} {isLoading} onChangeShowType={changeShowType} />
 
 <!-- ボディ: サイドバー + メインコンテンツ -->
 <div
@@ -462,7 +462,7 @@
                     </div>
                     <button
                         onclick={() => clearList(selectedListId!)}
-                        class="cursor-pointer text-sm text-gray-500 hover:text-gray-700"
+                        class="cursor-pointer rounded bg-gray-100 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-200"
                         title="完了済みタスクを非表示にする"
                         >完了済みを非表示</button
                     >

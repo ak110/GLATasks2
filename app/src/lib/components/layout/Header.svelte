@@ -1,11 +1,16 @@
 <script lang="ts">
+    /**
+     * @fileoverview 共通ヘッダーコンポーネント（タスク・タイマー両ページで使用）
+     */
+
     type Props = {
-        showType: "list" | "hidden" | "all";
+        page: "tasks" | "timers";
         isLoading: boolean;
-        onChangeShowType: (type: "list" | "hidden" | "all") => void;
+        showType?: "list" | "hidden" | "all";
+        onChangeShowType?: (type: "list" | "hidden" | "all") => void;
     };
 
-    let { showType, isLoading, onChangeShowType }: Props = $props();
+    let { page, isLoading, showType, onChangeShowType }: Props = $props();
 </script>
 
 <header
@@ -13,31 +18,37 @@
 >
     <a href="/" class="font-bold hover:text-gray-300">GLATasks</a>
     <span class="text-gray-400">|</span>
-    <a
-        href="/timers"
-        class="rounded px-2 py-1 text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
-        >タイマー</a
-    >
+    {#if page === "tasks"}
+        <a
+            href="/timers"
+            class="cursor-pointer rounded text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
+            >タイマー</a
+        >
+    {:else}
+        <span class="text-sm font-semibold text-gray-200">タイマー</span>
+    {/if}
     {#if isLoading}
         <span class="text-sm text-gray-400">読み込み中...</span>
     {/if}
     <div class="ml-auto flex items-center gap-2">
-        <select
-            value={showType}
-            onchange={(e) =>
-                onChangeShowType(
-                    e.currentTarget.value as "list" | "hidden" | "all",
-                )}
-            class="cursor-pointer rounded bg-gray-700 px-1.5 py-0.5 text-xs text-white focus:outline-none"
-        >
-            <option value="list">表示中</option>
-            <option value="hidden">非表示</option>
-            <option value="all">すべて</option>
-        </select>
+        {#if page === "tasks" && showType !== undefined && onChangeShowType}
+            <select
+                value={showType}
+                onchange={(e) =>
+                    onChangeShowType(
+                        e.currentTarget.value as "list" | "hidden" | "all",
+                    )}
+                class="cursor-pointer rounded bg-gray-700 px-1.5 py-0.5 text-xs text-white focus:outline-none"
+            >
+                <option value="list">表示中</option>
+                <option value="hidden">非表示</option>
+                <option value="all">すべて</option>
+            </select>
+        {/if}
         <form method="post" action="/auth/logout">
             <button
                 type="submit"
-                class="cursor-pointer rounded px-1.5 py-0.5 text-xs text-gray-300 hover:bg-gray-700 hover:text-white"
+                class="cursor-pointer rounded px-2 py-1 text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
                 >ログアウト</button
             >
         </form>
