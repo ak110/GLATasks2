@@ -608,12 +608,25 @@ export async function adjustTimer(
   }
 }
 
-/** タイマーを停止する（0秒到達時） */
+/**
+ * タイマーを停止する（0秒到達時）。
+ * startedAt が指定された場合、タイマーがリセット/再開されていないことを確認する。
+ * これにより、遅延した stop リクエストが新しいセッションを上書きするのを防ぐ。
+ */
 export async function stopTimer(
   userId: number,
   timerId: number,
+  startedAt?: string | null,
 ): Promise<void> {
-  await getOwnedTimer(timerId, userId);
+  const timer = await getOwnedTimer(timerId, userId);
+  // started_at が指定された場合、タイマーがリセット/再開されていないことを確認
+  if (startedAt !== undefined) {
+    const currentStartedAt = timer.started_at
+      ? timer.started_at.toISOString()
+      : null;
+    if (currentStartedAt !== startedAt) return;
+  }
+  if (!timer.running) return;
   const db = getDb();
   await db
     .update(timers)

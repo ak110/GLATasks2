@@ -70,7 +70,6 @@
                 return result;
             },
             refetchInterval: 5 * 60 * 1000,
-            refetchOnWindowFocus: true,
         }),
     );
 

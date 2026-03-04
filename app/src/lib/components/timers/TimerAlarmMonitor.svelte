@@ -116,7 +116,6 @@
                 return result;
             },
             refetchInterval: 5 * 60 * 1000,
-            refetchOnWindowFocus: true,
         }),
     );
 
@@ -145,8 +144,35 @@
         });
     }
 
+    /**
+     * タイマー完了直前にサーバーから最新状態を取得し、
+     * まだ running ならアラームを発火する。
+     * 別端末でリセット/停止された場合の誤アラームを防ぐ。
+     */
+    async function checkAndAlarm(
+        timerId: number,
+        timerName: string,
+        startedAt: string | null,
+    ) {
+        // サーバーから最新状態を取得
+        try {
+            await queryClient.refetchQueries({ queryKey: ["timers"] });
+        } catch {
+            // リフェッチ失敗時はキャッシュデータで続行
+        }
+        const data = queryClient.getQueryData<TimersResult>(["timers"]);
+        const timer = data?.timers?.find((t) => t.id === timerId);
+        // タイマーが存在しない、running でない、リセット/再開された場合はスキップ
+        if (!timer?.running || timer.started_at !== startedAt) return;
+        handleAlarm(timerId, timerName, startedAt);
+    }
+
     /** タイマー完了時の処理 */
-    function handleAlarm(timerId: number, timerName: string) {
+    function handleAlarm(
+        timerId: number,
+        timerName: string,
+        startedAt: string | null,
+    ) {
         if (alarmedIds.has(timerId)) return;
         alarmedIds = new Set([...alarmedIds, timerId]);
 
@@ -155,9 +181,9 @@
         showNotification(timerName);
         alarms = [...alarms, { timerId, timerName }];
 
-        // サーバーに停止報告（失敗時は alarmedIds から除去して再試行可能に）
+        // サーバーに停止報告（started_at でリセット/再開されていないことを確認）
         trpc.timers.stop
-            .mutate({ timerId })
+            .mutate({ timerId, started_at: startedAt })
             .then(() => queryClient.invalidateQueries({ queryKey: ["timers"] }))
             .catch(() => {
                 alarmedIds = new Set(
@@ -184,12 +210,14 @@
             if (alarmedIds.has(timer.id)) continue;
 
             const remainingMs = calcRemainingMs(timer);
+            // started_at をキャプチャしてリセット/再開の検出に使用
+            const startedAt = timer.started_at;
             if (remainingMs <= 0) {
-                // 既に時間切れ
-                handleAlarm(timer.id, timer.name);
+                // 既に時間切れ → サーバー確認してからアラーム
+                checkAndAlarm(timer.id, timer.name, startedAt);
             } else {
                 const id = setTimeout(
-                    () => handleAlarm(timer.id, timer.name),
+                    () => checkAndAlarm(timer.id, timer.name, startedAt),
                     remainingMs,
                 );
                 timeoutIds.push(id);

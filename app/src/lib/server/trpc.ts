@@ -15,6 +15,7 @@ import {
   UpdateTaskSchema,
   UpdateTimerSchema,
   TimerIdSchema,
+  TimerStopSchema,
   AdjustTimerSchema,
   LoginSchema,
 } from "$lib/schemas";
@@ -267,9 +268,9 @@ export const appRouter = t.router({
       }),
 
     stop: encryptedProcedure
-      .input(TimerIdSchema)
+      .input(TimerStopSchema)
       .mutation(async ({ ctx, input }) => {
-        await api.stopTimer(ctx.userId, input.timerId);
+        await api.stopTimer(ctx.userId, input.timerId, input.started_at);
         return { success: true };
       }),
   }),

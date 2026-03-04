@@ -71,6 +71,12 @@ export const TimerIdSchema = z.object({
   timerId: z.number().int().positive(),
 });
 
+export const TimerStopSchema = z.object({
+  timerId: z.number().int().positive(),
+  // アラーム発火時の started_at。リセット/再開されていないことを確認するために使用
+  started_at: z.string().datetime().nullable().optional(),
+});
+
 export const AdjustTimerSchema = z.object({
   timerId: z.number().int().positive(),
   minutes: z.number().int(),
@@ -107,5 +113,6 @@ export type GetListTasksInput = z.infer<typeof GetListTasksSchema>;
 export type CreateTimerInput = z.infer<typeof CreateTimerSchema>;
 export type UpdateTimerInput = z.infer<typeof UpdateTimerSchema>;
 export type AdjustTimerInput = z.infer<typeof AdjustTimerSchema>;
+export type TimerStopInput = z.infer<typeof TimerStopSchema>;
 export type RegisterUserInput = z.infer<typeof RegisterUserSchema>;
 export type LoginInput = z.infer<typeof LoginSchema>;
