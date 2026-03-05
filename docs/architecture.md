@@ -2,21 +2,21 @@
 
 ## 概要
 
-Google Tasks の canvas ビューが廃止されたため自作した低機能 Web タスク管理アプリ。
+タスク管理＆カウントダウンタイマーアプリ。
 
 ## スタック
 
 | レイヤー         | 技術                  | 役割                                    |
 | ---------------- | --------------------- | --------------------------------------- |
 | アプリケーション | SvelteKit             | UI・ルーティング・SSR・API・DB アクセス |
-| API              | tRPC v11              | 型安全な RPC（暗号化ミドルウェア付き）  |
+| API              | tRPC v11              | 型安全な RPC（難読化ミドルウェア付き）  |
 | バリデーション   | Zod                   | スキーマバリデーション                  |
 | データ取得       | TanStack Svelte Query | クライアント側キャッシュ・状態管理      |
 | ORM              | Drizzle ORM           | DB アクセス（型安全）                   |
 | DB               | MariaDB               | データ永続化                            |
 | リバースプロキシ | nginx                 | HTTPS 終端                              |
 | CSS              | Tailwind CSS          | スタイリング                            |
-| 暗号化           | Web Crypto API        | ブラウザ ↔ SvelteKit 間 AES-GCM         |
+| 難読化           | Web Crypto API        | ブラウザ ↔ SvelteKit 間 AES-GCM         |
 | 認証             | JWT/HS256 (`jose`)    | Cookie セッション管理                   |
 
 ## アーキテクチャ図
@@ -49,34 +49,6 @@ flowchart TB
 - `src/lib/trpc.ts`: tRPC クライアント（暗号化リンク）
 - `src/lib/schemas.ts`: Zod バリデーションスキーマ
 - `src/lib/query-client.ts`: TanStack Query 設定 + IndexedDB 永続化
-
-## 暗号化設計
-
-### 目的
-
-HTTPS通信で通信経路は暗号化されるが、それに加えてアプリケーション側でMITMプロキシ対策のための難読化を行う。(諸事情により必須)
-
-キーも一緒に送るので暗号化だけど実質ただの難読化。
-
-### 方式
-
-AES-GCM による対称暗号化。難読化の範囲はブラウザ ↔ SvelteKit サーバー間のみ。
-
-```mermaid
-flowchart LR
-    Browser["ブラウザ"]
-    SK["SvelteKit サーバー"]
-    DB["MariaDB"]
-
-    Browser <-- "AES-GCM 暗号化" --> SK
-    SK <-- "Drizzle ORM" --> DB
-```
-
-- **鍵管理**: `DATA_DIR/.encrypt_key`（32 バイト、初回起動時に自動生成）
-- **鍵配布**: `+layout.server.ts` が `getEncryptKey()` を呼び出し Base64 でブラウザに渡す
-- **クライアント実装**: `app/src/lib/crypto.ts`（Web Crypto API / AES-GCM）
-- **サーバー実装**: `app/src/lib/server/crypto.ts`（Node.js WebCrypto）
-- **データ形式**: `Base64(IV[12bytes] + CipherText)`
 
 ## 認証設計
 

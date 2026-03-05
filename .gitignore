@@ -9,6 +9,7 @@
 /app/tests/.auth/
 /test-results/
 /playwright-report/
+CLAUDE.local.md
 
 # https://github.com/github/gitignore/blob/main/Node.gitignore
 
