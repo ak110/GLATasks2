@@ -70,9 +70,15 @@
         }
     }
 
-    // alarms の有無に応じて favicon バッジを切り替え
+    // 完了状態のタイマーの有無に応じて favicon バッジを切り替え
+    // （トースト消去ではなくタイマーデータに基づく判定）
     $effect(() => {
-        if (alarms.length > 0) {
+        const timers =
+            ($timersQuery.data as TimersResult | undefined)?.timers ?? [];
+        const hasCompletedTimer = timers.some(
+            (t) => !t.running && t.remaining_seconds === 0,
+        );
+        if (hasCompletedTimer) {
             if (originalFaviconImg) {
                 if (!badgeFaviconUrl) {
                     badgeFaviconUrl = createBadgeFavicon(originalFaviconImg);
@@ -83,6 +89,21 @@
             badgeFaviconUrl = null;
             updateFavicon(FAVICON_PATH);
         }
+    });
+
+    // タイマーがリセットされたらトーストを自動消去
+    $effect(() => {
+        const timers =
+            ($timersQuery.data as TimersResult | undefined)?.timers ?? [];
+        if (alarms.length === 0) return;
+        alarms = alarms.filter((alarm) => {
+            const timer = timers.find((t) => t.id === alarm.timerId);
+            if (!timer) return false;
+            // まだ running（stop 完了待ち）→ 維持
+            // 完了状態（remaining_seconds === 0）→ 維持
+            // リセット済み（remaining_seconds > 0 かつ !running）→ 除去
+            return timer.running || timer.remaining_seconds === 0;
+        });
     });
 
     /** トースト通知を閉じる */
@@ -123,10 +144,15 @@
             return;
         }
         const title = timerName ? `${timerName} 完了` : "タイマー完了";
-        new Notification(title, {
+        const notification = new Notification(title, {
             body: "タイマーが終了しました",
             tag: "timer",
         });
+        notification.onclick = () => {
+            window.focus();
+            window.location.href = "/timers";
+            notification.close();
+        };
     }
 
     /**
