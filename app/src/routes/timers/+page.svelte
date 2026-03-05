@@ -11,25 +11,10 @@
     } from "@tanstack/svelte-query";
     import { trpc } from "$lib/trpc";
     import { playStartBeep } from "$lib/beep";
+    import type { TimerInfo, TimersResult } from "$lib/types";
     import Header from "$lib/components/layout/Header.svelte";
     import TimerCard from "$lib/components/timers/TimerCard.svelte";
     import TimerCreateDialog from "$lib/components/timers/TimerCreateDialog.svelte";
-
-    type TimerInfo = {
-        id: number;
-        name: string;
-        base_seconds: number;
-        adjust_minutes: number;
-        running: boolean;
-        remaining_seconds: number;
-        started_at: string | null;
-        sort_order: number;
-    };
-
-    type TimersResult = {
-        timers: TimerInfo[];
-        server_time: string;
-    };
 
     const queryClient = useQueryClient();
 
@@ -201,7 +186,7 @@
         <h1 class="text-xl font-bold text-gray-800">タイマー</h1>
         <button
             onclick={openCreateDialog}
-            class="cursor-pointer rounded bg-blue-500 px-4 py-2 text-sm text-white hover:bg-blue-600"
+            class="cursor-pointer rounded bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
             data-testid="timer-add-btn"
         >
             + 追加

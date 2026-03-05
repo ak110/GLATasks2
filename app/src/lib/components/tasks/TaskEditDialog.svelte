@@ -1,4 +1,8 @@
 <script lang="ts">
+    /**
+     * @fileoverview タスク編集ダイアログ（内容編集・リスト移動・完了状態変更）
+     */
+
     type Props = {
         open: boolean;
         text: string;

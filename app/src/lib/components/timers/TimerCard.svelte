@@ -3,16 +3,7 @@
      * @fileoverview タイマーカードコンポーネント
      */
 
-    type TimerInfo = {
-        id: number;
-        name: string;
-        base_seconds: number;
-        adjust_minutes: number;
-        running: boolean;
-        remaining_seconds: number;
-        started_at: string | null;
-        sort_order: number;
-    };
+    import type { TimerInfo } from "$lib/types";
 
     type Props = {
         timer: TimerInfo;

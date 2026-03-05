@@ -1,4 +1,8 @@
 <script lang="ts">
+    /**
+     * @fileoverview タスク管理メインページ（リスト一覧 + タスク一覧）
+     */
+
     import { writable, derived } from "svelte/store";
     import {
         createQuery,
@@ -7,28 +11,13 @@
     } from "@tanstack/svelte-query";
     import { trpc } from "$lib/trpc";
     import type { TaskStatus } from "$lib/schemas";
+    import type { ListInfo, TaskInfo, GetTasksResult } from "$lib/types";
     import Header from "$lib/components/layout/Header.svelte";
     import ListSidebar from "$lib/components/lists/ListSidebar.svelte";
     import TaskList from "$lib/components/tasks/TaskList.svelte";
     import TaskAddForm from "$lib/components/tasks/TaskAddForm.svelte";
+    import TaskListHeader from "$lib/components/tasks/TaskListHeader.svelte";
     import TaskEditDialog from "$lib/components/tasks/TaskEditDialog.svelte";
-
-    type ListInfo = {
-        id: number;
-        title: string;
-        last_updated: string;
-    };
-
-    type TaskInfo = {
-        id: number;
-        title: string;
-        notes: string;
-        status: string;
-    };
-
-    type GetTasksResult =
-        | { status: 304 }
-        | { status: 200; data: TaskInfo[]; lastModified: string };
 
     let selectedListId = $state<number | null>(null);
     let showType = $state<"list" | "hidden" | "all">("list");
@@ -432,41 +421,11 @@
         {#if selectedListId !== null}
             {@const selectedList = lists.find((l) => l.id === selectedListId)}
             {#if selectedList}
-                <div
-                    class="flex items-center justify-between border-b border-gray-200 bg-blue-50 px-4 py-3"
-                >
-                    <div class="flex items-center gap-1">
-                        <!-- モバイル用戻るボタン -->
-                        <button
-                            onclick={backToLists}
-                            class="cursor-pointer rounded p-1 text-gray-500 hover:bg-gray-200 hover:text-gray-700 sm:hidden"
-                            aria-label="リスト一覧に戻る"
-                        >
-                            <svg
-                                class="h-5 w-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M15 19l-7-7 7-7"
-                                />
-                            </svg>
-                        </button>
-                        <h2 class="font-semibold text-gray-800">
-                            {selectedList.title}
-                        </h2>
-                    </div>
-                    <button
-                        onclick={() => clearList(selectedListId!)}
-                        class="cursor-pointer rounded bg-gray-100 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-200"
-                        title="完了済みタスクを非表示にする"
-                        >完了済みを非表示</button
-                    >
-                </div>
+                <TaskListHeader
+                    title={selectedList.title}
+                    onBack={backToLists}
+                    onClear={() => clearList(selectedListId!)}
+                />
             {/if}
 
             <TaskAddForm bind:value={addTaskText} onSubmit={addTask} />

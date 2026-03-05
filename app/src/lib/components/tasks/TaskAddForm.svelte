@@ -1,4 +1,8 @@
 <script lang="ts">
+    /**
+     * @fileoverview タスク追加フォーム（テキストエリア + 追加ボタン）
+     */
+
     type Props = {
         value: string;
         onSubmit: (text: string) => void;

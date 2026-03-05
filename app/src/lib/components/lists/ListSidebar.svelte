@@ -1,10 +1,10 @@
 <script lang="ts">
-    import ListItem from "./ListItem.svelte";
+    /**
+     * @fileoverview リストサイドバー（リスト一覧表示 + リスト追加フォーム）
+     */
 
-    type ListInfo = {
-        id: number;
-        title: string;
-    };
+    import type { ListInfo } from "$lib/types";
+    import ListItem from "./ListItem.svelte";
 
     type Props = {
         lists: ListInfo[];

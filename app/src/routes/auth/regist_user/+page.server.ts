@@ -1,6 +1,10 @@
+/**
+ * @fileoverview ユーザー登録ページのサーバーサイド処理
+ */
+
 import { fail, redirect } from "@sveltejs/kit";
 import * as api from "$lib/server/api";
-import { createSessionToken } from "$lib/server/session";
+import { createSessionToken, setSessionCookie } from "$lib/server/session";
 import type { Actions, PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -27,13 +31,7 @@ export const actions: Actions = {
     try {
       const userInfo = await api.registerUser(userId, password);
       const token = await createSessionToken(userInfo.id);
-      cookies.set("gla-session", token, {
-        path: "/",
-        httpOnly: true,
-        secure: true,
-        sameSite: "none",
-        maxAge: 365 * 24 * 60 * 60,
-      });
+      setSessionCookie(cookies, token);
     } catch (e) {
       const msg =
         e instanceof Error ? e.message : "ユーザー登録に失敗しました。";

@@ -1,3 +1,7 @@
+/**
+ * @fileoverview 共有タスク追加ページのサーバーサイド処理
+ */
+
 import { fail, redirect } from "@sveltejs/kit";
 import * as api from "$lib/server/api";
 import type { Actions, PageServerLoad } from "./$types";

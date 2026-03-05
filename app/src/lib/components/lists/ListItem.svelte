@@ -1,8 +1,9 @@
 <script lang="ts">
-    type ListInfo = {
-        id: number;
-        title: string;
-    };
+    /**
+     * @fileoverview リストアイテム（選択ボタン + 操作メニュー）
+     */
+
+    import type { ListInfo } from "$lib/types";
 
     type Props = {
         list: ListInfo;

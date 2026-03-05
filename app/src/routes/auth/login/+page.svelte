@@ -1,19 +1,16 @@
 <script lang="ts">
+    /**
+     * @fileoverview ログインページ
+     */
+
     import type { ActionData } from "./$types";
+    import AuthCard from "$lib/components/layout/AuthCard.svelte";
 
     const { form }: { form: ActionData } = $props();
 </script>
 
-<div class="flex min-h-screen items-center justify-center bg-gray-100">
-    <div class="w-full max-w-sm rounded-lg bg-white p-8 shadow">
-        <h1 class="mb-6 text-center text-2xl font-bold text-gray-800">
-            GLATasks
-        </h1>
-        {#if form?.error}
-            <p class="mb-4 rounded bg-red-100 p-3 text-red-700">
-                {form.error}
-            </p>
-        {/if}
+<AuthCard title="GLATasks" error={form?.error}>
+    {#snippet children()}
         <form method="POST">
             <div class="mb-4">
                 <label
@@ -50,11 +47,13 @@
                 ログイン
             </button>
         </form>
+    {/snippet}
+    {#snippet footer()}
         <p class="mt-4 text-center text-gray-600">
             アカウントをお持ちでない方は
             <a href="/auth/regist_user" class="text-blue-600 hover:underline"
                 >登録</a
             >
         </p>
-    </div>
-</div>
+    {/snippet}
+</AuthCard>

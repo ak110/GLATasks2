@@ -1,10 +1,9 @@
 <script lang="ts">
-    type TaskInfo = {
-        id: number;
-        title: string;
-        notes: string;
-        status: string;
-    };
+    /**
+     * @fileoverview タスクアイテム（チェックボックス + テキスト表示 + 編集・コピーボタン）
+     */
+
+    import type { TaskInfo } from "$lib/types";
 
     type Props = {
         task: TaskInfo;

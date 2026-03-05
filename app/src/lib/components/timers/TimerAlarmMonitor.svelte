@@ -10,27 +10,12 @@
     import { writable } from "svelte/store";
     import { createQuery, useQueryClient } from "@tanstack/svelte-query";
     import { trpc } from "$lib/trpc";
+    import type { TimerInfo, TimersResult } from "$lib/types";
     import { onMount } from "svelte";
 
     type AlarmInfo = {
         timerId: number;
         timerName: string;
-    };
-
-    type TimerInfo = {
-        id: number;
-        name: string;
-        base_seconds: number;
-        adjust_minutes: number;
-        running: boolean;
-        remaining_seconds: number;
-        started_at: string | null;
-        sort_order: number;
-    };
-
-    type TimersResult = {
-        timers: TimerInfo[];
-        server_time: string;
     };
 
     const queryClient = useQueryClient();

@@ -1,12 +1,10 @@
 <script lang="ts">
-    import TaskItem from "./TaskItem.svelte";
+    /**
+     * @fileoverview タスク一覧表示コンポーネント
+     */
 
-    type TaskInfo = {
-        id: number;
-        title: string;
-        notes: string;
-        status: string;
-    };
+    import type { TaskInfo } from "$lib/types";
+    import TaskItem from "./TaskItem.svelte";
 
     type Props = {
         tasks: TaskInfo[];
