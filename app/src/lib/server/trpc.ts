@@ -156,17 +156,17 @@ export const appRouter = t.router({
         return { success: true };
       }),
 
-    hide: encryptedProcedure
+    archive: encryptedProcedure
       .input(UpdateListSchema.pick({ listId: true }))
       .mutation(async ({ ctx, input }) => {
-        await api.hideList(ctx.userId, input.listId);
+        await api.archiveList(ctx.userId, input.listId);
         return { success: true };
       }),
 
-    show: encryptedProcedure
+    unarchive: encryptedProcedure
       .input(UpdateListSchema.pick({ listId: true }))
       .mutation(async ({ ctx, input }) => {
-        await api.showList(ctx.userId, input.listId);
+        await api.unarchiveList(ctx.userId, input.listId);
         return { success: true };
       }),
 

@@ -10,7 +10,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
   const title = url.searchParams.get("title") ?? "";
   const text = url.searchParams.get("text") ?? "";
   const pageUrl = url.searchParams.get("url") ?? "";
-  const lists = await api.getLists(locals.user_id!, "list");
+  const lists = await api.getLists(locals.user_id!, "active");
   return { title, text, pageUrl, lists };
 };
 

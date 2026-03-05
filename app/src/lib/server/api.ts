@@ -3,7 +3,7 @@
  */
 
 import bcrypt from "bcryptjs";
-import { and, desc, eq } from "drizzle-orm";
+import { and, asc, eq, min } from "drizzle-orm";
 
 import { getDb } from "./db";
 import { lists, tasks, timers, users } from "./schema";
@@ -13,6 +13,7 @@ import { lists, tasks, timers, users } from "./schema";
 export type ListInfo = {
   id: number;
   title: string;
+  sort_order: number;
   last_updated: string;
 };
 
@@ -50,19 +51,6 @@ export type TimerInfo = {
 export type GetTasksResult =
   | { status: 304 }
   | { status: 200; data: TaskInfo[]; lastModified: string };
-
-// ── 定数 ──
-
-const STATUS_NAMES: Record<number, string> = {
-  0: "needsAction",
-  1: "completed",
-  2: "hidden",
-};
-const STATUS_IDS: Record<string, number> = {
-  needsAction: 0,
-  completed: 1,
-  hidden: 2,
-};
 
 // ── 日時変換ヘルパー ──
 
@@ -171,7 +159,7 @@ export async function registerUser(
 
 // ── リスト操作 ──
 
-/** リスト一覧を取得する。 */
+/** リスト一覧を取得する。sort_order 昇順で返す。 */
 export async function getLists(
   userId: number,
   showType: string,
@@ -181,12 +169,17 @@ export async function getLists(
     .select()
     .from(lists)
     .where(eq(lists.user_id, userId))
-    .orderBy(lists.title);
+    .orderBy(asc(lists.sort_order));
   return rows
-    .filter((r) => (showType === "list" ? r.status !== "hidden" : true))
+    .filter((r) => {
+      if (showType === "active") return r.status === "active";
+      if (showType === "archived") return r.status === "archived";
+      return true; // "all"
+    })
     .map((r) => ({
       id: r.id,
       title: r.title,
+      sort_order: r.sort_order,
       last_updated: toUtcIso(r.last_updated),
     }));
 }
@@ -215,52 +208,53 @@ export async function getListTasks(
     .select()
     .from(tasks)
     .where(eq(tasks.list_id, listId))
-    .orderBy(desc(tasks.updated));
+    .orderBy(asc(tasks.sort_order));
 
   const data: TaskInfo[] = allTasks
     .filter((t) => {
-      const status = STATUS_NAMES[t.status_id] ?? "needsAction";
       if (showType === "all") return true;
-      if (showType === "list") return status !== "hidden";
-      if (showType === "hidden") return status === "hidden";
+      if (showType === "active") return t.status !== "archived";
+      if (showType === "archived") return t.status === "archived";
       return true;
     })
     .map((t) => ({
       id: t.id,
       title: splitTitle(t.text),
       notes: splitNotes(t.text),
-      status: STATUS_NAMES[t.status_id] ?? "needsAction",
+      status: t.status,
     }));
 
   const lastModified = toUtcIso(list.last_updated);
   return { status: 200, data, lastModified };
 }
 
-/** リストを作成する。 */
+/** リストを作成する。sort_order は既存の最小値 - 1000（先頭追加）。 */
 export async function postList(userId: number, title: string): Promise<void> {
   if (title.length === 0) throw new Error("タイトルは必須です。");
   const db = getDb();
+  // 現在の最小 sort_order を取得
+  const [{ minOrder }] = await db
+    .select({ minOrder: min(lists.sort_order) })
+    .from(lists)
+    .where(eq(lists.user_id, userId));
+  const sortOrder = (minOrder ?? 1000) - 1000;
   await db.insert(lists).values({
     title,
     user_id: userId,
-    status: "show",
+    status: "active",
+    sort_order: sortOrder,
     last_updated: new Date(),
   });
 }
 
-/** 完了済みタスクを非表示にする。 */
+/** 完了済みタスクを archived にする。 */
 export async function clearList(userId: number, listId: number): Promise<void> {
   await getOwnedList(listId, userId);
   const db = getDb();
   await db
     .update(tasks)
-    .set({ status_id: STATUS_IDS["hidden"] })
-    .where(
-      and(
-        eq(tasks.list_id, listId),
-        eq(tasks.status_id, STATUS_IDS["completed"]),
-      ),
-    );
+    .set({ status: "archived" })
+    .where(and(eq(tasks.list_id, listId), eq(tasks.status, "completed")));
   await db
     .update(lists)
     .set({ last_updated: new Date() })
@@ -293,15 +287,24 @@ export async function deleteList(
   await db.delete(lists).where(eq(lists.id, listId));
 }
 
-/** リストを非表示にする。 */
-export async function hideList(userId: number, listId: number): Promise<void> {
+/** リストを archived にする。 */
+export async function archiveList(
+  userId: number,
+  listId: number,
+): Promise<void> {
   await getOwnedList(listId, userId);
   const db = getDb();
-  await db.update(lists).set({ status: "hidden" }).where(eq(lists.id, listId));
+  await db
+    .update(lists)
+    .set({ status: "archived" })
+    .where(eq(lists.id, listId));
 }
 
-/** リストを再表示する。 */
-export async function showList(userId: number, listId: number): Promise<void> {
+/** リストを active に戻す。 */
+export async function unarchiveList(
+  userId: number,
+  listId: number,
+): Promise<void> {
   await getOwnedList(listId, userId);
   const db = getDb();
   await db.update(lists).set({ status: "active" }).where(eq(lists.id, listId));
@@ -309,7 +312,7 @@ export async function showList(userId: number, listId: number): Promise<void> {
 
 // ── タスク操作 ──
 
-/** タスクを追加する。 */
+/** タスクを追加する。sort_order は既存の最小値 - 1000（先頭追加）。 */
 export async function postTask(
   userId: number,
   listId: number,
@@ -319,10 +322,17 @@ export async function postTask(
   const cleanText = text.trimEnd();
   const db = getDb();
   const now = new Date();
+  // 現在の最小 sort_order を取得
+  const [{ minOrder }] = await db
+    .select({ minOrder: min(tasks.sort_order) })
+    .from(tasks)
+    .where(eq(tasks.list_id, listId));
+  const sortOrder = (minOrder ?? 1000) - 1000;
   await db.insert(tasks).values({
     list_id: listId,
-    status_id: 0,
+    status: "active",
     text: cleanText,
+    sort_order: sortOrder,
     created: now,
     updated: now,
   });
@@ -351,15 +361,25 @@ export async function patchTask(
 
   if ("text" in data) {
     updates.text = (data.text as string).trimEnd();
-    if (!data.keep_order) updates.updated = new Date();
+    // keep_order=true の場合は sort_order を維持、false の場合は先頭に移動
+    if (!data.keep_order) {
+      const [{ minOrder }] = await db
+        .select({ minOrder: min(tasks.sort_order) })
+        .from(tasks)
+        .where(eq(tasks.list_id, listId));
+      const currentMin = minOrder ?? task.sort_order;
+      if (task.sort_order > currentMin) {
+        updates.sort_order = currentMin - 1000;
+      }
+    }
+    updates.updated = new Date();
   }
   if ("status" in data) {
     const newStatus = data.status as string;
-    const oldStatus = STATUS_NAMES[task.status_id] ?? "needsAction";
-    if (oldStatus === "needsAction" && newStatus === "completed") {
+    if (task.status === "active" && newStatus === "completed") {
       updates.completed = new Date();
     }
-    updates.status_id = STATUS_IDS[newStatus];
+    updates.status = newStatus;
   }
   if ("completed" in data) {
     updates.completed =
@@ -373,6 +393,12 @@ export async function patchTask(
       await getOwnedList(moveTo, userId);
       updates.list_id = moveTo;
       targetListId = moveTo;
+      // 移動先リストの先頭に配置
+      const [{ minOrder }] = await db
+        .select({ minOrder: min(tasks.sort_order) })
+        .from(tasks)
+        .where(eq(tasks.list_id, moveTo));
+      updates.sort_order = (minOrder ?? 1000) - 1000;
       await db
         .update(lists)
         .set({ last_updated: new Date() })
@@ -393,7 +419,7 @@ export async function patchTask(
     await db.select().from(tasks).where(eq(tasks.id, taskId)).limit(1)
   )[0];
   return {
-    status: STATUS_NAMES[updated.status_id] ?? "needsAction",
+    status: updated.status,
     completed: updated.completed ? toUtcIso(updated.completed) : null,
     list_id: targetListId,
     title: splitTitle(updated.text),

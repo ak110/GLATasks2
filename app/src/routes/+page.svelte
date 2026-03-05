@@ -20,7 +20,7 @@
     import TaskEditDialog from "$lib/components/tasks/TaskEditDialog.svelte";
 
     let selectedListId = $state<number | null>(null);
-    let showType = $state<"list" | "hidden" | "all">("list");
+    let showType = $state<"active" | "archived" | "all">("active");
     let addListTitle = $state("");
     let addTaskText = $state("");
     let openMenuId = $state<number | null>(null);
@@ -51,7 +51,7 @@
     const queryClient = useQueryClient();
 
     // rune → Svelte store 同期（@tanstack/svelte-query が Readable<T> を要求するため）
-    const showTypeStore = writable<"list" | "hidden" | "all">("list");
+    const showTypeStore = writable<"active" | "archived" | "all">("active");
     const selectedListIdStore = writable<number | null>(null);
     $effect(() => showTypeStore.set(showType));
     $effect(() => selectedListIdStore.set(selectedListId));
@@ -139,17 +139,17 @@
         },
     });
 
-    // リスト非表示
-    const hideListMutation = createMutation({
-        mutationFn: (listId: number) => trpc.lists.hide.mutate({ listId }),
+    // リストをアーカイブ
+    const archiveListMutation = createMutation({
+        mutationFn: (listId: number) => trpc.lists.archive.mutate({ listId }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["lists"] });
         },
     });
 
-    // リスト再表示
-    const showListMutation = createMutation({
-        mutationFn: (listId: number) => trpc.lists.show.mutate({ listId }),
+    // リストをアーカイブ解除
+    const unarchiveListMutation = createMutation({
+        mutationFn: (listId: number) => trpc.lists.unarchive.mutate({ listId }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["lists"] });
         },
@@ -256,7 +256,7 @@
         location.hash = "#" + listId;
     }
 
-    async function changeShowType(type: "list" | "hidden" | "all") {
+    async function changeShowType(type: "active" | "archived" | "all") {
         showType = type;
         await queryClient.invalidateQueries({ queryKey: ["lists"] });
         if (!lists.some((l) => l.id === selectedListId)) {
@@ -286,7 +286,7 @@
         if (!selectedListId) return;
         const taskData = checked
             ? { status: "completed" as const }
-            : { status: "needsAction" as const, completed: null };
+            : { status: "active" as const, completed: null };
         await $updateTaskMutation.mutateAsync({
             listId: selectedListId,
             taskId,
@@ -320,7 +320,7 @@
             data.completed !== wasCompleted
                 ? data.completed
                     ? { status: "completed" as const }
-                    : { status: "needsAction" as const, completed: null }
+                    : { status: "active" as const, completed: null }
                 : {};
 
         await $updateTaskMutation.mutateAsync({
@@ -358,9 +358,9 @@
         }
     }
 
-    async function hideList(listId: number) {
-        if (!globalThis.confirm("このリストを非表示にしますか？")) return;
-        await $hideListMutation.mutateAsync(listId);
+    async function archiveList(listId: number) {
+        if (!globalThis.confirm("このリストをアーカイブしますか？")) return;
+        await $archiveListMutation.mutateAsync(listId);
         if (selectedListId === listId) {
             const first = lists[0];
             if (first) selectList(first.id);
@@ -368,8 +368,8 @@
         }
     }
 
-    async function showList(listId: number) {
-        await $showListMutation.mutateAsync(listId);
+    async function unarchiveList(listId: number) {
+        await $unarchiveListMutation.mutateAsync(listId);
     }
 
     async function clearList(listId: number) {
@@ -406,8 +406,8 @@
             openMenuId = openMenuId === listId ? null : listId;
         }}
         onRename={renameList}
-        onHide={hideList}
-        onShow={showList}
+        onArchive={archiveList}
+        onUnarchive={unarchiveList}
         onDelete={deleteList}
         onAddList={addList}
     />

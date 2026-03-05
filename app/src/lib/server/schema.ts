@@ -24,8 +24,9 @@ export const users = mysqlTable("user", {
 export const lists = mysqlTable("list", {
   id: int("id").primaryKey().autoincrement(),
   user_id: int("user_id").notNull(),
-  status: varchar("status", { length: 255 }).notNull().default("show"),
+  status: varchar("status", { length: 255 }).notNull().default("active"),
   title: varchar("title", { length: 255 }).notNull(),
+  sort_order: int("sort_order").notNull().default(0),
   last_updated: timestamp("last_updated").notNull(),
 });
 
@@ -33,8 +34,9 @@ export const lists = mysqlTable("list", {
 export const tasks = mysqlTable("task", {
   id: int("id").primaryKey().autoincrement(),
   list_id: int("list_id").notNull(),
-  status_id: int("status_id").notNull().default(0),
+  status: varchar("status", { length: 255 }).notNull().default("active"),
   text: text("text").notNull(),
+  sort_order: int("sort_order").notNull().default(0),
   created: timestamp("created").notNull(),
   updated: timestamp("updated").notNull(),
   completed: timestamp("completed"),

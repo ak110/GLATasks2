@@ -8,6 +8,7 @@
 export type ListInfo = {
   id: number;
   title: string;
+  sort_order: number;
   last_updated: string;
 };
 

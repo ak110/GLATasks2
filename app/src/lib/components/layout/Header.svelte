@@ -6,8 +6,8 @@
     type Props = {
         page: "tasks" | "timers";
         isLoading: boolean;
-        showType?: "list" | "hidden" | "all";
-        onChangeShowType?: (type: "list" | "hidden" | "all") => void;
+        showType?: "active" | "archived" | "all";
+        onChangeShowType?: (type: "active" | "archived" | "all") => void;
     };
 
     let { page, isLoading, showType, onChangeShowType }: Props = $props();
@@ -36,12 +36,12 @@
                 value={showType}
                 onchange={(e) =>
                     onChangeShowType(
-                        e.currentTarget.value as "list" | "hidden" | "all",
+                        e.currentTarget.value as "active" | "archived" | "all",
                     )}
                 class="cursor-pointer rounded bg-gray-700 px-1.5 py-0.5 text-xs text-white focus:outline-none"
             >
-                <option value="list">表示中</option>
-                <option value="hidden">非表示</option>
+                <option value="active">表示中</option>
+                <option value="archived">アーカイブ</option>
                 <option value="all">すべて</option>
             </select>
         {/if}

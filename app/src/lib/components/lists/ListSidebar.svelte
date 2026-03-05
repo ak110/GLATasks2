@@ -9,7 +9,7 @@
     type Props = {
         lists: ListInfo[];
         selectedListId: number | null;
-        showType: "list" | "hidden" | "all";
+        showType: "active" | "archived" | "all";
         isLoading: boolean;
         mobileView: "lists" | "tasks";
         openMenuId: number | null;
@@ -17,8 +17,8 @@
         onSelect: (listId: number) => void;
         onToggleMenu: (listId: number) => void;
         onRename: (listId: number, currentTitle: string) => void;
-        onHide: (listId: number) => void;
-        onShow: (listId: number) => void;
+        onArchive: (listId: number) => void;
+        onUnarchive: (listId: number) => void;
         onDelete: (listId: number) => void;
         onAddList: (title: string) => void;
     };
@@ -34,8 +34,8 @@
         onSelect,
         onToggleMenu,
         onRename,
-        onHide,
-        onShow,
+        onArchive,
+        onUnarchive,
         onDelete,
         onAddList,
     }: Props = $props();
@@ -65,8 +65,8 @@
                 {onSelect}
                 {onToggleMenu}
                 {onRename}
-                {onHide}
-                {onShow}
+                {onArchive}
+                {onUnarchive}
                 {onDelete}
             />
         {/each}

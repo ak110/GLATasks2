@@ -6,9 +6,9 @@ import { z } from "zod";
 
 // ── 共通スキーマ ──
 
-export const TaskStatusSchema = z.enum(["needsAction", "completed", "hidden"]);
-export const ShowTypeSchema = z.enum(["list", "hidden", "all"]);
-export const ListStatusSchema = z.enum(["show", "hidden", "active"]);
+export const TaskStatusSchema = z.enum(["active", "completed", "archived"]);
+export const ShowTypeSchema = z.enum(["active", "archived", "all"]);
+export const ListStatusSchema = z.enum(["active", "archived"]);
 
 // ── タスク操作スキーマ ──
 

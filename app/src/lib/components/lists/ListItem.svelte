@@ -8,13 +8,13 @@
     type Props = {
         list: ListInfo;
         isSelected: boolean;
-        showType: "list" | "hidden" | "all";
+        showType: "active" | "archived" | "all";
         openMenuId: number | null;
         onSelect: (listId: number) => void;
         onToggleMenu: (listId: number) => void;
         onRename: (listId: number, currentTitle: string) => void;
-        onHide: (listId: number) => void;
-        onShow: (listId: number) => void;
+        onArchive: (listId: number) => void;
+        onUnarchive: (listId: number) => void;
         onDelete: (listId: number) => void;
     };
 
@@ -26,8 +26,8 @@
         onSelect,
         onToggleMenu,
         onRename,
-        onHide,
-        onShow,
+        onArchive,
+        onUnarchive,
         onDelete,
     }: Props = $props();
 </script>
@@ -72,25 +72,25 @@
                 >
                     名前変更
                 </button>
-                {#if showType === "hidden"}
+                {#if showType === "archived"}
                     <button
                         class="block w-full cursor-pointer px-4 py-1.5 text-left hover:bg-gray-100"
                         onclick={() => {
-                            onShow(list.id);
+                            onUnarchive(list.id);
                             onToggleMenu(list.id);
                         }}
                     >
-                        再表示
+                        アーカイブ解除
                     </button>
                 {:else}
                     <button
                         class="block w-full cursor-pointer px-4 py-1.5 text-left hover:bg-gray-100"
                         onclick={() => {
-                            onHide(list.id);
+                            onArchive(list.id);
                             onToggleMenu(list.id);
                         }}
                     >
-                        非表示にする
+                        アーカイブ
                     </button>
                 {/if}
                 <hr class="my-1 border-gray-200" />

@@ -25,7 +25,7 @@
 
 <div
     class="relative flex items-start gap-3 border-b border-gray-200 px-5 py-3 hover:bg-gray-50"
-    class:opacity-50={task.status === "hidden"}
+    class:opacity-50={task.status === "archived"}
     data-testid="task-item"
 >
     <input
