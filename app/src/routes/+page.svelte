@@ -213,15 +213,6 @@
         },
     });
 
-    // リスト並び替え
-    const reorderListsMutation = createMutation({
-        mutationFn: (listIds: number[]) =>
-            trpc.lists.reorder.mutate({ listIds }),
-        onSettled: () => {
-            queryClient.invalidateQueries({ queryKey: ["lists"] });
-        },
-    });
-
     // 派生状態
     const lists = $derived(($listsQuery.data ?? []) as ListInfo[]);
     const tasks = $derived.by(() => {
@@ -471,22 +462,6 @@
         $reorderTasksMutation.mutate({ listId: selectedListId, taskIds });
     }
 
-    /** リストの並び替え（楽観的更新 + API呼出） */
-    function handleReorderLists(listIds: number[]) {
-        // 楽観的更新
-        queryClient.setQueryData(
-            ["lists", showType],
-            (old: ListInfo[] | undefined) => {
-                if (!old) return old;
-                const listMap = new Map(old.map((l) => [l.id, l]));
-                return listIds
-                    .map((id) => listMap.get(id))
-                    .filter((l): l is ListInfo => l !== undefined);
-            },
-        );
-        $reorderListsMutation.mutate(listIds);
-    }
-
     /** 検索結果のタスクをクリックしてリストに遷移 */
     function goToSearchResult(listId: number) {
         searchQuery = "";
@@ -563,7 +538,6 @@
         onUnarchive={unarchiveList}
         onDelete={deleteList}
         onAddList={addList}
-        onReorderLists={handleReorderLists}
     />
 
     <!-- メインコンテンツ: 選択リストのタスク or 検索結果 -->

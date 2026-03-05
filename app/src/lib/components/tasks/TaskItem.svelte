@@ -48,13 +48,6 @@
     class:border-b-blue-500={dropIndicator === "after"}
     data-testid="task-item"
     role="listitem"
-    draggable={onDragStart ? "true" : undefined}
-    ondragstart={(e) => {
-        if (onDragStart) {
-            e.dataTransfer!.effectAllowed = "move";
-            onDragStart(task.id);
-        }
-    }}
     ondragover={(e) => {
         if (onDragOver) {
             e.preventDefault();
@@ -111,6 +104,20 @@
             aria-label="タスクをコピー">📋</button
         >
     </div>
+    <!-- ドラッグハンドル（D&D有効時のみ表示） -->
+    {#if onDragStart}
+        <span
+            class="mt-0.5 hidden cursor-grab text-gray-400 select-none sm:inline dark:text-gray-500"
+            draggable="true"
+            role="button"
+            tabindex="-1"
+            aria-label="ドラッグして並び替え"
+            ondragstart={(e) => {
+                e.dataTransfer!.effectAllowed = "move";
+                onDragStart(task.id);
+            }}>⠿</span
+        >
+    {/if}
     {#if copyMessage}
         <div
             class="absolute top-1 right-2 rounded bg-gray-800 px-2 py-1 text-xs text-white shadow"

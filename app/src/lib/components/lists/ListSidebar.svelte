@@ -21,7 +21,6 @@
         onUnarchive: (listId: number) => void;
         onDelete: (listId: number) => void;
         onAddList: (title: string) => void;
-        onReorderLists?: (listIds: number[]) => void;
     };
 
     let {
@@ -39,44 +38,7 @@
         onUnarchive,
         onDelete,
         onAddList,
-        onReorderLists,
     }: Props = $props();
-
-    // D&D 状態管理
-    let draggedId = $state<number | null>(null);
-    let dropTargetId = $state<number | null>(null);
-    let dropPosition = $state<"before" | "after" | null>(null);
-
-    function handleDragStart(listId: number) {
-        draggedId = listId;
-    }
-
-    function handleDragOver(listId: number, e: DragEvent) {
-        if (draggedId === null || listId === draggedId) return;
-        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-        const midY = rect.top + rect.height / 2;
-        dropTargetId = listId;
-        dropPosition = e.clientY < midY ? "before" : "after";
-    }
-
-    function handleDrop() {
-        if (draggedId === null || dropTargetId === null || !onReorderLists)
-            return;
-        const ids = lists.map((l) => l.id).filter((id) => id !== draggedId);
-        const targetIndex = ids.indexOf(dropTargetId);
-        if (targetIndex === -1) return;
-        const insertIndex =
-            dropPosition === "after" ? targetIndex + 1 : targetIndex;
-        ids.splice(insertIndex, 0, draggedId);
-        onReorderLists(ids);
-        resetDragState();
-    }
-
-    function resetDragState() {
-        draggedId = null;
-        dropTargetId = null;
-        dropPosition = null;
-    }
 
     function handleAddList(e: Event) {
         e.preventDefault();
@@ -106,12 +68,6 @@
                 {onArchive}
                 {onUnarchive}
                 {onDelete}
-                isDragging={draggedId === list.id}
-                dropIndicator={dropTargetId === list.id ? dropPosition : null}
-                onDragStart={onReorderLists ? handleDragStart : undefined}
-                onDragOver={onReorderLists ? handleDragOver : undefined}
-                onDrop={onReorderLists ? handleDrop : undefined}
-                onDragEnd={onReorderLists ? resetDragState : undefined}
             />
         {/each}
         {#if lists.length === 0 && !isLoading}

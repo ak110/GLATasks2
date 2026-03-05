@@ -20,7 +20,6 @@ import {
   LoginSchema,
   SearchTasksSchema,
   ReorderTasksSchema,
-  ReorderListsSchema,
 } from "$lib/schemas";
 import * as api from "./api";
 import { decryptToString, encryptObject } from "./crypto";
@@ -184,14 +183,6 @@ export const appRouter = t.router({
       .mutation(async ({ ctx, input }) => {
         await api.clearList(ctx.userId, input.listId);
         sendEvent(ctx.userId, "tasks:updated");
-        return { success: true };
-      }),
-
-    reorder: encryptedProcedure
-      .input(ReorderListsSchema)
-      .mutation(async ({ ctx, input }) => {
-        await api.reorderLists(ctx.userId, input.listIds);
-        sendEvent(ctx.userId, "lists:updated");
         return { success: true };
       }),
   }),

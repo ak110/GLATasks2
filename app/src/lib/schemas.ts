@@ -112,10 +112,6 @@ export const ReorderTasksSchema = z.object({
   taskIds: z.array(z.number().int().positive()),
 });
 
-export const ReorderListsSchema = z.object({
-  listIds: z.array(z.number().int().positive()),
-});
-
 // ── 型エクスポート ──
 
 export type TaskStatus = z.infer<typeof TaskStatusSchema>;
@@ -133,6 +129,5 @@ export type AdjustTimerInput = z.infer<typeof AdjustTimerSchema>;
 export type TimerStopInput = z.infer<typeof TimerStopSchema>;
 export type SearchTasksInput = z.infer<typeof SearchTasksSchema>;
 export type ReorderTasksInput = z.infer<typeof ReorderTasksSchema>;
-export type ReorderListsInput = z.infer<typeof ReorderListsSchema>;
 export type RegisterUserInput = z.infer<typeof RegisterUserSchema>;
 export type LoginInput = z.infer<typeof LoginSchema>;

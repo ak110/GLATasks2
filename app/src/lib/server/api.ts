@@ -164,7 +164,7 @@ export async function registerUser(
 
 // ── リスト操作 ──
 
-/** リスト一覧を取得する。sort_order 昇順で返す。 */
+/** リスト一覧を取得する。タイトル昇順で返す。 */
 export async function getLists(
   userId: number,
   showType: string,
@@ -174,7 +174,7 @@ export async function getLists(
     .select()
     .from(lists)
     .where(eq(lists.user_id, userId))
-    .orderBy(asc(lists.sort_order));
+    .orderBy(asc(lists.title));
   return rows
     .filter((r) => {
       if (showType === "active") return r.status === "active";
@@ -489,20 +489,6 @@ export async function reorderTasks(
     .update(lists)
     .set({ last_updated: new Date() })
     .where(eq(lists.id, listId));
-}
-
-/** リストの並び順を更新する */
-export async function reorderLists(
-  userId: number,
-  listIds: number[],
-): Promise<void> {
-  const db = getDb();
-  for (let i = 0; i < listIds.length; i++) {
-    await db
-      .update(lists)
-      .set({ sort_order: i * 1000 })
-      .where(and(eq(lists.id, listIds[i]), eq(lists.user_id, userId)));
-  }
 }
 
 // ── タイマー操作 ──

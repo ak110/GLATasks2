@@ -16,12 +16,6 @@
         onArchive: (listId: number) => void;
         onUnarchive: (listId: number) => void;
         onDelete: (listId: number) => void;
-        isDragging?: boolean;
-        dropIndicator?: "before" | "after" | null;
-        onDragStart?: (listId: number) => void;
-        onDragOver?: (listId: number, e: DragEvent) => void;
-        onDrop?: () => void;
-        onDragEnd?: () => void;
     };
 
     let {
@@ -35,12 +29,6 @@
         onArchive,
         onUnarchive,
         onDelete,
-        isDragging = false,
-        dropIndicator = null,
-        onDragStart,
-        onDragOver,
-        onDrop,
-        onDragEnd,
     }: Props = $props();
 </script>
 
@@ -48,33 +36,8 @@
     class="group flex items-center border-b border-gray-200 dark:border-gray-700 dark:text-gray-100 {isSelected
         ? 'bg-blue-50 dark:bg-blue-900/30'
         : ''}"
-    class:opacity-50={isDragging}
-    class:border-t-2={dropIndicator === "before"}
-    class:border-t-blue-500={dropIndicator === "before"}
-    class:border-b-2={dropIndicator === "after"}
-    class:border-b-blue-500={dropIndicator === "after"}
     data-testid="list-item"
     role="listitem"
-    draggable={onDragStart ? "true" : undefined}
-    ondragstart={(e) => {
-        if (onDragStart) {
-            e.dataTransfer!.effectAllowed = "move";
-            onDragStart(list.id);
-        }
-    }}
-    ondragover={(e) => {
-        if (onDragOver) {
-            e.preventDefault();
-            onDragOver(list.id, e);
-        }
-    }}
-    ondrop={(e) => {
-        if (onDrop) {
-            e.preventDefault();
-            onDrop();
-        }
-    }}
-    ondragend={() => onDragEnd?.()}
 >
     <button
         class="min-w-0 flex-1 cursor-pointer truncate px-4 py-2.5 text-left"
