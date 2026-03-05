@@ -11,7 +11,12 @@
     } from "@tanstack/svelte-query";
     import { trpc } from "$lib/trpc";
     import type { TaskStatus } from "$lib/schemas";
-    import type { ListInfo, TaskInfo, GetTasksResult } from "$lib/types";
+    import type {
+        ListInfo,
+        TaskInfo,
+        GetTasksResult,
+        SearchTaskResult,
+    } from "$lib/types";
     import Header from "$lib/components/layout/Header.svelte";
     import ListSidebar from "$lib/components/lists/ListSidebar.svelte";
     import TaskList from "$lib/components/tasks/TaskList.svelte";
@@ -25,6 +30,8 @@
     let addTaskText = $state("");
     let openMenuId = $state<number | null>(null);
     let hasHash = $state(false);
+    let searchQuery = $state("");
+    let debouncedQuery = $state("");
     const mobileView = $derived(
         hasHash ? ("tasks" as const) : ("lists" as const),
     );
@@ -50,11 +57,20 @@
 
     const queryClient = useQueryClient();
 
+    // 検索クエリの debounce（300ms）
+    $effect(() => {
+        const q = searchQuery;
+        const timer = setTimeout(() => (debouncedQuery = q), 300);
+        return () => clearTimeout(timer);
+    });
+
     // rune → Svelte store 同期（@tanstack/svelte-query が Readable<T> を要求するため）
     const showTypeStore = writable<"active" | "archived" | "all">("active");
     const selectedListIdStore = writable<number | null>(null);
+    const debouncedQueryStore = writable("");
     $effect(() => showTypeStore.set(showType));
     $effect(() => selectedListIdStore.set(selectedListId));
+    $effect(() => debouncedQueryStore.set(debouncedQuery));
 
     // リスト一覧取得
     const listsQuery = createQuery<ListInfo[]>(
@@ -81,6 +97,18 @@
                 }) as Promise<GetTasksResult>;
             },
             enabled: $listId !== null,
+        })),
+    );
+
+    // 全文検索クエリ
+    const searchResultsQuery = createQuery<SearchTaskResult[]>(
+        derived(debouncedQueryStore, ($q) => ({
+            queryKey: ["search", $q] as const,
+            queryFn: () =>
+                trpc.tasks.search.query({
+                    query: $q,
+                }) as Promise<SearchTaskResult[]>,
+            enabled: $q.length > 0,
         })),
     );
 
@@ -176,6 +204,24 @@
         },
     });
 
+    // タスク並び替え
+    const reorderTasksMutation = createMutation({
+        mutationFn: (input: { listId: number; taskIds: number[] }) =>
+            trpc.tasks.reorder.mutate(input),
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ["tasks"] });
+        },
+    });
+
+    // リスト並び替え
+    const reorderListsMutation = createMutation({
+        mutationFn: (listIds: number[]) =>
+            trpc.lists.reorder.mutate({ listIds }),
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ["lists"] });
+        },
+    });
+
     // 派生状態
     const lists = $derived(($listsQuery.data ?? []) as ListInfo[]);
     const tasks = $derived.by(() => {
@@ -183,6 +229,26 @@
         return data && "data" in data ? data.data : [];
     });
     const isLoading = $derived($listsQuery.isLoading || $tasksQuery.isLoading);
+    const isSearching = $derived(debouncedQuery.length > 0);
+    const searchResults = $derived(
+        ($searchResultsQuery.data ?? []) as SearchTaskResult[],
+    );
+    // 検索結果をリスト名でグループ化
+    const searchResultsByList = $derived.by(() => {
+        const map = new Map<
+            number,
+            { title: string; tasks: SearchTaskResult[] }
+        >();
+        for (const task of searchResults) {
+            let group = map.get(task.listId);
+            if (!group) {
+                group = { title: task.listTitle, tasks: [] };
+                map.set(task.listId, group);
+            }
+            group.tasks.push(task);
+        }
+        return map;
+    });
 
     // URLハッシュからリストIDを解析
     function parseHashListId(): number | null {
@@ -387,6 +453,47 @@
         await $clearListMutation.mutateAsync(listId);
     }
 
+    /** タスクの並び替え（楽観的更新 + API呼出） */
+    function handleReorderTasks(taskIds: number[]) {
+        if (!selectedListId) return;
+        // 楽観的更新: キャッシュ内のタスク配列を即座に並び替え
+        queryClient.setQueryData(
+            ["tasks", selectedListId, showType],
+            (old: GetTasksResult | undefined) => {
+                if (!old || !("data" in old)) return old;
+                const taskMap = new Map(old.data.map((t) => [t.id, t]));
+                const reordered = taskIds
+                    .map((id) => taskMap.get(id))
+                    .filter((t): t is TaskInfo => t !== undefined);
+                return { ...old, data: reordered };
+            },
+        );
+        $reorderTasksMutation.mutate({ listId: selectedListId, taskIds });
+    }
+
+    /** リストの並び替え（楽観的更新 + API呼出） */
+    function handleReorderLists(listIds: number[]) {
+        // 楽観的更新
+        queryClient.setQueryData(
+            ["lists", showType],
+            (old: ListInfo[] | undefined) => {
+                if (!old) return old;
+                const listMap = new Map(old.map((l) => [l.id, l]));
+                return listIds
+                    .map((id) => listMap.get(id))
+                    .filter((l): l is ListInfo => l !== undefined);
+            },
+        );
+        $reorderListsMutation.mutate(listIds);
+    }
+
+    /** 検索結果のタスクをクリックしてリストに遷移 */
+    function goToSearchResult(listId: number) {
+        searchQuery = "";
+        debouncedQuery = "";
+        selectList(listId);
+    }
+
     /** モバイルでリスト一覧に戻る（pushState でハッシュを除去） */
     function backToLists() {
         // history.back() だと直接 /#ID にアクセスした場合にサイト外へ遷移するため pushState を使う
@@ -396,9 +503,44 @@
     }
 </script>
 
-<svelte:window onclick={() => (openMenuId = null)} />
+<svelte:window
+    onclick={() => (openMenuId = null)}
+    onkeydown={(e) => {
+        // input/textarea/select にフォーカス中、またはダイアログ表示中はスキップ
+        const tag = (e.target as HTMLElement)?.tagName;
+        if (
+            tag === "INPUT" ||
+            tag === "TEXTAREA" ||
+            tag === "SELECT" ||
+            editDialog.open
+        )
+            return;
+        if (e.key === "n") {
+            e.preventDefault();
+            const textarea = document.querySelector<HTMLTextAreaElement>(
+                '[data-testid="task-add-form"] textarea',
+            );
+            textarea?.focus();
+        } else if (e.key === "/") {
+            e.preventDefault();
+            const input = document.querySelector<HTMLInputElement>(
+                '[data-testid="search-input"]',
+            );
+            input?.focus();
+        } else if (e.key === "Escape") {
+            (document.activeElement as HTMLElement)?.blur();
+        }
+    }}
+/>
 
-<Header page="tasks" {showType} {isLoading} onChangeShowType={changeShowType} />
+<Header
+    page="tasks"
+    {showType}
+    {isLoading}
+    onChangeShowType={changeShowType}
+    {searchQuery}
+    onSearchChange={(q) => (searchQuery = q)}
+/>
 
 <!-- ボディ: サイドバー + メインコンテンツ -->
 <div
@@ -421,15 +563,72 @@
         onUnarchive={unarchiveList}
         onDelete={deleteList}
         onAddList={addList}
+        onReorderLists={handleReorderLists}
     />
 
-    <!-- メインコンテンツ: 選択リストのタスク -->
+    <!-- メインコンテンツ: 選択リストのタスク or 検索結果 -->
     <main
-        class="flex-1 flex-col overflow-y-auto bg-white sm:flex"
+        class="flex-1 flex-col overflow-y-auto bg-white sm:flex dark:bg-gray-800"
         class:flex={mobileView === "tasks"}
         class:hidden={mobileView !== "tasks"}
     >
-        {#if selectedListId !== null}
+        {#if isSearching}
+            <!-- 検索結果表示 -->
+            <div
+                class="border-b border-gray-200 bg-blue-50 px-4 py-3 dark:border-gray-700 dark:bg-blue-900/30"
+            >
+                <h2 class="font-semibold text-gray-800 dark:text-gray-100">
+                    検索結果: "{debouncedQuery}"
+                </h2>
+            </div>
+            {#if $searchResultsQuery.isLoading}
+                <p class="p-4 text-gray-400 dark:text-gray-500">検索中...</p>
+            {:else if searchResults.length === 0}
+                <p class="p-4 text-gray-400 dark:text-gray-500">
+                    該当するタスクがありません
+                </p>
+            {:else}
+                {#each [...searchResultsByList] as [listId, group] (listId)}
+                    <div
+                        class="border-b border-gray-200 bg-gray-50 px-4 py-2 dark:border-gray-700 dark:bg-gray-900"
+                    >
+                        <button
+                            class="cursor-pointer text-sm font-medium text-blue-600 hover:underline dark:text-blue-400"
+                            onclick={() => goToSearchResult(listId)}
+                        >
+                            {group.title}
+                        </button>
+                    </div>
+                    {#each group.tasks as task (task.id)}
+                        <div
+                            class="flex items-start gap-3 border-b border-gray-200 px-5 py-3 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700"
+                        >
+                            <div
+                                class="min-w-0 flex-1 wrap-break-word break-all"
+                            >
+                                <button
+                                    class="cursor-pointer text-left leading-tight hover:text-blue-600 dark:text-gray-100 dark:hover:text-blue-400"
+                                    class:line-through={task.status ===
+                                        "completed"}
+                                    class:text-gray-400={task.status ===
+                                        "completed"}
+                                    onclick={() => goToSearchResult(listId)}
+                                >
+                                    {task.title}
+                                </button>
+                                {#if task.notes}
+                                    <p
+                                        class="mt-0.5 whitespace-pre-wrap text-gray-500 dark:text-gray-400"
+                                    >
+                                        {task.notes}
+                                    </p>
+                                {/if}
+                            </div>
+                        </div>
+                    {/each}
+                {/each}
+            {/if}
+        {:else if selectedListId !== null}
             {@const selectedList = lists.find((l) => l.id === selectedListId)}
             {#if selectedList}
                 <TaskListHeader
@@ -446,10 +645,11 @@
                 isLoading={$tasksQuery.isLoading}
                 onToggle={toggleTask}
                 onEdit={openEditDialog}
+                onReorder={handleReorderTasks}
             />
         {:else}
             <div class="flex flex-1 items-center justify-center">
-                <p class=" text-gray-400">
+                <p class="text-gray-400 dark:text-gray-500">
                     サイドバーからリストを選択してください
                 </p>
             </div>

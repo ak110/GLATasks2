@@ -191,7 +191,9 @@
 
 <div class="mx-auto max-w-4xl px-4 py-6">
     <div class="mb-6 flex items-center justify-between">
-        <h1 class="text-xl font-bold text-gray-800">タイマー</h1>
+        <h1 class="text-xl font-bold text-gray-800 dark:text-gray-100">
+            タイマー
+        </h1>
         <button
             onclick={openCreateDialog}
             class="cursor-pointer rounded bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
@@ -203,7 +205,9 @@
 
     {#if timersList.length === 0 && !isLoading}
         <div class="flex flex-col items-center justify-center py-16">
-            <p class="mb-4 text-gray-400">タイマーがありません</p>
+            <p class="mb-4 text-gray-400 dark:text-gray-500">
+                タイマーがありません
+            </p>
         </div>
     {:else}
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

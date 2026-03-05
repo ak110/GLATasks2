@@ -14,7 +14,7 @@
         <form method="POST">
             <div class="mb-4">
                 <label
-                    class="mb-1 block cursor-pointer font-medium text-gray-700"
+                    class="mb-1 block cursor-pointer font-medium text-gray-700 dark:text-gray-200"
                     for="user_id">ユーザーID</label
                 >
                 <input
@@ -23,12 +23,12 @@
                     type="text"
                     required
                     autocomplete="username"
-                    class="w-full rounded border border-gray-200 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                    class="w-full rounded border border-gray-200 px-3 py-2 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                 />
             </div>
             <div class="mb-4">
                 <label
-                    class="mb-1 block cursor-pointer font-medium text-gray-700"
+                    class="mb-1 block cursor-pointer font-medium text-gray-700 dark:text-gray-200"
                     for="password">パスワード</label
                 >
                 <input
@@ -37,12 +37,12 @@
                     type="password"
                     required
                     autocomplete="new-password"
-                    class="w-full rounded border border-gray-200 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                    class="w-full rounded border border-gray-200 px-3 py-2 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                 />
             </div>
             <div class="mb-6">
                 <label
-                    class="mb-1 block cursor-pointer font-medium text-gray-700"
+                    class="mb-1 block cursor-pointer font-medium text-gray-700 dark:text-gray-200"
                     for="password_confirm">パスワード（確認）</label
                 >
                 <input
@@ -51,7 +51,7 @@
                     type="password"
                     required
                     autocomplete="new-password"
-                    class="w-full rounded border border-gray-200 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                    class="w-full rounded border border-gray-200 px-3 py-2 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                 />
             </div>
             <button
@@ -63,7 +63,7 @@
         </form>
     {/snippet}
     {#snippet footer()}
-        <p class="mt-4 text-center text-gray-600">
+        <p class="mt-4 text-center text-gray-600 dark:text-gray-300">
             アカウントをお持ちの方は
             <a href="/auth/login" class="text-blue-600 hover:underline"
                 >ログイン</a

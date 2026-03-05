@@ -65,15 +65,19 @@
         role="dialog"
         aria-modal="true"
     >
-        <div class="w-full max-w-2xl rounded-lg bg-white shadow-xl">
+        <div
+            class="w-full max-w-2xl rounded-lg bg-white shadow-xl dark:bg-gray-800"
+        >
             <div class="flex items-center justify-between px-6 py-4">
-                <h2 class="text-lg font-semibold text-gray-800">
+                <h2
+                    class="text-lg font-semibold text-gray-800 dark:text-gray-100"
+                >
                     タスクの編集
                 </h2>
                 <button
                     bind:this={closeButtonEl}
                     onclick={onClose}
-                    class="cursor-pointer rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                    class="cursor-pointer rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
                     aria-label="閉じる"
                 >
                     ✕
@@ -89,12 +93,13 @@
                     />
                     <label
                         for="edit-completed"
-                        class="cursor-pointer text-gray-700">完了</label
+                        class="cursor-pointer text-gray-700 dark:text-gray-200"
+                        >完了</label
                     >
                 </div>
                 <div class="mb-4">
                     <label
-                        class="mb-1 block cursor-pointer font-medium text-gray-700"
+                        class="mb-1 block cursor-pointer font-medium text-gray-700 dark:text-gray-200"
                         for="edit-text">内容</label
                     >
                     <textarea
@@ -108,18 +113,18 @@
                                 closeButtonEl?.focus();
                             }
                         }}
-                        class="w-full rounded border border-gray-200 px-3 py-2 wrap-break-word break-all focus:border-blue-500 focus:outline-none"
+                        class="w-full rounded border border-gray-200 px-3 py-2 wrap-break-word break-all focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                     ></textarea>
                 </div>
                 <div class="mb-4">
                     <label
-                        class="mb-1 block cursor-pointer font-medium text-gray-700"
+                        class="mb-1 block cursor-pointer font-medium text-gray-700 dark:text-gray-200"
                         for="edit-move-to">リスト</label
                     >
                     <select
                         id="edit-move-to"
                         bind:value={localMoveTo}
-                        class="w-full rounded border border-gray-200 px-3 py-2 wrap-break-word break-all focus:border-blue-500 focus:outline-none"
+                        class="w-full rounded border border-gray-200 px-3 py-2 wrap-break-word break-all focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                     >
                         {#each lists as l (l.id)}
                             <option value={String(l.id)}>{l.title}</option>
@@ -135,7 +140,7 @@
                     />
                     <label
                         for="edit-keep-order"
-                        class="cursor-pointer text-gray-700"
+                        class="cursor-pointer text-gray-700 dark:text-gray-200"
                         >並び順を維持する</label
                     >
                 </div>

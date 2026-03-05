@@ -93,6 +93,12 @@
 - `observable` の `next` コールバックが `async` の場合、`complete` が非同期の処理完了前に発火する。
 - `pending` で Promise を追跡し、`complete` 時に `then()` で待つ必要がある。
 
+### Svelte テンプレートの `class:` ディレクティブ制限
+
+- `class:dark:bg-blue-900/30={condition}` は構文エラーになる。Svelte のパーサーは `class:` ディレクティブ名に `:` や `/` を含められない。
+- 条件付きダークモードクラスは動的 class 式で記述する: `class="... {condition ? 'bg-blue-50 dark:bg-blue-900/30' : ''}"`
+- ドラッグ&ドロップのイベントハンドラを持つ `<div>` には `role="listitem"` 等の ARIA ロールが必要（`a11y_no_static_element_interactions` エラー回避）。
+
 ### JavaScript の `String.split(sep, limit)` の罠
 
 - `"a\nb\nc".split("\n", 2)` は `["a", "b"]` を返し、`"c"` は捨てられる。Python と異なり、残りが末尾要素に結合されない。

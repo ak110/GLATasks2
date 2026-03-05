@@ -21,6 +21,7 @@
         onUnarchive: (listId: number) => void;
         onDelete: (listId: number) => void;
         onAddList: (title: string) => void;
+        onReorderLists?: (listIds: number[]) => void;
     };
 
     let {
@@ -38,7 +39,44 @@
         onUnarchive,
         onDelete,
         onAddList,
+        onReorderLists,
     }: Props = $props();
+
+    // D&D 状態管理
+    let draggedId = $state<number | null>(null);
+    let dropTargetId = $state<number | null>(null);
+    let dropPosition = $state<"before" | "after" | null>(null);
+
+    function handleDragStart(listId: number) {
+        draggedId = listId;
+    }
+
+    function handleDragOver(listId: number, e: DragEvent) {
+        if (draggedId === null || listId === draggedId) return;
+        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+        const midY = rect.top + rect.height / 2;
+        dropTargetId = listId;
+        dropPosition = e.clientY < midY ? "before" : "after";
+    }
+
+    function handleDrop() {
+        if (draggedId === null || dropTargetId === null || !onReorderLists)
+            return;
+        const ids = lists.map((l) => l.id).filter((id) => id !== draggedId);
+        const targetIndex = ids.indexOf(dropTargetId);
+        if (targetIndex === -1) return;
+        const insertIndex =
+            dropPosition === "after" ? targetIndex + 1 : targetIndex;
+        ids.splice(insertIndex, 0, draggedId);
+        onReorderLists(ids);
+        resetDragState();
+    }
+
+    function resetDragState() {
+        draggedId = null;
+        dropTargetId = null;
+        dropPosition = null;
+    }
 
     function handleAddList(e: Event) {
         e.preventDefault();
@@ -50,7 +88,7 @@
 </script>
 
 <aside
-    class="flex-col border-r border-gray-200 bg-white sm:flex sm:w-56 sm:shrink-0"
+    class="flex-col border-r border-gray-200 bg-white sm:flex sm:w-56 sm:shrink-0 dark:border-gray-700 dark:bg-gray-800"
     class:flex={mobileView === "lists"}
     class:w-full={mobileView === "lists"}
     class:hidden={mobileView !== "lists"}
@@ -68,20 +106,26 @@
                 {onArchive}
                 {onUnarchive}
                 {onDelete}
+                isDragging={draggedId === list.id}
+                dropIndicator={dropTargetId === list.id ? dropPosition : null}
+                onDragStart={onReorderLists ? handleDragStart : undefined}
+                onDragOver={onReorderLists ? handleDragOver : undefined}
+                onDrop={onReorderLists ? handleDrop : undefined}
+                onDragEnd={onReorderLists ? resetDragState : undefined}
             />
         {/each}
         {#if lists.length === 0 && !isLoading}
-            <p class="p-4 text-gray-400">リストなし</p>
+            <p class="p-4 text-gray-400 dark:text-gray-500">リストなし</p>
         {/if}
     </div>
     <!-- リスト追加フォーム -->
-    <div class="border-t border-gray-200 p-3">
+    <div class="border-t border-gray-200 p-3 dark:border-gray-700">
         <form onsubmit={handleAddList} class="flex gap-2">
             <input
                 type="text"
                 bind:value={addListTitle}
                 placeholder="新しいリスト"
-                class="min-w-0 flex-1 rounded border border-gray-200 px-2.5 py-1.5 focus:border-blue-400 focus:outline-none"
+                class="min-w-0 flex-1 rounded border border-gray-200 px-2.5 py-1.5 focus:border-blue-400 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
             />
             <button
                 type="submit"

@@ -58,6 +58,32 @@
 - コンテンツ領域のアクションボタン: `cursor-pointer rounded bg-gray-100 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-200`
 - ダイアログの共通パターン: ヘッダーにタイトル+✕閉じるボタン、キャンセルボタンは使わない
 
+### ダークモードの色マッピング
+
+Tailwind CSS v4 の `@custom-variant dark` を使用。`<html>` に `.dark` クラスを付与して切り替え。
+
+| ライトモード        | ダークモード               |
+| ------------------- | -------------------------- |
+| `bg-white`          | `dark:bg-gray-800`         |
+| `bg-gray-50`        | `dark:bg-gray-900`         |
+| `bg-gray-100`       | `dark:bg-gray-700`         |
+| `bg-blue-50`        | `dark:bg-blue-900/30`      |
+| `text-gray-800`     | `dark:text-gray-100`       |
+| `text-gray-700`     | `dark:text-gray-200`       |
+| `text-gray-600`     | `dark:text-gray-300`       |
+| `text-gray-500`     | `dark:text-gray-400`       |
+| `text-gray-400`     | `dark:text-gray-500`       |
+| `text-blue-600`     | `dark:text-blue-400`       |
+| `border-gray-200`   | `dark:border-gray-700`     |
+| `border-gray-300`   | `dark:border-gray-600`     |
+| `hover:bg-gray-50`  | `dark:hover:bg-gray-700`   |
+| `hover:bg-gray-100` | `dark:hover:bg-gray-700`   |
+| `hover:bg-gray-200` | `dark:hover:bg-gray-600`   |
+| `hover:bg-red-50`   | `dark:hover:bg-red-900/30` |
+| `bg-blue-100`       | `dark:bg-blue-900/40`      |
+
+テーマ管理: `app/src/lib/theme.ts`（light / dark / system の3状態トグル）
+
 ## Markdown記述スタイル
 
 - `**`は強調したい箇所のみとし、箇条書きの見出しなどでの使用は禁止

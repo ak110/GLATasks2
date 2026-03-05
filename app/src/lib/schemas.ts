@@ -10,6 +10,12 @@ export const TaskStatusSchema = z.enum(["active", "completed", "archived"]);
 export const ShowTypeSchema = z.enum(["active", "archived", "all"]);
 export const ListStatusSchema = z.enum(["active", "archived"]);
 
+// ── 検索スキーマ ──
+
+export const SearchTasksSchema = z.object({
+  query: z.string().min(1).max(255),
+});
+
 // ── タスク操作スキーマ ──
 
 export const CreateTaskSchema = z.object({
@@ -99,6 +105,17 @@ export const LoginSchema = z.object({
   password: z.string().min(1),
 });
 
+// ── 並び替えスキーマ ──
+
+export const ReorderTasksSchema = z.object({
+  listId: z.number().int().positive(),
+  taskIds: z.array(z.number().int().positive()),
+});
+
+export const ReorderListsSchema = z.object({
+  listIds: z.array(z.number().int().positive()),
+});
+
 // ── 型エクスポート ──
 
 export type TaskStatus = z.infer<typeof TaskStatusSchema>;
@@ -114,5 +131,8 @@ export type CreateTimerInput = z.infer<typeof CreateTimerSchema>;
 export type UpdateTimerInput = z.infer<typeof UpdateTimerSchema>;
 export type AdjustTimerInput = z.infer<typeof AdjustTimerSchema>;
 export type TimerStopInput = z.infer<typeof TimerStopSchema>;
+export type SearchTasksInput = z.infer<typeof SearchTasksSchema>;
+export type ReorderTasksInput = z.infer<typeof ReorderTasksSchema>;
+export type ReorderListsInput = z.infer<typeof ReorderListsSchema>;
 export type RegisterUserInput = z.infer<typeof RegisterUserSchema>;
 export type LoginInput = z.infer<typeof LoginSchema>;

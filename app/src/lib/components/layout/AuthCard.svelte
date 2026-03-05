@@ -15,9 +15,15 @@
     let { title, error, children, footer }: Props = $props();
 </script>
 
-<div class="flex min-h-screen items-center justify-center bg-gray-100">
-    <div class="w-full max-w-sm rounded-lg bg-white p-8 shadow">
-        <h1 class="mb-6 text-center text-2xl font-bold text-gray-800">
+<div
+    class="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-gray-900"
+>
+    <div
+        class="w-full max-w-sm rounded-lg bg-white p-8 shadow dark:bg-gray-800"
+    >
+        <h1
+            class="mb-6 text-center text-2xl font-bold text-gray-800 dark:text-gray-100"
+        >
             {title}
         </h1>
         {#if error}

@@ -42,7 +42,7 @@
 </script>
 
 <div
-    class="border-b border-gray-200 bg-white px-4 py-2"
+    class="border-b border-gray-200 bg-white px-4 py-2 dark:border-gray-700 dark:bg-gray-800"
     data-testid="task-add-form"
 >
     <form onsubmit={handleSubmit} class="flex items-start gap-2">
@@ -53,14 +53,14 @@
             onfocus={() => (formFocused = true)}
             onblur={handleBlur}
             onkeydown={handleKeydown}
-            class="flex-1 resize-none rounded border border-gray-200 px-3 py-1.5 text-sm focus:border-blue-400 focus:outline-none"
+            class="flex-1 resize-none rounded border border-gray-200 px-3 py-1.5 text-sm focus:border-blue-400 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
         ></textarea>
         {#if formFocused || value}
             <button
                 type="submit"
                 onfocus={() => (formFocused = true)}
                 onblur={handleBlur}
-                class="cursor-pointer rounded bg-blue-100 px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-200"
+                class="cursor-pointer rounded bg-blue-100 px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-400 dark:hover:bg-blue-900/60"
             >
                 追加
             </button>

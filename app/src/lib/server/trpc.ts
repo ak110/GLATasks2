@@ -18,6 +18,9 @@ import {
   TimerStopSchema,
   AdjustTimerSchema,
   LoginSchema,
+  SearchTasksSchema,
+  ReorderTasksSchema,
+  ReorderListsSchema,
 } from "$lib/schemas";
 import * as api from "./api";
 import { decryptToString, encryptObject } from "./crypto";
@@ -183,6 +186,14 @@ export const appRouter = t.router({
         sendEvent(ctx.userId, "tasks:updated");
         return { success: true };
       }),
+
+    reorder: encryptedProcedure
+      .input(ReorderListsSchema)
+      .mutation(async ({ ctx, input }) => {
+        await api.reorderLists(ctx.userId, input.listIds);
+        sendEvent(ctx.userId, "lists:updated");
+        return { success: true };
+      }),
   }),
 
   // ── タスク操作 ──
@@ -213,6 +224,20 @@ export const appRouter = t.router({
         const result = api.patchTask(ctx.userId, listId, taskId, data);
         sendEvent(ctx.userId, "tasks:updated");
         return result;
+      }),
+
+    search: encryptedProcedure
+      .input(SearchTasksSchema)
+      .query(async ({ ctx, input }) => {
+        return api.searchTasks(ctx.userId, input.query);
+      }),
+
+    reorder: encryptedProcedure
+      .input(ReorderTasksSchema)
+      .mutation(async ({ ctx, input }) => {
+        await api.reorderTasks(ctx.userId, input.listId, input.taskIds);
+        sendEvent(ctx.userId, "tasks:updated");
+        return { success: true };
       }),
   }),
 

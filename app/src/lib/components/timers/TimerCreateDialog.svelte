@@ -78,14 +78,18 @@
         role="dialog"
         aria-modal="true"
     >
-        <div class="mx-4 w-full max-w-md rounded-lg bg-white shadow-xl">
+        <div
+            class="mx-4 w-full max-w-md rounded-lg bg-white shadow-xl dark:bg-gray-800"
+        >
             <div class="flex items-center justify-between px-6 py-4">
-                <h2 class="text-lg font-semibold text-gray-800">
+                <h2
+                    class="text-lg font-semibold text-gray-800 dark:text-gray-100"
+                >
                     {mode === "create" ? "タイマー追加" : "タイマー編集"}
                 </h2>
                 <button
                     onclick={onClose}
-                    class="cursor-pointer rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                    class="cursor-pointer rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
                     aria-label="閉じる"
                 >
                     ✕
@@ -101,14 +105,15 @@
                 <div>
                     <label
                         for="timer-name"
-                        class="mb-1 block text-sm text-gray-600">名前</label
+                        class="mb-1 block text-sm text-gray-600 dark:text-gray-300"
+                        >名前</label
                     >
                     <input
                         id="timer-name"
                         type="text"
                         bind:value={localName}
                         bind:this={nameInputEl}
-                        class="w-full rounded border border-gray-200 px-3 py-2 focus:border-blue-400 focus:outline-none"
+                        class="w-full rounded border border-gray-200 px-3 py-2 focus:border-blue-400 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                         placeholder="例: 作業タイマー"
                         maxlength="255"
                         data-testid="timer-name-input"
@@ -116,7 +121,8 @@
                 </div>
 
                 <div>
-                    <span class="mb-1 block text-sm text-gray-600"
+                    <span
+                        class="mb-1 block text-sm text-gray-600 dark:text-gray-300"
                         >ベース時間</span
                     >
                     <div class="flex items-center gap-2">
@@ -125,35 +131,41 @@
                             bind:value={localHours}
                             min="0"
                             max="99"
-                            class="w-20 rounded border border-gray-200 px-2 py-2 text-center focus:border-blue-400 focus:outline-none"
+                            class="w-20 rounded border border-gray-200 px-2 py-2 text-center focus:border-blue-400 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                             data-testid="timer-hours-input"
                         />
-                        <span class="text-sm text-gray-500">時間</span>
+                        <span class="text-sm text-gray-500 dark:text-gray-400"
+                            >時間</span
+                        >
                         <input
                             type="number"
                             bind:value={localMinutes}
                             min="0"
                             max="59"
-                            class="w-20 rounded border border-gray-200 px-2 py-2 text-center focus:border-blue-400 focus:outline-none"
+                            class="w-20 rounded border border-gray-200 px-2 py-2 text-center focus:border-blue-400 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                             data-testid="timer-minutes-input"
                         />
-                        <span class="text-sm text-gray-500">分</span>
+                        <span class="text-sm text-gray-500 dark:text-gray-400"
+                            >分</span
+                        >
                         <input
                             type="number"
                             bind:value={localSeconds}
                             min="0"
                             max="59"
-                            class="w-20 rounded border border-gray-200 px-2 py-2 text-center focus:border-blue-400 focus:outline-none"
+                            class="w-20 rounded border border-gray-200 px-2 py-2 text-center focus:border-blue-400 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                             data-testid="timer-seconds-input"
                         />
-                        <span class="text-sm text-gray-500">秒</span>
+                        <span class="text-sm text-gray-500 dark:text-gray-400"
+                            >秒</span
+                        >
                     </div>
                 </div>
 
                 <div>
                     <label
                         for="timer-adjust"
-                        class="mb-1 block text-sm text-gray-600"
+                        class="mb-1 block text-sm text-gray-600 dark:text-gray-300"
                         >延長/削減の単位（分）</label
                     >
                     <input
@@ -162,7 +174,7 @@
                         bind:value={localAdjustMinutes}
                         min="1"
                         max="999"
-                        class="w-24 rounded border border-gray-200 px-3 py-2 text-center focus:border-blue-400 focus:outline-none"
+                        class="w-24 rounded border border-gray-200 px-3 py-2 text-center focus:border-blue-400 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                         data-testid="timer-adjust-input"
                     />
                 </div>

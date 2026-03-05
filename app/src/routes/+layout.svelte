@@ -5,11 +5,21 @@
     import { queryClient } from "$lib/query-client";
     import { onMount } from "svelte";
     import { setEncryptKey } from "$lib/trpc";
+    import { setContext } from "svelte";
+    import {
+        getStoredTheme,
+        setTheme,
+        applyTheme,
+        cycleTheme,
+        type Theme,
+    } from "$lib/theme";
     import TimerAlarmMonitor from "$lib/components/timers/TimerAlarmMonitor.svelte";
     import type { LayoutData } from "./$types";
 
     const { children, data }: { children: Snippet; data: LayoutData } =
         $props();
+
+    let theme = $state<Theme>("system");
 
     // 暗号化鍵が提供されている場合は設定
     $effect(() => {
@@ -18,20 +28,47 @@
         }
     });
 
-    // サービスワーカー登録
-    onMount(async () => {
+    onMount(() => {
+        // テーマ初期化
+        theme = getStoredTheme();
+        applyTheme(theme);
+
+        // OS テーマ変更リスナー
+        const mq = matchMedia("(prefers-color-scheme:dark)");
+        const handler = () => {
+            if (theme === "system") applyTheme("system");
+        };
+        mq.addEventListener("change", handler);
+
+        // サービスワーカー登録
         if ("serviceWorker" in navigator) {
-            try {
-                const registration =
-                    await navigator.serviceWorker.register("/sw.js");
-                console.log(
-                    "ServiceWorker registration successful with scope:",
-                    registration.scope,
+            navigator.serviceWorker
+                .register("/sw.js")
+                .then((r) =>
+                    console.log(
+                        "ServiceWorker registration successful with scope:",
+                        r.scope,
+                    ),
+                )
+                .catch((e) =>
+                    console.log("ServiceWorker registration failed:", e),
                 );
-            } catch (error) {
-                console.log("ServiceWorker registration failed:", error);
-            }
         }
+
+        return () => mq.removeEventListener("change", handler);
+    });
+
+    function handleChangeTheme() {
+        theme = cycleTheme(theme);
+        setTheme(theme);
+    }
+
+    // テーマを子コンポーネントに提供
+    setContext("themeContext", {
+        get theme() {
+            return theme;
+        },
+        changeTheme: handleChangeTheme,
     });
 </script>
 
@@ -39,7 +76,7 @@
     {#if data.logged_in}
         <TimerAlarmMonitor />
     {/if}
-    <div class="min-h-screen bg-gray-50">
+    <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
         {@render children()}
     </div>
 </QueryClientProvider>

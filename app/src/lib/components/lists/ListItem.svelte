@@ -16,6 +16,12 @@
         onArchive: (listId: number) => void;
         onUnarchive: (listId: number) => void;
         onDelete: (listId: number) => void;
+        isDragging?: boolean;
+        dropIndicator?: "before" | "after" | null;
+        onDragStart?: (listId: number) => void;
+        onDragOver?: (listId: number, e: DragEvent) => void;
+        onDrop?: () => void;
+        onDragEnd?: () => void;
     };
 
     let {
@@ -29,13 +35,46 @@
         onArchive,
         onUnarchive,
         onDelete,
+        isDragging = false,
+        dropIndicator = null,
+        onDragStart,
+        onDragOver,
+        onDrop,
+        onDragEnd,
     }: Props = $props();
 </script>
 
 <div
-    class="group flex items-center border-b border-gray-200"
-    class:bg-blue-50={isSelected}
+    class="group flex items-center border-b border-gray-200 dark:border-gray-700 dark:text-gray-100 {isSelected
+        ? 'bg-blue-50 dark:bg-blue-900/30'
+        : ''}"
+    class:opacity-50={isDragging}
+    class:border-t-2={dropIndicator === "before"}
+    class:border-t-blue-500={dropIndicator === "before"}
+    class:border-b-2={dropIndicator === "after"}
+    class:border-b-blue-500={dropIndicator === "after"}
     data-testid="list-item"
+    role="listitem"
+    draggable={onDragStart ? "true" : undefined}
+    ondragstart={(e) => {
+        if (onDragStart) {
+            e.dataTransfer!.effectAllowed = "move";
+            onDragStart(list.id);
+        }
+    }}
+    ondragover={(e) => {
+        if (onDragOver) {
+            e.preventDefault();
+            onDragOver(list.id, e);
+        }
+    }}
+    ondrop={(e) => {
+        if (onDrop) {
+            e.preventDefault();
+            onDrop();
+        }
+    }}
+    ondragend={() => onDragEnd?.()}
 >
     <button
         class="min-w-0 flex-1 cursor-pointer truncate px-4 py-2.5 text-left"
@@ -48,7 +87,7 @@
     <!-- ⋮ メニュー -->
     <div class="relative flex-shrink-0">
         <button
-            class="cursor-pointer rounded px-2 py-2.5 text-sm text-gray-400 hover:bg-gray-100 hover:text-gray-700 sm:opacity-0 sm:group-hover:opacity-100"
+            class="cursor-pointer rounded px-2 py-2.5 text-sm text-gray-400 hover:bg-gray-100 hover:text-gray-700 sm:opacity-0 sm:group-hover:opacity-100 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-200"
             onclick={(e) => {
                 e.stopPropagation();
                 onToggleMenu(list.id);
@@ -61,10 +100,10 @@
         </button>
         {#if openMenuId === list.id}
             <div
-                class="absolute top-full right-0 z-20 min-w-max rounded border border-gray-200 bg-white py-1 shadow-lg"
+                class="absolute top-full right-0 z-20 min-w-max rounded border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-600 dark:bg-gray-800"
             >
                 <button
-                    class="block w-full cursor-pointer px-4 py-1.5 text-left hover:bg-gray-100"
+                    class="block w-full cursor-pointer px-4 py-1.5 text-left hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700"
                     onclick={() => {
                         onRename(list.id, list.title);
                         onToggleMenu(list.id);
@@ -74,7 +113,7 @@
                 </button>
                 {#if showType === "archived"}
                     <button
-                        class="block w-full cursor-pointer px-4 py-1.5 text-left hover:bg-gray-100"
+                        class="block w-full cursor-pointer px-4 py-1.5 text-left hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700"
                         onclick={() => {
                             onUnarchive(list.id);
                             onToggleMenu(list.id);
@@ -84,7 +123,7 @@
                     </button>
                 {:else}
                     <button
-                        class="block w-full cursor-pointer px-4 py-1.5 text-left hover:bg-gray-100"
+                        class="block w-full cursor-pointer px-4 py-1.5 text-left hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700"
                         onclick={() => {
                             onArchive(list.id);
                             onToggleMenu(list.id);
@@ -93,9 +132,9 @@
                         アーカイブ
                     </button>
                 {/if}
-                <hr class="my-1 border-gray-200" />
+                <hr class="my-1 border-gray-200 dark:border-gray-600" />
                 <button
-                    class="block w-full cursor-pointer px-4 py-1.5 text-left text-red-600 hover:bg-red-50"
+                    class="block w-full cursor-pointer px-4 py-1.5 text-left text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30"
                     onclick={() => {
                         onDelete(list.id);
                         onToggleMenu(list.id);

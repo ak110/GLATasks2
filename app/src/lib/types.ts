@@ -20,6 +20,12 @@ export type TaskInfo = {
   status: string;
 };
 
+/** 検索結果タスク情報 */
+export type SearchTaskResult = TaskInfo & {
+  listId: number;
+  listTitle: string;
+};
+
 /** タスク一覧取得レスポンス（304 は未変更） */
 export type GetTasksResult =
   | { status: 304 }

@@ -3,7 +3,7 @@
  */
 
 import bcrypt from "bcryptjs";
-import { and, asc, eq, min } from "drizzle-orm";
+import { and, asc, eq, inArray, like, min } from "drizzle-orm";
 
 import { getDb } from "./db";
 import { lists, tasks, timers, users } from "./schema";
@@ -46,6 +46,11 @@ export type TimerInfo = {
   remaining_seconds: number;
   started_at: string | null;
   sort_order: number;
+};
+
+export type SearchTaskResult = TaskInfo & {
+  listId: number;
+  listTitle: string;
 };
 
 export type GetTasksResult =
@@ -425,6 +430,79 @@ export async function patchTask(
     title: splitTitle(updated.text),
     notes: splitNotes(updated.text),
   };
+}
+
+/** 全リスト横断でタスクを LIKE 検索する */
+export async function searchTasks(
+  userId: number,
+  query: string,
+): Promise<SearchTaskResult[]> {
+  const db = getDb();
+  // ユーザーの active リストを取得
+  const userLists = await db
+    .select()
+    .from(lists)
+    .where(and(eq(lists.user_id, userId), eq(lists.status, "active")));
+  if (userLists.length === 0) return [];
+
+  // LIKE 用にワイルドカードをエスケープ
+  const escaped = query.replace(/[%_]/g, "\\$&");
+  const pattern = `%${escaped}%`;
+
+  const listIds = userLists.map((l) => l.id);
+  const rows = await db
+    .select()
+    .from(tasks)
+    .where(and(inArray(tasks.list_id, listIds), like(tasks.text, pattern)))
+    .orderBy(asc(tasks.sort_order));
+
+  // listId → title のマップ
+  const listMap = new Map(userLists.map((l) => [l.id, l.title]));
+  return rows
+    .filter((t) => t.status !== "archived")
+    .map((t) => ({
+      id: t.id,
+      title: splitTitle(t.text),
+      notes: splitNotes(t.text),
+      status: t.status,
+      listId: t.list_id,
+      listTitle: listMap.get(t.list_id) ?? "",
+    }));
+}
+
+/** タスクの並び順を更新する */
+export async function reorderTasks(
+  userId: number,
+  listId: number,
+  taskIds: number[],
+): Promise<void> {
+  await getOwnedList(listId, userId);
+  const db = getDb();
+  // taskIds の順に sort_order を 0, 1000, 2000... で再割当
+  for (let i = 0; i < taskIds.length; i++) {
+    await db
+      .update(tasks)
+      .set({ sort_order: i * 1000 })
+      .where(and(eq(tasks.id, taskIds[i]), eq(tasks.list_id, listId)));
+  }
+  await db
+    .update(lists)
+    .set({ last_updated: new Date() })
+    .where(eq(lists.id, listId));
+}
+
+/** リストの並び順を更新する */
+export async function reorderLists(
+  userId: number,
+  listIds: number[],
+): Promise<void> {
+  const db = getDb();
+  for (let i = 0; i < listIds.length; i++) {
+    await db
+      .update(lists)
+      .set({ sort_order: i * 1000 })
+      .where(and(eq(lists.id, listIds[i]), eq(lists.user_id, userId)));
+  }
 }
 
 // ── タイマー操作 ──

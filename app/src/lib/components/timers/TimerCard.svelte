@@ -75,27 +75,30 @@
 </script>
 
 <div
-    class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
+    class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
     data-testid="timer-card"
 >
     <!-- ヘッダー: タイマー名 + 操作ボタン -->
     <div class="mb-3 flex items-center justify-between">
         {#if timer.name}
-            <h3 class="font-medium text-gray-800" data-testid="timer-name">
+            <h3
+                class="font-medium text-gray-800 dark:text-gray-100"
+                data-testid="timer-name"
+            >
                 {timer.name}
             </h3>
         {/if}
         <div class="flex gap-1">
             <button
                 onclick={() => onEdit(timer)}
-                class="cursor-pointer rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                class="cursor-pointer rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
                 title="編集"
                 aria-label="タイマーを編集"
                 data-testid="timer-edit-btn">✏️</button
             >
             <button
                 onclick={() => onDelete(timer.id)}
-                class="cursor-pointer rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-red-500"
+                class="cursor-pointer rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-red-500 dark:hover:bg-gray-700"
                 title="削除"
                 aria-label="タイマーを削除"
                 data-testid="timer-delete-btn">🗑</button
@@ -105,8 +108,10 @@
 
     <!-- 残り時間表示 -->
     <div
-        class="mb-4 text-center font-mono text-4xl font-bold"
-        class:text-gray-800={!isExpired && !timer.running}
+        class="mb-4 text-center font-mono text-4xl font-bold {!isExpired &&
+        !timer.running
+            ? 'text-gray-800 dark:text-gray-100'
+            : ''}"
         class:text-blue-600={timer.running}
         class:text-red-500={isExpired}
         data-testid="timer-display"
@@ -133,19 +138,19 @@
             {/if}
             <button
                 onclick={() => onReset(timer.id)}
-                class="cursor-pointer rounded bg-gray-100 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-200"
+                class="cursor-pointer rounded bg-gray-100 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                 data-testid="timer-reset-btn">🔄 リセット</button
             >
         </div>
         <div class="flex flex-nowrap items-center gap-2">
             <button
                 onclick={() => onAdjust(timer.id, timer.adjust_minutes)}
-                class="cursor-pointer rounded bg-blue-50 px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-100"
+                class="cursor-pointer rounded bg-blue-50 px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50"
                 data-testid="timer-plus-btn">+{timer.adjust_minutes}分</button
             >
             <button
                 onclick={() => onAdjust(timer.id, -timer.adjust_minutes)}
-                class="cursor-pointer rounded bg-blue-50 px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-100"
+                class="cursor-pointer rounded bg-blue-50 px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50"
                 data-testid="timer-minus-btn">-{timer.adjust_minutes}分</button
             >
         </div>
