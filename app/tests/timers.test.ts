@@ -6,7 +6,11 @@ import { test, expect } from "@playwright/test";
 
 test.describe("timers", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/timers", { waitUntil: "networkidle" });
+    // SSE 接続が常時開いているため networkidle は使えない
+    await Promise.all([
+      page.goto("/timers"),
+      page.waitForResponse((res) => res.url().includes("/api/trpc")),
+    ]);
   });
 
   test("タイマーページが表示される", async ({ page }) => {

@@ -6,8 +6,12 @@ import { test, expect } from "@playwright/test";
 
 test.describe("lists", () => {
   test.beforeEach(async ({ page }) => {
-    // networkidle まで待機して Svelte hydration と onMount の API コールが完了するのを確保する
-    await page.goto("/", { waitUntil: "networkidle" });
+    // SSE 接続が常時開いているため networkidle は使えない。
+    // goto + 初回 tRPC レスポンス待ちで hydration + データ取得完了を確保する。
+    await Promise.all([
+      page.goto("/"),
+      page.waitForResponse((res) => res.url().includes("/api/trpc")),
+    ]);
   });
 
   test("リストを追加するとサイドバーに表示される", async ({ page }) => {

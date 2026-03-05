@@ -21,6 +21,7 @@ import {
 } from "$lib/schemas";
 import * as api from "./api";
 import { decryptToString, encryptObject } from "./crypto";
+import { sendEvent } from "./sse";
 
 // ── Context 型定義 ──
 
@@ -139,6 +140,7 @@ export const appRouter = t.router({
       .input(CreateListSchema)
       .mutation(async ({ ctx, input }) => {
         await api.postList(ctx.userId, input.title);
+        sendEvent(ctx.userId, "lists:updated");
         return { success: true };
       }),
 
@@ -146,6 +148,7 @@ export const appRouter = t.router({
       .input(UpdateListSchema)
       .mutation(async ({ ctx, input }) => {
         await api.renameList(ctx.userId, input.listId, input.title);
+        sendEvent(ctx.userId, "lists:updated");
         return { success: true };
       }),
 
@@ -153,6 +156,7 @@ export const appRouter = t.router({
       .input(UpdateListSchema.pick({ listId: true }))
       .mutation(async ({ ctx, input }) => {
         await api.deleteList(ctx.userId, input.listId);
+        sendEvent(ctx.userId, "lists:updated");
         return { success: true };
       }),
 
@@ -160,6 +164,7 @@ export const appRouter = t.router({
       .input(UpdateListSchema.pick({ listId: true }))
       .mutation(async ({ ctx, input }) => {
         await api.archiveList(ctx.userId, input.listId);
+        sendEvent(ctx.userId, "lists:updated");
         return { success: true };
       }),
 
@@ -167,6 +172,7 @@ export const appRouter = t.router({
       .input(UpdateListSchema.pick({ listId: true }))
       .mutation(async ({ ctx, input }) => {
         await api.unarchiveList(ctx.userId, input.listId);
+        sendEvent(ctx.userId, "lists:updated");
         return { success: true };
       }),
 
@@ -174,6 +180,7 @@ export const appRouter = t.router({
       .input(UpdateListSchema.pick({ listId: true }))
       .mutation(async ({ ctx, input }) => {
         await api.clearList(ctx.userId, input.listId);
+        sendEvent(ctx.userId, "tasks:updated");
         return { success: true };
       }),
   }),
@@ -195,6 +202,7 @@ export const appRouter = t.router({
       .input(CreateTaskSchema)
       .mutation(async ({ ctx, input }) => {
         await api.postTask(ctx.userId, input.listId, input.text);
+        sendEvent(ctx.userId, "tasks:updated");
         return { success: true };
       }),
 
@@ -202,7 +210,9 @@ export const appRouter = t.router({
       .input(UpdateTaskSchema)
       .mutation(async ({ ctx, input }) => {
         const { listId, taskId, ...data } = input;
-        return api.patchTask(ctx.userId, listId, taskId, data);
+        const result = api.patchTask(ctx.userId, listId, taskId, data);
+        sendEvent(ctx.userId, "tasks:updated");
+        return result;
       }),
   }),
 
@@ -221,6 +231,7 @@ export const appRouter = t.router({
           input.base_seconds,
           input.adjust_minutes,
         );
+        sendEvent(ctx.userId, "timers:updated");
         return { success: true };
       }),
 
@@ -229,6 +240,7 @@ export const appRouter = t.router({
       .mutation(async ({ ctx, input }) => {
         const { timerId, ...data } = input;
         await api.updateTimer(ctx.userId, timerId, data);
+        sendEvent(ctx.userId, "timers:updated");
         return { success: true };
       }),
 
@@ -236,6 +248,7 @@ export const appRouter = t.router({
       .input(TimerIdSchema)
       .mutation(async ({ ctx, input }) => {
         await api.deleteTimer(ctx.userId, input.timerId);
+        sendEvent(ctx.userId, "timers:updated");
         return { success: true };
       }),
 
@@ -243,6 +256,7 @@ export const appRouter = t.router({
       .input(TimerIdSchema)
       .mutation(async ({ ctx, input }) => {
         await api.startTimer(ctx.userId, input.timerId);
+        sendEvent(ctx.userId, "timers:updated");
         return { success: true };
       }),
 
@@ -250,6 +264,7 @@ export const appRouter = t.router({
       .input(TimerIdSchema)
       .mutation(async ({ ctx, input }) => {
         await api.pauseTimer(ctx.userId, input.timerId);
+        sendEvent(ctx.userId, "timers:updated");
         return { success: true };
       }),
 
@@ -257,6 +272,7 @@ export const appRouter = t.router({
       .input(TimerIdSchema)
       .mutation(async ({ ctx, input }) => {
         await api.resetTimer(ctx.userId, input.timerId);
+        sendEvent(ctx.userId, "timers:updated");
         return { success: true };
       }),
 
@@ -264,6 +280,7 @@ export const appRouter = t.router({
       .input(AdjustTimerSchema)
       .mutation(async ({ ctx, input }) => {
         await api.adjustTimer(ctx.userId, input.timerId, input.minutes);
+        sendEvent(ctx.userId, "timers:updated");
         return { success: true };
       }),
 
@@ -271,6 +288,7 @@ export const appRouter = t.router({
       .input(TimerStopSchema)
       .mutation(async ({ ctx, input }) => {
         await api.stopTimer(ctx.userId, input.timerId, input.started_at);
+        sendEvent(ctx.userId, "timers:updated");
         return { success: true };
       }),
   }),

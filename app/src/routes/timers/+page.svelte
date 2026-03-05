@@ -43,7 +43,7 @@
         adjustMinutes: 5,
     });
 
-    // タイマー一覧取得（5分ポーリング + フォーカス時再取得）
+    // タイマー一覧取得（SSE でリアルタイム同期）
     const timersQuery = createQuery<TimersResult>(
         writable({
             queryKey: ["timers"] as const,
@@ -54,9 +54,17 @@
                 serverOffset = serverMs - Date.now();
                 return result;
             },
-            refetchInterval: 5 * 60 * 1000,
         }),
     );
+
+    // SSE 接続: サーバーからの通知でクエリを再取得
+    $effect(() => {
+        const es = new EventSource("/api/events");
+        es.addEventListener("timers:updated", () => {
+            queryClient.invalidateQueries({ queryKey: ["timers"] });
+        });
+        return () => es.close();
+    });
 
     // ミューテーション群
     const createTimerMutation = createMutation({

@@ -17,7 +17,10 @@ test.describe("share/ingest", () => {
       ignoreHTTPSErrors: true,
     });
     const page = await ctx.newPage();
-    await page.goto("/", { waitUntil: "networkidle" });
+    await Promise.all([
+      page.goto("/"),
+      page.waitForResponse((res) => res.url().includes("/api/trpc")),
+    ]);
     await page.fill('aside input[placeholder="新しいリスト"]', LIST_NAME);
     await page.click('aside button[type="submit"]');
     await page
@@ -34,7 +37,10 @@ test.describe("share/ingest", () => {
       ignoreHTTPSErrors: true,
     });
     const page = await ctx.newPage();
-    await page.goto("/", { waitUntil: "networkidle" });
+    await Promise.all([
+      page.goto("/"),
+      page.waitForResponse((res) => res.url().includes("/api/trpc")),
+    ]);
     page.once("dialog", (dialog) => dialog.accept());
     const listRow = page
       .locator('[data-testid="list-item"]')

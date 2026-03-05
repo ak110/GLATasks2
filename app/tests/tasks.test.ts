@@ -17,7 +17,10 @@ test.describe("tasks", () => {
       ignoreHTTPSErrors: true,
     });
     const page = await ctx.newPage();
-    await page.goto("/", { waitUntil: "networkidle" });
+    await Promise.all([
+      page.goto("/"),
+      page.waitForResponse((res) => res.url().includes("/api/trpc")),
+    ]);
     await page.fill('aside input[placeholder="新しいリスト"]', LIST_NAME);
     await page.click('aside button[type="submit"]');
     await page
@@ -34,7 +37,10 @@ test.describe("tasks", () => {
       ignoreHTTPSErrors: true,
     });
     const page = await ctx.newPage();
-    await page.goto("/", { waitUntil: "networkidle" });
+    await Promise.all([
+      page.goto("/"),
+      page.waitForResponse((res) => res.url().includes("/api/trpc")),
+    ]);
     page.once("dialog", (dialog) => dialog.accept());
     const listRow = page
       .locator('[data-testid="list-item"]')
@@ -46,7 +52,10 @@ test.describe("tasks", () => {
   });
 
   test.beforeEach(async ({ page }) => {
-    await page.goto("/", { waitUntil: "networkidle" });
+    await Promise.all([
+      page.goto("/"),
+      page.waitForResponse((res) => res.url().includes("/api/trpc")),
+    ]);
     await page.click(
       `[data-testid="list-select-btn"]:has-text("${LIST_NAME}")`,
     );
@@ -96,7 +105,7 @@ test.describe("tasks", () => {
       .locator('[data-testid="task-item"]')
       .filter({ hasText: taskTitle });
     await taskRow.waitFor({ timeout: 15000 });
-    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(500);
     await taskRow.locator('input[type="checkbox"]').dispatchEvent("click");
     await expect(
       taskRow.locator('[data-testid="task-text"].line-through'),
@@ -113,14 +122,14 @@ test.describe("tasks", () => {
       .locator('[data-testid="task-item"]')
       .filter({ hasText: taskTitle });
     await taskRow.waitFor({ timeout: 15000 });
-    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(500);
     await taskRow.locator('input[type="checkbox"]').dispatchEvent("click");
     await expect(
       taskRow.locator('[data-testid="task-text"].line-through'),
     ).toBeVisible({
       timeout: 15000,
     });
-    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(500);
     await taskRow.locator('input[type="checkbox"]').dispatchEvent("click");
     await expect(
       taskRow.locator('[data-testid="task-text"].line-through'),
@@ -139,7 +148,7 @@ test.describe("tasks", () => {
       .locator('[data-testid="task-item"]')
       .filter({ hasText: original });
     await taskRow.waitFor({ timeout: 15000 });
-    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(500);
     await taskRow
       .locator('[data-testid="task-edit-btn"]')
       .dispatchEvent("click");

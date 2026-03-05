@@ -64,7 +64,7 @@
         })),
     );
 
-    // タスク一覧取得（5分ポーリングで他画面の変更を自動反映）
+    // タスク一覧取得（SSE でリアルタイム同期）
     const tasksQuery = createQuery<GetTasksResult>(
         derived([selectedListIdStore, showTypeStore], ([$listId, $st]) => ({
             queryKey: ["tasks", $listId, $st] as const,
@@ -81,9 +81,20 @@
                 }) as Promise<GetTasksResult>;
             },
             enabled: $listId !== null,
-            refetchInterval: 5 * 60 * 1000,
         })),
     );
+
+    // SSE 接続: サーバーからの通知でクエリを再取得
+    $effect(() => {
+        const es = new EventSource("/api/events");
+        es.addEventListener("lists:updated", () => {
+            queryClient.invalidateQueries({ queryKey: ["lists"] });
+        });
+        es.addEventListener("tasks:updated", () => {
+            queryClient.invalidateQueries({ queryKey: ["tasks"] });
+        });
+        return () => es.close();
+    });
 
     // リスト作成
     const createListMutation = createMutation({
