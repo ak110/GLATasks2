@@ -13,7 +13,7 @@ SvelteKit + Drizzle ORM + MariaDB + nginx
 
 ## 利用方法
 
-### 起動
+### ローカル起動
 
 ```bash
 make deploy
@@ -24,6 +24,10 @@ make deploy
 ```bash
 make stop
 ```
+
+### 本番デプロイ
+
+GitHub Actions 経由で自動デプロイされる。詳細は [docs/development.md の CI/CD セクション](docs/development.md#cicd) を参照。
 
 ## 開発
 
