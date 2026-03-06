@@ -62,7 +62,10 @@ services:
         import { drizzle } from 'drizzle-orm/mysql2';
         import { migrate } from 'drizzle-orm/mysql2/migrator';
         import mysql from 'mysql2/promise';
-        const conn = await mysql.createConnection(process.env.DATABASE_URL);
+        const conn = await mysql.createConnection({
+          uri: process.env.DATABASE_URL,
+          multipleStatements: true,
+        });
         const db = drizzle(conn);
         console.log('🔄 Running migrations from ./drizzle/migrations...');
         await migrate(db, { migrationsFolder: './drizzle/migrations' });
@@ -98,7 +101,10 @@ services:
           import { drizzle } from '\''drizzle-orm/mysql2'\'';
           import { migrate } from '\''drizzle-orm/mysql2/migrator'\'';
           import mysql from '\''mysql2/promise'\'';
-          const conn = await mysql.createConnection(process.env.DATABASE_URL);
+          const conn = await mysql.createConnection({
+            uri: process.env.DATABASE_URL,
+            multipleStatements: true,
+          });
           const db = drizzle(conn);
           console.log('\''🔄 Running migrations from ./drizzle/migrations...'\'');
           await migrate(db, { migrationsFolder: '\''./drizzle/migrations'\'' });
