@@ -96,7 +96,7 @@
         const timers =
             ($timersQuery.data as TimersResult | undefined)?.timers ?? [];
         if (alarms.length === 0) return;
-        alarms = alarms.filter((alarm) => {
+        const filtered = alarms.filter((alarm) => {
             const timer = timers.find((t) => t.id === alarm.timerId);
             if (!timer) return false;
             // まだ running（stop 完了待ち）→ 維持
@@ -104,6 +104,10 @@
             // リセット済み（remaining_seconds > 0 かつ !running）→ 除去
             return timer.running || timer.remaining_seconds === 0;
         });
+        // 新しい配列参照を毎回作ると Svelte が変更検知して無限ループするため、変化があるときだけ更新
+        if (filtered.length !== alarms.length) {
+            alarms = filtered;
+        }
     });
 
     /** トースト通知を閉じる */
@@ -210,8 +214,11 @@
         const runningTimers = timers.filter((t) => t.running);
 
         // running タイマーがなければ alarmedIds をリセット
+        // 新しい Set 参照を毎回作ると Svelte が変更検知して無限ループするため、空でないときだけ更新
         if (runningTimers.length === 0) {
-            alarmedIds = new Set();
+            if (alarmedIds.size > 0) {
+                alarmedIds = new Set();
+            }
             return;
         }
 
