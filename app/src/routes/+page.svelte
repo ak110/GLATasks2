@@ -10,6 +10,8 @@
         useQueryClient,
     } from "@tanstack/svelte-query";
     import { trpc } from "$lib/trpc";
+    import { subscribe } from "$lib/sse-client";
+    import { onMount } from "svelte";
     import type { TaskStatus } from "$lib/schemas";
     import type {
         ListInfo,
@@ -112,16 +114,18 @@
         })),
     );
 
-    // SSE 接続: サーバーからの通知でクエリを再取得
-    $effect(() => {
-        const es = new EventSource("/api/events");
-        es.addEventListener("lists:updated", () => {
+    // SSE: サーバーからの通知でクエリを再取得
+    onMount(() => {
+        const unsub1 = subscribe("lists:updated", () => {
             queryClient.invalidateQueries({ queryKey: ["lists"] });
         });
-        es.addEventListener("tasks:updated", () => {
+        const unsub2 = subscribe("tasks:updated", () => {
             queryClient.invalidateQueries({ queryKey: ["tasks"] });
         });
-        return () => es.close();
+        return () => {
+            unsub1();
+            unsub2();
+        };
     });
 
     // リスト作成

@@ -10,6 +10,11 @@
     import { writable } from "svelte/store";
     import { createQuery, useQueryClient } from "@tanstack/svelte-query";
     import { trpc } from "$lib/trpc";
+    import {
+        getServerOffset,
+        setServerOffset,
+        onOffsetChange,
+    } from "$lib/sse-client";
     import type { TimerInfo, TimersResult } from "$lib/types";
     import { onMount } from "svelte";
 
@@ -20,8 +25,8 @@
 
     const queryClient = useQueryClient();
 
-    // サーバー時刻オフセット（ms）
-    let serverOffset = $state(0);
+    // 共有オフセットのローカルミラー（$effect の依存追跡用）
+    let localOffset = $state(getServerOffset());
 
     // アラーム再生済みタイマーIDのセット（二重再生防止）
     let alarmedIds = $state(new Set<number>());
@@ -41,6 +46,11 @@
         img.onload = () => {
             originalFaviconImg = img;
         };
+        // オフセット変更を localOffset に同期（$effect の再トリガー用）
+        const unsubOffset = onOffsetChange((v) => {
+            localOffset = v;
+        });
+        return unsubOffset;
     });
 
     /** favicon に赤丸バッジを重ねた Data URL を生成する */
@@ -120,12 +130,15 @@
         writable({
             queryKey: ["timers"] as const,
             queryFn: async (): Promise<TimersResult> => {
+                // RTT/2 補正付きオフセット計算
+                const t0 = Date.now();
                 const result = (await trpc.timers.list.query()) as TimersResult;
+                const t1 = Date.now();
                 const serverMs = new Date(result.server_time).getTime();
-                serverOffset = serverMs - Date.now();
+                setServerOffset(serverMs - (t0 + t1) / 2);
                 return result;
             },
-            refetchInterval: 5 * 60 * 1000,
+            refetchInterval: 60 * 1000,
         }),
     );
 
@@ -135,7 +148,7 @@
             return timer.remaining_seconds * 1000;
         }
         const startedAtMs = new Date(timer.started_at).getTime();
-        const elapsedMs = Date.now() + serverOffset - startedAtMs;
+        const elapsedMs = Date.now() + localOffset - startedAtMs;
         return Math.max(0, timer.remaining_seconds * 1000 - elapsedMs);
     }
 
@@ -208,7 +221,9 @@
     }
 
     // running タイマーを監視し、setTimeout で正確なアラームをスケジュール
+    // localOffset を参照してオフセット変更時にも再スケジュールする
     $effect(() => {
+        void localOffset; // 依存追跡用: オフセット変更時に再スケジュール
         const timers =
             ($timersQuery.data as TimersResult | undefined)?.timers ?? [];
         const runningTimers = timers.filter((t) => t.running);

@@ -4,10 +4,10 @@
      */
 
     import type { TimerInfo } from "$lib/types";
+    import { getServerOffset } from "$lib/sse-client";
 
     type Props = {
         timer: TimerInfo;
-        serverOffset: number;
         onStart: (timerId: number) => void;
         onPause: (timerId: number) => void;
         onReset: (timerId: number) => void;
@@ -18,7 +18,6 @@
 
     let {
         timer,
-        serverOffset,
         onStart,
         onPause,
         onReset,
@@ -32,7 +31,7 @@
 
     /** サーバー時刻補正された現在時刻（ms） */
     function serverNow(): number {
-        return Date.now() + serverOffset;
+        return Date.now() + getServerOffset();
     }
 
     /** 残り秒数を計算する */

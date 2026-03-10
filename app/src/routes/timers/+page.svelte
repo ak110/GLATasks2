@@ -9,17 +9,16 @@
         createMutation,
         useQueryClient,
     } from "@tanstack/svelte-query";
+    import { onMount } from "svelte";
     import { trpc } from "$lib/trpc";
     import { playStartBeep } from "$lib/beep";
+    import { subscribe, setServerOffset } from "$lib/sse-client";
     import type { TimerInfo, TimersResult } from "$lib/types";
     import Header from "$lib/components/layout/Header.svelte";
     import TimerCard from "$lib/components/timers/TimerCard.svelte";
     import TimerCreateDialog from "$lib/components/timers/TimerCreateDialog.svelte";
 
     const queryClient = useQueryClient();
-
-    // サーバー時刻オフセット（ms）
-    let serverOffset = $state(0);
 
     // ダイアログ状態
     type DialogState = {
@@ -48,22 +47,23 @@
         writable({
             queryKey: ["timers"] as const,
             queryFn: async (): Promise<TimersResult> => {
+                // RTT/2 補正付きオフセット計算
+                const t0 = Date.now();
                 const result = (await trpc.timers.list.query()) as TimersResult;
-                // サーバー時刻オフセットを更新
+                const t1 = Date.now();
                 const serverMs = new Date(result.server_time).getTime();
-                serverOffset = serverMs - Date.now();
+                setServerOffset(serverMs - (t0 + t1) / 2);
                 return result;
             },
         }),
     );
 
-    // SSE 接続: サーバーからの通知でクエリを再取得
-    $effect(() => {
-        const es = new EventSource("/api/events");
-        es.addEventListener("timers:updated", () => {
+    // SSE: サーバーからの通知でクエリを再取得
+    onMount(() => {
+        const unsub = subscribe("timers:updated", () => {
             queryClient.invalidateQueries({ queryKey: ["timers"] });
         });
-        return () => es.close();
+        return unsub;
     });
 
     // ミューテーション群
@@ -214,7 +214,6 @@
             {#each timersList as timer (timer.id)}
                 <TimerCard
                     {timer}
-                    {serverOffset}
                     onStart={(id) => $startTimerMutation.mutate(id)}
                     onPause={(id) => $pauseTimerMutation.mutate(id)}
                     onReset={(id) => $resetTimerMutation.mutate(id)}

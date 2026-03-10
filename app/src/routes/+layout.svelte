@@ -13,6 +13,7 @@
         cycleTheme,
         type Theme,
     } from "$lib/theme";
+    import { connect, disconnect } from "$lib/sse-client";
     import TimerAlarmMonitor from "$lib/components/timers/TimerAlarmMonitor.svelte";
     import type { LayoutData } from "./$types";
 
@@ -29,6 +30,11 @@
     });
 
     onMount(() => {
+        // SSE 接続（ログイン済みの場合のみ）
+        if (data.logged_in) {
+            connect();
+        }
+
         // テーマ初期化
         theme = getStoredTheme();
         applyTheme(theme);
@@ -55,7 +61,10 @@
                 );
         }
 
-        return () => mq.removeEventListener("change", handler);
+        return () => {
+            mq.removeEventListener("change", handler);
+            disconnect();
+        };
     });
 
     function handleChangeTheme() {

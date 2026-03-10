@@ -15,20 +15,28 @@ export const GET: RequestHandler = async ({ locals }) => {
   }
 
   let savedController: ReadableStreamDefaultController | null = null;
+  let heartbeatInterval: ReturnType<typeof setInterval> | null = null;
 
   const stream = new ReadableStream({
     start(controller) {
       savedController = controller;
       addConnection(userId, controller);
-      // 接続確立を通知（クライアントが接続成功を検知するため）
+      // 接続確立を通知（暫定オフセット計算用にサーバー時刻を含む）
       controller.enqueue(
-        new TextEncoder().encode("event: connected\ndata: \n\n"),
+        new TextEncoder().encode(`event: connected\ndata: ${Date.now()}\n\n`),
       );
+      // 30秒間隔でハートビート（接続維持のみ、データなし）
+      heartbeatInterval = setInterval(() => {
+        try {
+          controller.enqueue(new TextEncoder().encode(":\n\n"));
+        } catch {
+          /* closed */
+        }
+      }, 30_000);
     },
     cancel() {
-      if (savedController) {
-        removeConnection(userId, savedController);
-      }
+      if (heartbeatInterval) clearInterval(heartbeatInterval);
+      if (savedController) removeConnection(userId, savedController);
     },
   });
 
