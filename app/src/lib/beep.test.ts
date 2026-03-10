@@ -2,12 +2,17 @@
  * @fileoverview ビープ音ユーティリティのユニットテスト
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { playBeep, playStartBeep } from "./beep";
 
 describe("playBeep", () => {
   beforeEach(() => {
+    vi.useFakeTimers();
     vi.restoreAllMocks();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("AudioContext が無い環境では警告ログを出力する", async () => {
@@ -44,7 +49,10 @@ describe("playBeep", () => {
 
     vi.stubGlobal("AudioContext", MockAudioContext);
 
-    await playBeep(2);
+    // playBeep(2) を起動し、fake timers で即座に進める
+    const promise = playBeep(2);
+    await vi.advanceTimersByTimeAsync(10000);
+    await promise;
 
     expect(MockAudioContext).toHaveBeenCalledOnce();
     expect(startFn).toHaveBeenCalledTimes(2);
@@ -57,7 +65,12 @@ describe("playBeep", () => {
 
 describe("playStartBeep", () => {
   beforeEach(() => {
+    vi.useFakeTimers();
     vi.restoreAllMocks();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("AudioContext が無い環境では警告ログを出力する", async () => {

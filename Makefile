@@ -86,9 +86,9 @@ format:  # 整形 + 軽量lint（自動修正あり）
 	@# pre-commitはフォーマットによるエラーを考慮して2度まで実行
 	pre-commit run --all-files || pre-commit run --all-files
 
-test:  # format + lint + test + e2eテスト
+test:  # format + check + unit test + e2eテスト
 	$(MAKE) format
-	$(call RUN_NODE, pnpm run test, --rm)
+	$(call RUN_NODE, pnpm run check && pnpm run test:unit, --rm)
 	$(MAKE) test-e2e
 
 migrate:  # DBマイグレーション実行
