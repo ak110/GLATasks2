@@ -14,6 +14,7 @@
         getServerOffset,
         setServerOffset,
         onOffsetChange,
+        subscribe,
     } from "$lib/sse-client";
     import type { TimerInfo, TimersResult } from "$lib/types";
     import { onMount } from "svelte";
@@ -50,7 +51,15 @@
         const unsubOffset = onOffsetChange((v) => {
             localOffset = v;
         });
-        return unsubOffset;
+        // SSE: タイマー更新通知でデータを再取得
+        // （/timers ページ以外でもトースト消去・favicon 復元が即座に反映されるように）
+        const unsubSSE = subscribe("timers:updated", () => {
+            queryClient.invalidateQueries({ queryKey: ["timers"] });
+        });
+        return () => {
+            unsubOffset();
+            unsubSSE();
+        };
     });
 
     /** favicon に赤丸バッジを重ねた Data URL を生成する */
