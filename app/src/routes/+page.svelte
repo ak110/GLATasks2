@@ -25,6 +25,7 @@
     import TaskAddForm from "$lib/components/tasks/TaskAddForm.svelte";
     import TaskListHeader from "$lib/components/tasks/TaskListHeader.svelte";
     import TaskEditDialog from "$lib/components/tasks/TaskEditDialog.svelte";
+    import { linkify } from "$lib/linkify";
 
     let selectedListId = $state<number | null>(null);
     let showType = $state<"active" | "archived" | "all">("active");
@@ -592,13 +593,15 @@
                                         "completed"}
                                     onclick={() => goToSearchResult(listId)}
                                 >
-                                    {task.title}
+                                    <!-- eslint-disable-next-line svelte/no-at-html-tags -- linkify()が自前でHTMLエスケープ済み -->
+                                    {@html linkify(task.title)}
                                 </button>
                                 {#if task.notes}
                                     <p
                                         class="mt-0.5 whitespace-pre-wrap text-gray-500 dark:text-gray-400"
                                     >
-                                        {task.notes}
+                                        <!-- eslint-disable-next-line svelte/no-at-html-tags -- linkify()が自前でHTMLエスケープ済み -->
+                                        {@html linkify(task.notes)}
                                     </p>
                                 {/if}
                             </div>

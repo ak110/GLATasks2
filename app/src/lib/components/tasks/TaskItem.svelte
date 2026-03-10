@@ -4,6 +4,7 @@
      */
 
     import type { TaskInfo } from "$lib/types";
+    import { linkify } from "$lib/linkify";
 
     type Props = {
         task: TaskInfo;
@@ -78,7 +79,8 @@
                 ? 'text-gray-400 dark:text-gray-500'
                 : 'dark:text-gray-100'}"
         >
-            {task.title}
+            <!-- eslint-disable-next-line svelte/no-at-html-tags -- linkify()が自前でHTMLエスケープ済み -->
+            {@html linkify(task.title)}
         </p>
         {#if task.notes}
             <p
@@ -86,7 +88,8 @@
                     ? 'text-gray-400 dark:text-gray-500'
                     : 'text-gray-500 dark:text-gray-400'}"
             >
-                {task.notes}
+                <!-- eslint-disable-next-line svelte/no-at-html-tags -- linkify()が自前でHTMLエスケープ済み -->
+                {@html linkify(task.notes)}
             </p>
         {/if}
     </div>
