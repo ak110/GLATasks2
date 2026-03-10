@@ -39,7 +39,7 @@
 </script>
 
 <header
-    class="sticky top-0 z-10 flex h-12 items-center gap-3 bg-gray-800 px-4 text-white shadow dark:bg-gray-950"
+    class="sticky top-0 z-10 flex h-12 items-center gap-2 bg-gray-800 px-4 text-white shadow sm:gap-3 dark:bg-gray-950"
 >
     <a href="/" class="font-bold hover:text-gray-300">GLATasks</a>
     <span class="text-gray-400">|</span>
@@ -62,7 +62,7 @@
                 value={searchQuery ?? ""}
                 oninput={(e) => onSearchChange(e.currentTarget.value)}
                 placeholder="検索..."
-                class="w-28 rounded bg-gray-700 px-2 py-0.5 text-xs text-white placeholder-gray-400 focus:w-40 focus:ring-1 focus:ring-blue-400 focus:outline-none sm:w-36 sm:focus:w-48"
+                class="w-20 rounded bg-gray-700 px-2 py-0.5 text-xs text-white placeholder-gray-400 focus:w-28 focus:ring-1 focus:ring-blue-400 focus:outline-none sm:w-28 sm:focus:w-40"
                 data-testid="search-input"
             />
         {/if}
@@ -95,7 +95,9 @@
             <button
                 type="submit"
                 class="cursor-pointer rounded px-2 py-1 text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
-                >ログアウト</button
+                ><span class="hidden sm:inline">ログアウト</span><span
+                    class="sm:hidden">↩</span
+                ></button
             >
         </form>
     </div>

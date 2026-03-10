@@ -129,6 +129,68 @@
             queryClient.invalidateQueries({ queryKey: ["timers"] }),
     });
 
+    const reorderTimersMutation = createMutation({
+        mutationFn: (input: { timerIds: number[] }) =>
+            trpc.timers.reorder.mutate(input),
+        onSettled: () =>
+            queryClient.invalidateQueries({ queryKey: ["timers"] }),
+    });
+
+    // D&D 状態管理
+    let draggedId = $state<number | null>(null);
+    let dropTargetId = $state<number | null>(null);
+    let dropPosition = $state<"before" | "after" | null>(null);
+
+    function handleDragStart(timerId: number) {
+        draggedId = timerId;
+    }
+
+    function handleDragOver(timerId: number, e: DragEvent) {
+        if (draggedId === null || timerId === draggedId) return;
+        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+        const midY = rect.top + rect.height / 2;
+        dropTargetId = timerId;
+        dropPosition = e.clientY < midY ? "before" : "after";
+    }
+
+    function handleDrop() {
+        if (draggedId === null || dropTargetId === null) return;
+        // 新しい順序を構成
+        const ids = timersList
+            .map((t) => t.id)
+            .filter((id) => id !== draggedId);
+        const targetIndex = ids.indexOf(dropTargetId);
+        if (targetIndex === -1) return;
+        const insertIndex =
+            dropPosition === "after" ? targetIndex + 1 : targetIndex;
+        ids.splice(insertIndex, 0, draggedId);
+        handleReorderTimers(ids);
+        resetDragState();
+    }
+
+    function resetDragState() {
+        draggedId = null;
+        dropTargetId = null;
+        dropPosition = null;
+    }
+
+    /** タイマーの並び替え（楽観的更新 + API呼出） */
+    function handleReorderTimers(timerIds: number[]) {
+        // 楽観的更新: キャッシュ内のタイマー配列を即座に並び替え
+        queryClient.setQueryData(
+            ["timers"],
+            (old: TimersResult | undefined) => {
+                if (!old) return old;
+                const timerMap = new Map(old.timers.map((t) => [t.id, t]));
+                const reordered = timerIds
+                    .map((id) => timerMap.get(id))
+                    .filter((t): t is TimerInfo => t !== undefined);
+                return { ...old, timers: reordered };
+            },
+        );
+        $reorderTimersMutation.mutate({ timerIds });
+    }
+
     // 派生状態
     const timersList = $derived(
         ($timersQuery.data as TimersResult | undefined)?.timers ?? [],
@@ -221,6 +283,14 @@
                         $adjustTimerMutation.mutate({ timerId: id, minutes })}
                     onEdit={openEditDialog}
                     onDelete={handleDelete}
+                    isDragging={draggedId === timer.id}
+                    dropIndicator={dropTargetId === timer.id
+                        ? dropPosition
+                        : null}
+                    onDragStart={handleDragStart}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                    onDragEnd={resetDragState}
                 />
             {/each}
         </div>

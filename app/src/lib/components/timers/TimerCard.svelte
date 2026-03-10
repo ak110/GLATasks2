@@ -14,6 +14,12 @@
         onAdjust: (timerId: number, minutes: number) => void;
         onEdit: (timer: TimerInfo) => void;
         onDelete: (timerId: number) => void;
+        isDragging?: boolean;
+        dropIndicator?: "before" | "after" | null;
+        onDragStart?: (timerId: number) => void;
+        onDragOver?: (timerId: number, e: DragEvent) => void;
+        onDrop?: () => void;
+        onDragEnd?: () => void;
     };
 
     let {
@@ -24,6 +30,12 @@
         onAdjust,
         onEdit,
         onDelete,
+        isDragging = false,
+        dropIndicator = null,
+        onDragStart,
+        onDragOver,
+        onDrop,
+        onDragEnd,
     }: Props = $props();
 
     let displaySeconds = $state(0);
@@ -75,10 +87,42 @@
 
 <div
     class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+    class:opacity-50={isDragging}
+    class:border-t-2={dropIndicator === "before"}
+    class:border-t-blue-500={dropIndicator === "before"}
+    class:border-b-2={dropIndicator === "after"}
+    class:border-b-blue-500={dropIndicator === "after"}
     data-testid="timer-card"
+    role="listitem"
+    ondragover={(e) => {
+        if (onDragOver) {
+            e.preventDefault();
+            onDragOver(timer.id, e);
+        }
+    }}
+    ondrop={(e) => {
+        if (onDrop) {
+            e.preventDefault();
+            onDrop();
+        }
+    }}
+    ondragend={() => onDragEnd?.()}
 >
-    <!-- ヘッダー: タイマー名 + 操作ボタン -->
+    <!-- ヘッダー: ドラッグハンドル + タイマー名 + 操作ボタン -->
     <div class="mb-3 flex items-center justify-between">
+        {#if onDragStart}
+            <span
+                class="mr-2 hidden cursor-grab text-gray-400 select-none sm:inline dark:text-gray-500"
+                draggable="true"
+                role="button"
+                tabindex="-1"
+                aria-label="ドラッグして並び替え"
+                ondragstart={(e) => {
+                    e.dataTransfer!.effectAllowed = "move";
+                    onDragStart(timer.id);
+                }}>⠿</span
+            >
+        {/if}
         {#if timer.name}
             <h3
                 class="font-medium text-gray-800 dark:text-gray-100"

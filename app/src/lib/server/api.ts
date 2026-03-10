@@ -3,7 +3,7 @@
  */
 
 import bcrypt from "bcryptjs";
-import { and, asc, eq, inArray, like, min } from "drizzle-orm";
+import { and, asc, eq, inArray, like, max, min } from "drizzle-orm";
 
 import { getDb } from "./db";
 import { lists, tasks, timers, users } from "./schema";
@@ -491,6 +491,33 @@ export async function reorderTasks(
     .where(eq(lists.id, listId));
 }
 
+/** タイマーの並び順を更新する（全件一致を検証） */
+export async function reorderTimers(
+  userId: number,
+  timerIds: number[],
+): Promise<void> {
+  const db = getDb();
+  // ユーザーの全タイマーIDを取得して全件一致を検証
+  const owned = await db
+    .select({ id: timers.id })
+    .from(timers)
+    .where(eq(timers.user_id, userId));
+  const ownedIds = new Set(owned.map((r) => r.id));
+  if (
+    timerIds.length !== ownedIds.size ||
+    !timerIds.every((id) => ownedIds.has(id))
+  ) {
+    throw new Error("invalid_timer_ids");
+  }
+  // timerIds の順に sort_order を 0, 1000, 2000... で再割当
+  for (let i = 0; i < timerIds.length; i++) {
+    await db
+      .update(timers)
+      .set({ sort_order: i * 1000 })
+      .where(and(eq(timers.id, timerIds[i]), eq(timers.user_id, userId)));
+  }
+}
+
 // ── タイマー操作 ──
 
 /** タイマーの所有権チェック */
@@ -562,7 +589,7 @@ export async function getTimers(
   };
 }
 
-/** タイマーを作成する */
+/** タイマーを作成する（sort_order は既存の最大値 + 1000 で末尾追加） */
 export async function createTimer(
   userId: number,
   name: string,
@@ -571,12 +598,19 @@ export async function createTimer(
 ): Promise<void> {
   const db = getDb();
   const now = new Date();
+  // 現在の最大 sort_order を取得
+  const [{ maxOrder }] = await db
+    .select({ maxOrder: max(timers.sort_order) })
+    .from(timers)
+    .where(eq(timers.user_id, userId));
+  const sortOrder = (maxOrder ?? 0) + 1000;
   await db.insert(timers).values({
     user_id: userId,
     name,
     base_seconds: baseSeconds,
     adjust_minutes: adjustMinutes,
     remaining_seconds: baseSeconds,
+    sort_order: sortOrder,
     created: now,
     updated: now,
   });

@@ -20,6 +20,7 @@ import {
   LoginSchema,
   SearchTasksSchema,
   ReorderTasksSchema,
+  ReorderTimersSchema,
 } from "$lib/schemas";
 import * as api from "./api";
 import { decryptToString, encryptObject } from "./crypto";
@@ -237,6 +238,14 @@ export const appRouter = t.router({
     list: encryptedProcedure.query(async ({ ctx }) => {
       return api.getTimers(ctx.userId);
     }),
+
+    reorder: encryptedProcedure
+      .input(ReorderTimersSchema)
+      .mutation(async ({ ctx, input }) => {
+        await api.reorderTimers(ctx.userId, input.timerIds);
+        sendEvent(ctx.userId, "timers:updated");
+        return { success: true };
+      }),
 
     create: encryptedProcedure
       .input(CreateTimerSchema)
