@@ -102,10 +102,42 @@ const withEncryption = t.middleware(async ({ getRawInput, next }) => {
   return result;
 });
 
+// ── エラーメッセージマッピング ──
+
+/** api.ts の機械可読な識別子 → tRPC エラーコード・表示用メッセージ */
+const API_ERRORS: Record<
+  string,
+  { code: "NOT_FOUND" | "BAD_REQUEST"; message: string }
+> = {
+  not_found_or_forbidden: {
+    code: "NOT_FOUND",
+    message: "対象が見つかりません",
+  },
+  task_not_found: { code: "NOT_FOUND", message: "タスクが見つかりません" },
+  invalid_timer_ids: { code: "BAD_REQUEST", message: "タイマーIDが不正です" },
+};
+
+/**
+ * API エラー変換ミドルウェア:
+ * api.ts の機械可読な識別子を適切な TRPCError に変換する
+ */
+const withApiErrors = t.middleware(async ({ next }) => {
+  try {
+    return await next();
+  } catch (err) {
+    if (err instanceof TRPCError) throw err;
+    if (err instanceof Error && err.message in API_ERRORS) {
+      const mapped = API_ERRORS[err.message];
+      throw new TRPCError({ code: mapped.code, message: mapped.message });
+    }
+    throw err;
+  }
+});
+
 // ── プロシージャ定義 ──
 
 const publicProcedure = t.procedure;
-const protectedProcedure = t.procedure.use(isAuthed);
+const protectedProcedure = t.procedure.use(isAuthed).use(withApiErrors);
 const encryptedProcedure = protectedProcedure.use(withEncryption);
 
 // ── ルーター定義 ──
