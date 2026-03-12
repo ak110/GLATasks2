@@ -17,6 +17,7 @@
         subscribe,
     } from "$lib/sse-client";
     import type { TimerInfo, TimersResult } from "$lib/types";
+    import { calcTimerRemainingMs } from "$lib/timer-utils";
     import { onMount } from "svelte";
 
     type AlarmInfo = {
@@ -153,12 +154,7 @@
 
     /** サーバー時刻補正込みの残りミリ秒を計算する */
     function calcRemainingMs(timer: TimerInfo): number {
-        if (!timer.running || !timer.started_at) {
-            return timer.remaining_seconds * 1000;
-        }
-        const startedAtMs = new Date(timer.started_at).getTime();
-        const elapsedMs = Date.now() + localOffset - startedAtMs;
-        return Math.max(0, timer.remaining_seconds * 1000 - elapsedMs);
+        return calcTimerRemainingMs(timer, localOffset);
     }
 
     /** タイマー完了時にブラウザ通知を表示する */

@@ -5,6 +5,7 @@
 
     import type { TimerInfo } from "$lib/types";
     import { getServerOffset } from "$lib/sse-client";
+    import { calcTimerRemainingMs } from "$lib/timer-utils";
 
     type Props = {
         timer: TimerInfo;
@@ -41,19 +42,11 @@
     let displaySeconds = $state(0);
     let intervalId = $state<ReturnType<typeof setInterval> | null>(null);
 
-    /** サーバー時刻補正された現在時刻（ms） */
-    function serverNow(): number {
-        return Date.now() + getServerOffset();
-    }
-
     /** 残り秒数を計算する */
     function calcRemaining(): number {
-        if (!timer.running || !timer.started_at) {
-            return timer.remaining_seconds;
-        }
-        const startedAtMs = new Date(timer.started_at).getTime();
-        const elapsed = Math.floor((serverNow() - startedAtMs) / 1000);
-        return Math.max(0, timer.remaining_seconds - elapsed);
+        return Math.floor(
+            calcTimerRemainingMs(timer, getServerOffset()) / 1000,
+        );
     }
 
     /** 時:分:秒 フォーマット */
