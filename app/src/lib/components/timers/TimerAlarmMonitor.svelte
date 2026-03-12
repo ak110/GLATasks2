@@ -193,9 +193,14 @@
     ) {
         // サーバーから最新状態を取得
         try {
-            await queryClient.refetchQueries({ queryKey: ["timers"] });
+            await queryClient.refetchQueries(
+                { queryKey: ["timers"] },
+                { throwOnError: true },
+            );
         } catch {
-            // リフェッチ失敗時はキャッシュデータで続行
+            // サーバー確認できない場合はアラームしない
+            // （refetchOnWindowFocus / refetchInterval で最新データ取得後に再スケジュールされる）
+            return;
         }
         const data = queryClient.getQueryData<TimersResult>(["timers"]);
         const timer = data?.timers?.find((t) => t.id === timerId);
@@ -233,6 +238,12 @@
     // localOffset を参照してオフセット変更時にも再スケジュールする
     $effect(() => {
         void localOffset; // 依存追跡用: オフセット変更時に再スケジュール
+
+        // キャッシュが古すぎる場合はスケジュールしない
+        // （refetchOnWindowFocus 完了後に dataUpdatedAt が更新され $effect が再発火する）
+        const dataAge = Date.now() - ($timersQuery.dataUpdatedAt ?? 0);
+        if (dataAge > 5 * 60 * 1000) return;
+
         const timers =
             ($timersQuery.data as TimersResult | undefined)?.timers ?? [];
         const runningTimers = timers.filter((t) => t.running);
