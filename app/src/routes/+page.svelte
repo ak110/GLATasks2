@@ -61,13 +61,16 @@
     const queryClient = useQueryClient();
 
     // 検索クエリの debounce（300ms）
+    // searchQuery の変更ごとにタイマーをリセットし、入力停止後に検索を実行する
     $effect(() => {
         const q = searchQuery;
         const timer = setTimeout(() => (debouncedQuery = q), 300);
         return () => clearTimeout(timer);
     });
 
-    // rune → Svelte store 同期（@tanstack/svelte-query が Readable<T> を要求するため）
+    // rune → Svelte store 同期
+    // @tanstack/svelte-query v5 が Readable<T> のみ対応で rune を直接受け取れないため、
+    // $effect で rune の値を writable store に同期する（Lessons Learned 参照）
     const showTypeStore = writable<"active" | "archived" | "all">("active");
     const selectedListIdStore = writable<number | null>(null);
     const debouncedQueryStore = writable("");
@@ -255,6 +258,7 @@
     }
 
     // hashchange イベントで URL ハッシュと状態を同期
+    // ブラウザのバック/フォワード操作やモバイルのリスト⇔タスク画面遷移を検知する
     $effect(() => {
         function onHashChange() {
             const hashId = parseHashListId();
@@ -270,6 +274,7 @@
 
     // リストデータ到着時に選択状態を復元（初回のみ）
     // URLハッシュ > URL パラメータ `list` > localStorage の優先順
+    // SSR ではなく $effect で行う理由: window/localStorage/location はブラウザ専用 API のため
     $effect(() => {
         if (lists.length > 0 && selectedListId === null) {
             // URLハッシュ（ブックマーク・直接アクセス等）

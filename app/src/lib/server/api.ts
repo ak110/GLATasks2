@@ -325,7 +325,17 @@ export async function postTask(
   await touchListUpdated(listId);
 }
 
-/** タスクを更新する（部分更新）。 */
+/**
+ * タスクを更新する（部分更新）。
+ *
+ * data のキーに応じて以下の更新パターンを処理する:
+ * - text: テキスト変更 + keep_order=false なら先頭移動
+ * - status: ステータス変更（active→completed 時に completed 日時を自動セット）
+ * - completed: 完了日時の明示的な上書き（null でクリア）
+ * - move_to: 別リストへの移動（移動先リストの先頭に配置）
+ *
+ * 各パターンは同時に適用可能（例: テキスト変更 + リスト移動）。
+ */
 export async function patchTask(
   userId: number,
   listId: number,
