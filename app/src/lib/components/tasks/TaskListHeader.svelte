@@ -43,6 +43,9 @@
     <button
         onclick={onClear}
         class="cursor-pointer rounded bg-gray-100 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-        title="完了済みタスクを非表示にする">完了済みを非表示</button
+        title="完了済みタスクを非表示にする"
+        ><span class="sm:hidden">非表示</span><span class="hidden sm:inline"
+            >完了済みを非表示</span
+        ></button
     >
 </div>

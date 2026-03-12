@@ -41,7 +41,7 @@
 </script>
 
 <div
-    class="relative flex items-start gap-3 border-b border-gray-200 px-5 py-3 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700"
+    class="relative flex items-start gap-3 border-b border-gray-200 px-3 py-3 hover:bg-gray-50 sm:px-5 dark:border-gray-700 dark:hover:bg-gray-700"
     class:opacity-50={task.status === "archived" || isDragging}
     class:border-t-2={dropIndicator === "before"}
     class:border-t-blue-500={dropIndicator === "before"}

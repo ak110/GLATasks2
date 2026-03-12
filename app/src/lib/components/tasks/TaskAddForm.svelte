@@ -42,7 +42,7 @@
 </script>
 
 <div
-    class="border-b border-gray-200 bg-white px-4 py-2 dark:border-gray-700 dark:bg-gray-800"
+    class="border-b border-gray-200 bg-white px-3 py-2 sm:px-4 dark:border-gray-700 dark:bg-gray-800"
     data-testid="task-add-form"
 >
     <form onsubmit={handleSubmit} class="flex items-start gap-2">

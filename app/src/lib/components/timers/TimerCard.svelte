@@ -151,7 +151,7 @@
 
     <!-- 残り時間表示 -->
     <div
-        class="mb-4 text-center font-mono text-4xl font-bold {!isExpired &&
+        class="mb-4 text-center font-mono text-3xl font-bold sm:text-4xl {!isExpired &&
         !timer.running
             ? 'text-gray-800 dark:text-gray-100'
             : ''}"

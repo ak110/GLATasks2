@@ -580,7 +580,7 @@
                     </div>
                     {#each group.tasks as task (task.id)}
                         <div
-                            class="flex items-start gap-3 border-b border-gray-200 px-5 py-3 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700"
+                            class="flex items-start gap-3 border-b border-gray-200 px-3 py-3 hover:bg-gray-50 sm:px-5 dark:border-gray-700 dark:hover:bg-gray-700"
                         >
                             <div
                                 class="min-w-0 flex-1 wrap-break-word break-all"

@@ -39,10 +39,12 @@
 </script>
 
 <header
-    class="sticky top-0 z-10 flex h-12 items-center gap-2 bg-gray-800 px-4 text-white shadow sm:gap-3 dark:bg-gray-950"
+    class="sticky top-0 z-10 flex h-12 items-center gap-1 bg-gray-800 px-2 text-white shadow sm:gap-2 sm:px-4 dark:bg-gray-950"
 >
-    <a href="/" class="font-bold hover:text-gray-300">GLATasks</a>
-    <span class="text-gray-400">|</span>
+    <a href="/" class="font-bold hover:text-gray-300"
+        >GLA<span class="hidden sm:inline">Tasks</span></a
+    >
+    <span class="hidden text-gray-400 sm:inline">|</span>
     {#if page === "tasks"}
         <a
             href="/timers"
@@ -62,7 +64,7 @@
                 value={searchQuery ?? ""}
                 oninput={(e) => onSearchChange(e.currentTarget.value)}
                 placeholder="検索..."
-                class="w-20 rounded bg-gray-700 px-2 py-0.5 text-xs text-white placeholder-gray-400 focus:w-28 focus:ring-1 focus:ring-blue-400 focus:outline-none sm:w-28 sm:focus:w-40"
+                class="w-16 rounded bg-gray-700 px-2 py-0.5 text-xs text-white placeholder-gray-400 focus:w-24 focus:ring-1 focus:ring-blue-400 focus:outline-none sm:w-28 sm:focus:w-40"
                 data-testid="search-input"
             />
         {/if}
