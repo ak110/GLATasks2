@@ -73,6 +73,17 @@ function splitNotes(text: string): string {
         .trimEnd();
 }
 
+// ── DB 更新ヘルパー ──
+
+/** リストの last_updated を現在時刻に更新する */
+async function touchListUpdated(listId: number): Promise<void> {
+  const db = getDb();
+  await db
+    .update(lists)
+    .set({ last_updated: new Date() })
+    .where(eq(lists.id, listId));
+}
+
 // ── 所有権チェック ──
 
 async function getOwnedList(listId: number, userId: number) {
@@ -235,10 +246,7 @@ export async function clearList(userId: number, listId: number): Promise<void> {
     .update(tasks)
     .set({ status: "archived" })
     .where(and(eq(tasks.list_id, listId), eq(tasks.status, "completed")));
-  await db
-    .update(lists)
-    .set({ last_updated: new Date() })
-    .where(eq(lists.id, listId));
+  await touchListUpdated(listId);
 }
 
 /** リスト名を変更する。 */
@@ -250,10 +258,8 @@ export async function renameList(
   if (title.length === 0) throw new Error("タイトルは必須です。");
   await getOwnedList(listId, userId);
   const db = getDb();
-  await db
-    .update(lists)
-    .set({ title, last_updated: new Date() })
-    .where(eq(lists.id, listId));
+  await db.update(lists).set({ title }).where(eq(lists.id, listId));
+  await touchListUpdated(listId);
 }
 
 /** リストとその全タスクを削除する。 */
@@ -316,7 +322,7 @@ export async function postTask(
     created: now,
     updated: now,
   });
-  await db.update(lists).set({ last_updated: now }).where(eq(lists.id, listId));
+  await touchListUpdated(listId);
 }
 
 /** タスクを更新する（部分更新）。 */
@@ -379,20 +385,14 @@ export async function patchTask(
         .from(tasks)
         .where(eq(tasks.list_id, moveTo));
       updates.sort_order = (minOrder ?? 1000) - 1000;
-      await db
-        .update(lists)
-        .set({ last_updated: new Date() })
-        .where(eq(lists.id, moveTo));
+      await touchListUpdated(moveTo);
     }
   }
 
   if (Object.keys(updates).length > 0) {
     await db.update(tasks).set(updates).where(eq(tasks.id, taskId));
   }
-  await db
-    .update(lists)
-    .set({ last_updated: new Date() })
-    .where(eq(lists.id, listId));
+  await touchListUpdated(listId);
 
   // 更新後のタスクを再取得
   const updated = (
@@ -460,10 +460,7 @@ export async function reorderTasks(
       .set({ sort_order: i * 1000 })
       .where(and(eq(tasks.id, taskIds[i]), eq(tasks.list_id, listId)));
   }
-  await db
-    .update(lists)
-    .set({ last_updated: new Date() })
-    .where(eq(lists.id, listId));
+  await touchListUpdated(listId);
 }
 
 /** タイマーの並び順を更新する（全件一致を検証） */
