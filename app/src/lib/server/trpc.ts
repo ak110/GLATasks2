@@ -213,7 +213,7 @@ export const appRouter = t.router({
       .input(UpdateTaskSchema)
       .mutation(async ({ ctx, input }) => {
         const { listId, taskId, ...data } = input;
-        const result = api.patchTask(ctx.userId, listId, taskId, data);
+        const result = await api.patchTask(ctx.userId, listId, taskId, data);
         sendEvent(ctx.userId, "tasks:updated");
         return result;
       }),
