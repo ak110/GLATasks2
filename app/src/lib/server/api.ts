@@ -5,24 +5,19 @@
 import bcrypt from "bcryptjs";
 import { and, asc, eq, inArray, like, max, min } from "drizzle-orm";
 
+import type {
+  ListInfo,
+  TaskInfo,
+  TimerInfo,
+  SearchTaskResult,
+  GetTasksResult,
+} from "$lib/types";
 import { getDb } from "./db";
 import { lists, tasks, timers, users } from "./schema";
 
-// ── 型定義 ──
+// ── 型定義（SSOT は $lib/types.ts、ここには api.ts 固有の型のみ） ──
 
-export type ListInfo = {
-  id: number;
-  title: string;
-  sort_order: number;
-  last_updated: string;
-};
-
-export type TaskInfo = {
-  id: number;
-  title: string;
-  notes: string;
-  status: string;
-};
+export type { ListInfo, TaskInfo, TimerInfo, SearchTaskResult, GetTasksResult };
 
 export type TaskPatchResult = {
   status: string;
@@ -36,26 +31,6 @@ export type UserInfo = {
   id: number;
   user: string;
 };
-
-export type TimerInfo = {
-  id: number;
-  name: string;
-  base_seconds: number;
-  adjust_minutes: number;
-  running: boolean;
-  remaining_seconds: number;
-  started_at: string | null;
-  sort_order: number;
-};
-
-export type SearchTaskResult = TaskInfo & {
-  listId: number;
-  listTitle: string;
-};
-
-export type GetTasksResult =
-  | { status: 304 }
-  | { status: 200; data: TaskInfo[]; lastModified: string };
 
 // ── 日時変換ヘルパー ──
 
