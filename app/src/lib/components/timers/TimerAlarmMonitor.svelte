@@ -200,8 +200,14 @@
         }
         const data = queryClient.getQueryData<TimersResult>(["timers"]);
         const timer = data?.timers?.find((t) => t.id === timerId);
-        // タイマーが存在しない、running でない、リセット/再開された場合はスキップ
-        if (!timer?.running || timer.started_at !== startedAt) return;
+        if (!timer) return;
+        // autoStopIfExpired で停止済み（remaining_seconds=0）→ 完了として扱う
+        const isCompleted = !timer.running && timer.remaining_seconds === 0;
+        // まだ running で started_at が一致 → 完了直前
+        const isAboutToComplete =
+            timer.running && timer.started_at === startedAt;
+        // リセット（remaining > 0）や再開（started_at 変更）はスキップ
+        if (!isCompleted && !isAboutToComplete) return;
         handleAlarm(timerId, timerName, startedAt);
     }
 
