@@ -138,6 +138,7 @@ test.describe("timers", () => {
     await page.fill('[data-testid="timer-hours-input"]', "0");
     await page.fill('[data-testid="timer-minutes-input"]', "5");
     await page.fill('[data-testid="timer-seconds-input"]', "0");
+    await page.fill('[data-testid="timer-adjust-input"]', "5");
     await page.click('[data-testid="timer-submit-btn"]');
 
     const card = page

@@ -48,7 +48,7 @@ export const timers = mysqlTable("timer", {
   user_id: int("user_id").notNull(),
   name: varchar("name", { length: 255 }).notNull(),
   base_seconds: int("base_seconds").notNull(),
-  adjust_minutes: int("adjust_minutes").notNull().default(5),
+  adjust_minutes: int("adjust_minutes").notNull().default(10),
   running: tinyint("running").notNull().default(0),
   remaining_seconds: int("remaining_seconds").notNull(),
   started_at: timestamp("started_at"),

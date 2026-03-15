@@ -63,7 +63,7 @@ export const GetListTasksSchema = z.object({
 export const CreateTimerSchema = z.object({
   name: z.string().trim().max(255),
   base_seconds: z.number().int().positive("ベース時間は正の整数が必要です"),
-  adjust_minutes: z.number().int().min(1).max(999).default(5),
+  adjust_minutes: z.number().int().min(1).max(999).default(10),
 });
 
 export const UpdateTimerSchema = z.object({

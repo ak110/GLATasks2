@@ -35,7 +35,7 @@
     let localHours = $state(0);
     let localMinutes = $state(0);
     let localSeconds = $state(0);
-    let localAdjustMinutes = $state(5);
+    let localAdjustMinutes = $state(10);
     let nameInputEl = $state<HTMLInputElement | null>(null);
 
     // ダイアログ開閉時にローカル状態をリセット

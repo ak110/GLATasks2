@@ -37,9 +37,9 @@
         timerId: 0,
         name: "",
         hours: 0,
-        minutes: 25,
+        minutes: 30,
         seconds: 0,
-        adjustMinutes: 5,
+        adjustMinutes: 10,
     });
 
     // タイマー一覧取得（SSE でリアルタイム同期）
@@ -205,9 +205,9 @@
             timerId: 0,
             name: "",
             hours: 0,
-            minutes: 25,
+            minutes: 30,
             seconds: 0,
-            adjustMinutes: 5,
+            adjustMinutes: 10,
         };
     }
 
