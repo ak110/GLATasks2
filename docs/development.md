@@ -246,3 +246,71 @@ gh workflow run release.yml --field="bump=メジャーバージョンアップ"
 <https://github.com/ak110/GLATasks2/actions> で状況を確認できる。
 
 リリース作成後、deploy.yml が自動的にトリガーされ本番デプロイが実行される。詳細は [CI/CD](#cicd) セクションを参照。
+
+## 外部リバースプロキシ設定
+
+Docker Compose の前段に Let's Encrypt 証明書で HTTPS 終端する外部 nginx を配置する場合の設定。
+
+```mermaid
+flowchart LR
+    Browser["ブラウザ"]
+    ExtNginx["外部 nginx\n（Let's Encrypt）"]
+    IntNginx["内部 nginx\n（自己署名 HTTPS, :38180）"]
+    SK["SvelteKit"]
+
+    Browser -- "HTTPS" --> ExtNginx
+    ExtNginx -- "HTTPS（proxy_ssl_*）" --> IntNginx
+    IntNginx --> SK
+```
+
+設定上の制約:
+
+- `/api/events` と `/` の両方に `proxy_ssl_certificate` / `proxy_ssl_certificate_key` が必要（内部 nginx が自己署名 HTTPS のため）
+- SSE 用の `/api/events` には `proxy_buffering off` + `proxy_read_timeout 86400` + `proxy_http_version 1.1` + `Connection ''` が必須
+- `X-Accel-Buffering: no` ヘッダーで nginx のレスポンスバッファも無効化する
+
+設定例:
+
+```nginx
+upstream app_backend {
+    server 127.0.0.1:38180;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name example.com;
+
+    ssl_certificate     /etc/letsencrypt/live/example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/example.com/privkey.pem;
+
+    # SSE エンドポイント（バッファリング無効化が必要）
+    location /api/events {
+        proxy_pass https://app_backend;
+        proxy_http_version 1.1;
+        proxy_set_header Connection '';
+        proxy_ssl_certificate     /path/to/glatasks/web/ssl/server.crt;
+        proxy_ssl_certificate_key /path/to/glatasks/web/ssl/server.key;
+        proxy_ssl_protocols TLSv1.3;
+        proxy_redirect off;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_buffering off;
+        proxy_cache off;
+        proxy_read_timeout 86400;
+        add_header X-Accel-Buffering no;
+    }
+
+    # 通常リクエスト
+    location / {
+        proxy_pass https://app_backend;
+        proxy_ssl_certificate     /path/to/glatasks/web/ssl/server.crt;
+        proxy_ssl_certificate_key /path/to/glatasks/web/ssl/server.key;
+        proxy_ssl_protocols TLSv1.3;
+        proxy_redirect off;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+    }
+}
+```
