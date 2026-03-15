@@ -11,6 +11,10 @@
     } from "@tanstack/svelte-query";
     import { onMount } from "svelte";
     import { trpc } from "$lib/trpc";
+    import {
+        TIMER_DEFAULT_BASE_MINUTES,
+        TIMER_DEFAULT_ADJUST_MINUTES,
+    } from "$lib/schemas";
     import { playStartBeep } from "$lib/beep";
     import { subscribe, setServerOffset } from "$lib/sse-client";
     import type { TimerInfo, TimersResult } from "$lib/types";
@@ -37,9 +41,9 @@
         timerId: 0,
         name: "",
         hours: 0,
-        minutes: 30,
+        minutes: TIMER_DEFAULT_BASE_MINUTES,
         seconds: 0,
-        adjustMinutes: 10,
+        adjustMinutes: TIMER_DEFAULT_ADJUST_MINUTES,
     });
 
     // タイマー一覧取得（SSE でリアルタイム同期）
@@ -205,9 +209,9 @@
             timerId: 0,
             name: "",
             hours: 0,
-            minutes: 30,
+            minutes: TIMER_DEFAULT_BASE_MINUTES,
             seconds: 0,
-            adjustMinutes: 10,
+            adjustMinutes: TIMER_DEFAULT_ADJUST_MINUTES,
         };
     }
 

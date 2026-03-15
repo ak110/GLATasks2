@@ -3,6 +3,8 @@
      * @fileoverview タイマー追加/編集ダイアログ
      */
 
+    import { TIMER_DEFAULT_ADJUST_MINUTES } from "$lib/schemas";
+
     type Props = {
         open: boolean;
         mode: "create" | "edit";
@@ -35,7 +37,7 @@
     let localHours = $state(0);
     let localMinutes = $state(0);
     let localSeconds = $state(0);
-    let localAdjustMinutes = $state(10);
+    let localAdjustMinutes = $state(TIMER_DEFAULT_ADJUST_MINUTES);
     let nameInputEl = $state<HTMLInputElement | null>(null);
 
     // ダイアログ開閉時にローカル状態をリセット

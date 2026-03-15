@@ -58,12 +58,25 @@ export const GetListTasksSchema = z.object({
   ifModifiedSince: z.string().datetime().optional(),
 });
 
+// ── タイマーデフォルト値 ──
+
+/** タイマー作成時のベース時間デフォルト（分） */
+export const TIMER_DEFAULT_BASE_MINUTES = 30;
+
+/** 延長/削減のデフォルト分数 */
+export const TIMER_DEFAULT_ADJUST_MINUTES = 10;
+
 // ── タイマー操作スキーマ ──
 
 export const CreateTimerSchema = z.object({
   name: z.string().trim().max(255),
   base_seconds: z.number().int().positive("ベース時間は正の整数が必要です"),
-  adjust_minutes: z.number().int().min(1).max(999).default(10),
+  adjust_minutes: z
+    .number()
+    .int()
+    .min(1)
+    .max(999)
+    .default(TIMER_DEFAULT_ADJUST_MINUTES),
 });
 
 export const UpdateTimerSchema = z.object({

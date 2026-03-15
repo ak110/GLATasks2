@@ -10,6 +10,7 @@ import {
   timestamp,
   tinyint,
 } from "drizzle-orm/mysql-core";
+import { TIMER_DEFAULT_ADJUST_MINUTES } from "$lib/schemas";
 
 /** user テーブル */
 export const users = mysqlTable("user", {
@@ -48,7 +49,9 @@ export const timers = mysqlTable("timer", {
   user_id: int("user_id").notNull(),
   name: varchar("name", { length: 255 }).notNull(),
   base_seconds: int("base_seconds").notNull(),
-  adjust_minutes: int("adjust_minutes").notNull().default(10),
+  adjust_minutes: int("adjust_minutes")
+    .notNull()
+    .default(TIMER_DEFAULT_ADJUST_MINUTES),
   running: tinyint("running").notNull().default(0),
   remaining_seconds: int("remaining_seconds").notNull(),
   started_at: timestamp("started_at"),
