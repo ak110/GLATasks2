@@ -67,6 +67,7 @@
 - @README.md
 - @docs/architecture.md
 - @docs/coding-style.md
+- @docs/development.md
 
 ---
 
