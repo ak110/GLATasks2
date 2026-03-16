@@ -95,9 +95,7 @@
     $effect(() => {
         const timers =
             ($timersQuery.data as TimersResult | undefined)?.timers ?? [];
-        const hasCompletedTimer = timers.some(
-            (t) => !t.running && t.remaining_seconds === 0,
-        );
+        const hasCompletedTimer = timers.some((t) => t.expired && !t.running);
         if (hasCompletedTimer) {
             if (originalFaviconImg) {
                 if (!badgeFaviconUrl) {
@@ -120,9 +118,9 @@
             const timer = timers.find((t) => t.id === alarm.timerId);
             if (!timer) return false;
             // まだ running（stop 完了待ち）→ 維持
-            // 完了状態（remaining_seconds === 0）→ 維持
-            // リセット済み（remaining_seconds > 0 かつ !running）→ 除去
-            return timer.running || timer.remaining_seconds === 0;
+            // expired（自然期限切れ）→ 維持
+            // リセット済み or 手動で0にした（expired=false）→ 除去
+            return timer.running || timer.expired;
         });
         // 新しい配列参照を毎回作ると Svelte が変更検知して無限ループするため、変化があるときだけ更新
         if (filtered.length !== alarms.length) {
@@ -201,8 +199,8 @@
         const data = queryClient.getQueryData<TimersResult>(["timers"]);
         const timer = data?.timers?.find((t) => t.id === timerId);
         if (!timer) return;
-        // autoStopIfExpired で停止済み（remaining_seconds=0）→ 完了として扱う
-        const isCompleted = !timer.running && timer.remaining_seconds === 0;
+        // autoStopIfExpired で停止済み（expired=true）→ 完了として扱う
+        const isCompleted = timer.expired && !timer.running;
         // まだ running で started_at が一致 → 完了直前
         const isAboutToComplete =
             timer.running && timer.started_at === startedAt;

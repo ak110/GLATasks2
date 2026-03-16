@@ -531,12 +531,19 @@ async function autoStopIfExpired(
     .update(timers)
     .set({
       running: 0,
+      expired: 1,
       remaining_seconds: 0,
       started_at: null,
       updated: new Date(),
     })
     .where(eq(timers.id, timer.id));
-  return { ...timer, running: 0, remaining_seconds: 0, started_at: null };
+  return {
+    ...timer,
+    running: 0,
+    expired: 1,
+    remaining_seconds: 0,
+    started_at: null,
+  };
 }
 
 /** DB の timer 行を TimerInfo に変換する */
@@ -547,6 +554,7 @@ function toTimerInfo(row: typeof timers.$inferSelect): TimerInfo {
     base_seconds: row.base_seconds,
     adjust_minutes: row.adjust_minutes,
     running: row.running === 1,
+    expired: row.expired === 1,
     remaining_seconds: row.remaining_seconds,
     started_at: row.started_at ? toUtcIso(row.started_at) : null,
     sort_order: row.sort_order,
@@ -635,7 +643,12 @@ export async function startTimer(
   const db = getDb();
   await db
     .update(timers)
-    .set({ running: 1, started_at: new Date(), updated: new Date() })
+    .set({
+      running: 1,
+      expired: 0,
+      started_at: new Date(),
+      updated: new Date(),
+    })
     .where(eq(timers.id, timerId));
 }
 
@@ -653,6 +666,7 @@ export async function pauseTimer(
     .update(timers)
     .set({
       running: 0,
+      expired: remaining === 0 ? 1 : 0,
       remaining_seconds: remaining,
       started_at: null,
       updated: new Date(),
@@ -660,18 +674,36 @@ export async function pauseTimer(
     .where(eq(timers.id, timerId));
 }
 
-/** タイマーをリセットする（base_seconds に戻す） */
+/**
+ * タイマーをリセットする（トグル動作）。
+ * - running中 or 途中使用中 → base_seconds に戻す
+ * - remaining == base_seconds → 0 にクリア
+ * - remaining == 0 → base_seconds に戻す
+ */
 export async function resetTimer(
   userId: number,
   timerId: number,
 ): Promise<void> {
   const timer = await getOwnedTimer(timerId, userId);
+  let currentRemaining = timer.remaining_seconds;
+  if (timer.running && timer.started_at) {
+    const elapsed = Math.floor(
+      (Date.now() - timer.started_at.getTime()) / 1000,
+    );
+    currentRemaining = Math.max(0, timer.remaining_seconds - elapsed);
+  }
+  // トグルロジック: base_seconds と一致 → 0、それ以外 → base_seconds
+  const newRemaining =
+    !timer.running && currentRemaining === timer.base_seconds
+      ? 0
+      : timer.base_seconds;
   const db = getDb();
   await db
     .update(timers)
     .set({
       running: 0,
-      remaining_seconds: timer.base_seconds,
+      expired: 0,
+      remaining_seconds: newRemaining,
       started_at: null,
       updated: new Date(),
     })
@@ -703,13 +735,18 @@ export async function adjustTimer(
         remaining_seconds: newRemaining,
         started_at: newRemaining > 0 ? new Date() : null,
         running: newRemaining > 0 ? 1 : 0,
+        expired: 0,
         updated: new Date(),
       })
       .where(eq(timers.id, timerId));
   } else {
     await db
       .update(timers)
-      .set({ remaining_seconds: newRemaining, updated: new Date() })
+      .set({
+        remaining_seconds: newRemaining,
+        expired: 0,
+        updated: new Date(),
+      })
       .where(eq(timers.id, timerId));
   }
 }
@@ -738,9 +775,25 @@ export async function stopTimer(
     .update(timers)
     .set({
       running: 0,
+      expired: 1,
       remaining_seconds: 0,
       started_at: null,
       updated: new Date(),
     })
+    .where(eq(timers.id, timerId));
+}
+
+/** タイマーの残り時間を直接設定する（停止中のみ） */
+export async function setTimerTime(
+  userId: number,
+  timerId: number,
+  seconds: number,
+): Promise<void> {
+  const timer = await getOwnedTimer(timerId, userId);
+  if (timer.running) throw new Error("timer_is_running");
+  const db = getDb();
+  await db
+    .update(timers)
+    .set({ remaining_seconds: seconds, expired: 0, updated: new Date() })
     .where(eq(timers.id, timerId));
 }

@@ -101,6 +101,11 @@ export const AdjustTimerSchema = z.object({
   minutes: z.number().int(),
 });
 
+export const SetTimerTimeSchema = z.object({
+  timerId: z.number().int().positive(),
+  seconds: z.number().int().min(0).max(359999),
+});
+
 // ── 認証スキーマ ──
 
 export const RegisterUserSchema = z.object({
@@ -143,6 +148,7 @@ export type GetListTasksInput = z.infer<typeof GetListTasksSchema>;
 export type CreateTimerInput = z.infer<typeof CreateTimerSchema>;
 export type UpdateTimerInput = z.infer<typeof UpdateTimerSchema>;
 export type AdjustTimerInput = z.infer<typeof AdjustTimerSchema>;
+export type SetTimerTimeInput = z.infer<typeof SetTimerTimeSchema>;
 export type TimerStopInput = z.infer<typeof TimerStopSchema>;
 export type SearchTasksInput = z.infer<typeof SearchTasksSchema>;
 export type ReorderTasksInput = z.infer<typeof ReorderTasksSchema>;

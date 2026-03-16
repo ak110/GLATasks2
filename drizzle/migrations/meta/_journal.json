@@ -29,6 +29,13 @@
       "when": 1772700000000,
       "tag": "0003_sort_order_and_status",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1773800000000,
+      "tag": "0004_add_timer_expired",
+      "breakpoints": true
     }
   ]
 }

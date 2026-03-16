@@ -30,9 +30,7 @@
         mode: "create" | "edit";
         timerId: number;
         name: string;
-        hours: number;
-        minutes: number;
-        seconds: number;
+        baseSeconds: number;
         adjustMinutes: number;
     };
     let dialog = $state<DialogState>({
@@ -40,9 +38,7 @@
         mode: "create",
         timerId: 0,
         name: "",
-        hours: 0,
-        minutes: TIMER_DEFAULT_BASE_MINUTES,
-        seconds: 0,
+        baseSeconds: TIMER_DEFAULT_BASE_MINUTES * 60,
         adjustMinutes: TIMER_DEFAULT_ADJUST_MINUTES,
     });
 
@@ -133,6 +129,13 @@
             queryClient.invalidateQueries({ queryKey: ["timers"] }),
     });
 
+    const setTimerTimeMutation = createMutation({
+        mutationFn: (input: { timerId: number; seconds: number }) =>
+            trpc.timers.setTime.mutate(input),
+        onSuccess: () =>
+            queryClient.invalidateQueries({ queryKey: ["timers"] }),
+    });
+
     const reorderTimersMutation = createMutation({
         mutationFn: (input: { timerIds: number[] }) =>
             trpc.timers.reorder.mutate(input),
@@ -208,25 +211,18 @@
             mode: "create",
             timerId: 0,
             name: "",
-            hours: 0,
-            minutes: TIMER_DEFAULT_BASE_MINUTES,
-            seconds: 0,
+            baseSeconds: TIMER_DEFAULT_BASE_MINUTES * 60,
             adjustMinutes: TIMER_DEFAULT_ADJUST_MINUTES,
         };
     }
 
     function openEditDialog(timer: TimerInfo) {
-        const h = Math.floor(timer.base_seconds / 3600);
-        const m = Math.floor((timer.base_seconds % 3600) / 60);
-        const s = timer.base_seconds % 60;
         dialog = {
             open: true,
             mode: "edit",
             timerId: timer.id,
             name: timer.name,
-            hours: h,
-            minutes: m,
-            seconds: s,
+            baseSeconds: timer.base_seconds,
             adjustMinutes: timer.adjust_minutes,
         };
     }
@@ -285,6 +281,11 @@
                     onReset={(id) => $resetTimerMutation.mutate(id)}
                     onAdjust={(id, minutes) =>
                         $adjustTimerMutation.mutate({ timerId: id, minutes })}
+                    onSetTime={(id, seconds) =>
+                        $setTimerTimeMutation.mutate({
+                            timerId: id,
+                            seconds,
+                        })}
                     onEdit={openEditDialog}
                     onDelete={handleDelete}
                     isDragging={draggedId === timer.id}
@@ -305,9 +306,7 @@
     open={dialog.open}
     mode={dialog.mode}
     name={dialog.name}
-    hours={dialog.hours}
-    minutes={dialog.minutes}
-    seconds={dialog.seconds}
+    baseSeconds={dialog.baseSeconds}
     adjustMinutes={dialog.adjustMinutes}
     onSubmit={handleDialogSubmit}
     onClose={() => (dialog.open = false)}

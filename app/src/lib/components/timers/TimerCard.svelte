@@ -5,7 +5,11 @@
 
     import type { TimerInfo } from "$lib/types";
     import { getServerOffset } from "$lib/sse-client";
-    import { calcTimerRemainingMs } from "$lib/timer-utils";
+    import {
+        calcTimerRemainingMs,
+        formatTime,
+        parseTimeInput,
+    } from "$lib/timer-utils";
 
     type Props = {
         timer: TimerInfo;
@@ -13,6 +17,7 @@
         onPause: (timerId: number) => void;
         onReset: (timerId: number) => void;
         onAdjust: (timerId: number, minutes: number) => void;
+        onSetTime: (timerId: number, seconds: number) => void;
         onEdit: (timer: TimerInfo) => void;
         onDelete: (timerId: number) => void;
         isDragging?: boolean;
@@ -29,6 +34,7 @@
         onPause,
         onReset,
         onAdjust,
+        onSetTime,
         onEdit,
         onDelete,
         isDragging = false,
@@ -42,19 +48,15 @@
     let displaySeconds = $state(0);
     let intervalId = $state<ReturnType<typeof setInterval> | null>(null);
 
+    // 時刻編集状態
+    let editing = $state(false);
+    let editValue = $state("");
+
     /** 残り秒数を計算する */
     function calcRemaining(): number {
         return Math.floor(
             calcTimerRemainingMs(timer, getServerOffset()) / 1000,
         );
-    }
-
-    /** 時:分:秒 フォーマット */
-    function formatTime(totalSeconds: number): string {
-        const h = Math.floor(totalSeconds / 3600);
-        const m = Math.floor((totalSeconds % 3600) / 60);
-        const s = totalSeconds % 60;
-        return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
     }
 
     // 1秒ごとに表示更新（アラームは TimerAlarmMonitor が担当）
@@ -75,7 +77,39 @@
         }
     });
 
-    const isExpired = $derived(displaySeconds <= 0 && !timer.running);
+    const isExpired = $derived(timer.expired && !timer.running);
+
+    /** 時刻表示クリック → 編集モードに切り替え */
+    function startEditing() {
+        if (timer.running) return;
+        editing = true;
+        editValue = formatTime(displaySeconds);
+    }
+
+    /** 編集確定 */
+    function commitEdit() {
+        editing = false;
+        const seconds = parseTimeInput(editValue);
+        if (seconds !== null && seconds !== displaySeconds) {
+            onSetTime(timer.id, seconds);
+        }
+    }
+
+    /** 編集キャンセル */
+    function cancelEdit() {
+        editing = false;
+    }
+
+    /** 編集中のキー入力処理 */
+    function handleEditKeydown(e: KeyboardEvent) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            commitEdit();
+        } else if (e.key === "Escape") {
+            e.preventDefault();
+            cancelEdit();
+        }
+    }
 </script>
 
 <div
@@ -144,15 +178,28 @@
 
     <!-- 残り時間表示 -->
     <div
-        class="mb-4 text-center font-mono text-3xl font-bold sm:text-4xl {!isExpired &&
-        !timer.running
-            ? 'text-gray-800 dark:text-gray-100'
-            : ''}"
-        class:text-blue-600={timer.running}
-        class:text-red-500={isExpired}
+        class="mb-4 text-center font-mono text-3xl font-bold sm:text-4xl"
         data-testid="timer-display"
     >
-        {formatTime(displaySeconds)}
+        {#if editing}
+            <input
+                type="text"
+                bind:value={editValue}
+                onblur={commitEdit}
+                onkeydown={handleEditKeydown}
+                class="w-full rounded border border-gray-300 bg-white px-2 py-1 text-center font-mono text-3xl font-bold text-gray-800 focus:border-blue-400 focus:outline-none sm:text-4xl dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                data-testid="timer-time-input"
+            />
+        {:else if timer.running}
+            <span class="text-blue-600">{formatTime(displaySeconds)}</span>
+        {:else}
+            <button
+                class="cursor-pointer bg-transparent {isExpired
+                    ? 'text-red-500'
+                    : 'text-gray-800 dark:text-gray-100'}"
+                onclick={startEditing}>{formatTime(displaySeconds)}</button
+            >
+        {/if}
     </div>
 
     <!-- 操作ボタン -->

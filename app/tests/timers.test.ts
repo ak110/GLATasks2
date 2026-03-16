@@ -27,9 +27,7 @@ test.describe("timers", () => {
 
     // フォームを入力
     await page.fill('[data-testid="timer-name-input"]', timerName);
-    await page.fill('[data-testid="timer-hours-input"]', "0");
-    await page.fill('[data-testid="timer-minutes-input"]', "5");
-    await page.fill('[data-testid="timer-seconds-input"]', "0");
+    await page.fill('[data-testid="timer-base-time-input"]', "00:05:00");
 
     // 送信
     await page.click('[data-testid="timer-submit-btn"]');
@@ -57,9 +55,7 @@ test.describe("timers", () => {
     await page.click('[data-testid="timer-add-btn"]');
     await page.locator('[data-testid="timer-name-input"]').waitFor();
     await page.fill('[data-testid="timer-name-input"]', timerName);
-    await page.fill('[data-testid="timer-hours-input"]', "0");
-    await page.fill('[data-testid="timer-minutes-input"]', "1");
-    await page.fill('[data-testid="timer-seconds-input"]', "0");
+    await page.fill('[data-testid="timer-base-time-input"]', "00:01:00");
     await page.click('[data-testid="timer-submit-btn"]');
 
     const card = page
@@ -101,9 +97,7 @@ test.describe("timers", () => {
     await page.click('[data-testid="timer-add-btn"]');
     await page.locator('[data-testid="timer-name-input"]').waitFor();
     await page.fill('[data-testid="timer-name-input"]', timerName);
-    await page.fill('[data-testid="timer-hours-input"]', "0");
-    await page.fill('[data-testid="timer-minutes-input"]', "2");
-    await page.fill('[data-testid="timer-seconds-input"]', "30");
+    await page.fill('[data-testid="timer-base-time-input"]', "00:02:30");
     await page.click('[data-testid="timer-submit-btn"]');
 
     const card = page
@@ -135,9 +129,7 @@ test.describe("timers", () => {
     await page.click('[data-testid="timer-add-btn"]');
     await page.locator('[data-testid="timer-name-input"]').waitFor();
     await page.fill('[data-testid="timer-name-input"]', timerName);
-    await page.fill('[data-testid="timer-hours-input"]', "0");
-    await page.fill('[data-testid="timer-minutes-input"]', "5");
-    await page.fill('[data-testid="timer-seconds-input"]', "0");
+    await page.fill('[data-testid="timer-base-time-input"]', "00:05:00");
     await page.fill('[data-testid="timer-adjust-input"]', "5");
     await page.click('[data-testid="timer-submit-btn"]');
 
@@ -174,9 +166,7 @@ test.describe("timers", () => {
     await page.click('[data-testid="timer-add-btn"]');
     await page.locator('[data-testid="timer-name-input"]').waitFor();
     await page.fill('[data-testid="timer-name-input"]', timerName);
-    await page.fill('[data-testid="timer-hours-input"]', "0");
-    await page.fill('[data-testid="timer-minutes-input"]', "3");
-    await page.fill('[data-testid="timer-seconds-input"]', "0");
+    await page.fill('[data-testid="timer-base-time-input"]', "00:03:00");
     await page.click('[data-testid="timer-submit-btn"]');
 
     const card = page

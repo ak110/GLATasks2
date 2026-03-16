@@ -17,6 +17,7 @@ import {
   TimerIdSchema,
   TimerStopSchema,
   AdjustTimerSchema,
+  SetTimerTimeSchema,
   LoginSchema,
   SearchTasksSchema,
   ReorderTasksSchema,
@@ -115,6 +116,10 @@ const API_ERRORS: Record<
   },
   task_not_found: { code: "NOT_FOUND", message: "タスクが見つかりません" },
   invalid_timer_ids: { code: "BAD_REQUEST", message: "タイマーIDが不正です" },
+  timer_is_running: {
+    code: "BAD_REQUEST",
+    message: "タイマー実行中は時刻を変更できません",
+  },
 };
 
 /**
@@ -337,6 +342,14 @@ export const appRouter = t.router({
       .input(AdjustTimerSchema)
       .mutation(async ({ ctx, input }) => {
         await api.adjustTimer(ctx.userId, input.timerId, input.minutes);
+        sendEvent(ctx.userId, "timers:updated");
+        return { success: true };
+      }),
+
+    setTime: encryptedProcedure
+      .input(SetTimerTimeSchema)
+      .mutation(async ({ ctx, input }) => {
+        await api.setTimerTime(ctx.userId, input.timerId, input.seconds);
         sendEvent(ctx.userId, "timers:updated");
         return { success: true };
       }),

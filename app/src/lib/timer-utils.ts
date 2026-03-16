@@ -22,3 +22,36 @@ export function calcTimerRemainingMs(
   const elapsedMs = Date.now() + offsetMs - startedAtMs;
   return Math.max(0, timer.remaining_seconds * 1000 - elapsedMs);
 }
+
+/** 秒数を HH:MM:SS 形式にフォーマットする */
+export function formatTime(totalSeconds: number): string {
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
+/**
+ * 時刻文字列を秒数にパースする。
+ * `HH:MM:SS` / `MM:SS` / `SS` 形式を受け付ける。不正入力は null を返す。
+ */
+export function parseTimeInput(input: string): number | null {
+  const trimmed = input.trim();
+  if (trimmed === "") return null;
+  const parts = trimmed.split(":");
+  if (parts.length < 1 || parts.length > 3) return null;
+  const nums = parts.map(Number);
+  if (nums.some((n) => !Number.isFinite(n) || n < 0 || n !== Math.floor(n))) {
+    return null;
+  }
+  let total: number;
+  if (nums.length === 3) {
+    total = nums[0] * 3600 + nums[1] * 60 + nums[2];
+  } else if (nums.length === 2) {
+    total = nums[0] * 60 + nums[1];
+  } else {
+    total = nums[0];
+  }
+  if (total < 0 || total > 359999) return null;
+  return total;
+}

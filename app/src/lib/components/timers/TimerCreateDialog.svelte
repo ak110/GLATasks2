@@ -4,14 +4,13 @@
      */
 
     import { TIMER_DEFAULT_ADJUST_MINUTES } from "$lib/schemas";
+    import { formatTime, parseTimeInput } from "$lib/timer-utils";
 
     type Props = {
         open: boolean;
         mode: "create" | "edit";
         name: string;
-        hours: number;
-        minutes: number;
-        seconds: number;
+        baseSeconds: number;
         adjustMinutes: number;
         onSubmit: (data: {
             name: string;
@@ -25,18 +24,14 @@
         open,
         mode,
         name: initialName,
-        hours: initialHours,
-        minutes: initialMinutes,
-        seconds: initialSeconds,
+        baseSeconds: initialBaseSeconds,
         adjustMinutes: initialAdjustMinutes,
         onSubmit,
         onClose,
     }: Props = $props();
 
     let localName = $state("");
-    let localHours = $state(0);
-    let localMinutes = $state(0);
-    let localSeconds = $state(0);
+    let localBaseTime = $state("");
     let localAdjustMinutes = $state(TIMER_DEFAULT_ADJUST_MINUTES);
     let nameInputEl = $state<HTMLInputElement | null>(null);
 
@@ -44,9 +39,7 @@
     $effect(() => {
         if (open) {
             localName = initialName;
-            localHours = initialHours;
-            localMinutes = initialMinutes;
-            localSeconds = initialSeconds;
+            localBaseTime = formatTime(initialBaseSeconds);
             localAdjustMinutes = initialAdjustMinutes;
             queueMicrotask(() => nameInputEl?.focus());
         }
@@ -63,9 +56,8 @@
     });
 
     function handleSubmit() {
-        const baseSeconds =
-            localHours * 3600 + localMinutes * 60 + localSeconds;
-        if (baseSeconds <= 0) return;
+        const baseSeconds = parseTimeInput(localBaseTime);
+        if (baseSeconds === null || baseSeconds <= 0) return;
         onSubmit({
             name: localName.trim(),
             base_seconds: baseSeconds,
@@ -123,45 +115,19 @@
                 </div>
 
                 <div>
-                    <span
+                    <label
+                        for="timer-base-time"
                         class="mb-1 block text-sm text-gray-600 dark:text-gray-300"
-                        >ベース時間</span
+                        >ベース時間</label
                     >
-                    <div class="flex items-center gap-2">
-                        <input
-                            type="number"
-                            bind:value={localHours}
-                            min="0"
-                            max="99"
-                            class="w-20 rounded border border-gray-200 px-2 py-2 text-center focus:border-blue-400 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-                            data-testid="timer-hours-input"
-                        />
-                        <span class="text-sm text-gray-500 dark:text-gray-400"
-                            >時間</span
-                        >
-                        <input
-                            type="number"
-                            bind:value={localMinutes}
-                            min="0"
-                            max="59"
-                            class="w-20 rounded border border-gray-200 px-2 py-2 text-center focus:border-blue-400 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-                            data-testid="timer-minutes-input"
-                        />
-                        <span class="text-sm text-gray-500 dark:text-gray-400"
-                            >分</span
-                        >
-                        <input
-                            type="number"
-                            bind:value={localSeconds}
-                            min="0"
-                            max="59"
-                            class="w-20 rounded border border-gray-200 px-2 py-2 text-center focus:border-blue-400 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-                            data-testid="timer-seconds-input"
-                        />
-                        <span class="text-sm text-gray-500 dark:text-gray-400"
-                            >秒</span
-                        >
-                    </div>
+                    <input
+                        id="timer-base-time"
+                        type="text"
+                        bind:value={localBaseTime}
+                        class="w-full rounded border border-gray-200 px-3 py-2 font-mono focus:border-blue-400 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                        placeholder="HH:MM:SS"
+                        data-testid="timer-base-time-input"
+                    />
                 </div>
 
                 <div>
