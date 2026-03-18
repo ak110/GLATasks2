@@ -31,6 +31,36 @@ export function formatTime(totalSeconds: number): string {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
+/** target_minutes を "HH:MM" 形式にフォーマットする */
+export function formatTargetTime(targetMinutes: number): string {
+  const h = Math.floor(targetMinutes / 60);
+  const m = targetMinutes % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
+
+/** "HH:MM" 形式を target_minutes (0-1439) にパースする */
+export function parseTargetTime(input: string): number | null {
+  const trimmed = input.trim();
+  const match = trimmed.match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) return null;
+  const h = Number(match[1]);
+  const m = Number(match[2]);
+  if (h < 0 || h > 23 || m < 0 || m > 59) return null;
+  return h * 60 + m;
+}
+
+/** 目標時刻（分）までの残り秒数を計算する（ローカル時刻基準、クライアント用） */
+export function calcSecondsUntilTarget(targetMinutes: number): number {
+  const now = new Date();
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  const nowSeconds = now.getSeconds();
+  let diffMinutes = targetMinutes - nowMinutes;
+  if (diffMinutes < 0 || (diffMinutes === 0 && nowSeconds > 0)) {
+    diffMinutes += 24 * 60;
+  }
+  return diffMinutes * 60 - nowSeconds;
+}
+
 /**
  * 時刻文字列を秒数にパースする。
  * `HH:MM:SS` / `MM:SS` / `SS` 形式を受け付ける。不正入力は null を返す。

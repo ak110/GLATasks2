@@ -9,6 +9,9 @@
         calcTimerRemainingMs,
         formatTime,
         parseTimeInput,
+        formatTargetTime,
+        parseTargetTime,
+        calcSecondsUntilTarget,
     } from "$lib/timer-utils";
 
     type Props = {
@@ -17,7 +20,12 @@
         onPause: (timerId: number) => void;
         onReset: (timerId: number) => void;
         onAdjust: (timerId: number, minutes: number) => void;
-        onSetTime: (timerId: number, seconds: number) => void;
+        onSetTime: (
+            timerId: number,
+            seconds: number,
+            targetMinutes?: number,
+            tzOffsetMinutes?: number,
+        ) => void;
         onEdit: (timer: TimerInfo) => void;
         onDelete: (timerId: number) => void;
         isDragging?: boolean;
@@ -54,16 +62,28 @@
 
     /** 残り秒数を計算する */
     function calcRemaining(): number {
+        // 停止中のアラームは wall clock からライブ計算
+        if (
+            timer.mode === "alarm" &&
+            !timer.running &&
+            timer.target_minutes !== null
+        ) {
+            return calcSecondsUntilTarget(timer.target_minutes);
+        }
         return Math.floor(
             calcTimerRemainingMs(timer, getServerOffset()) / 1000,
         );
     }
 
-    // 1秒ごとに表示更新（アラームは TimerAlarmMonitor が担当）
+    // 1秒ごとに表示更新
     $effect(() => {
         displaySeconds = calcRemaining();
 
-        if (timer.running) {
+        // alarm は停止中でもカウントダウン表示を更新する
+        if (
+            timer.running ||
+            (timer.mode === "alarm" && timer.target_minutes !== null)
+        ) {
             const id = setInterval(() => {
                 displaySeconds = calcRemaining();
             }, 1000);
@@ -83,15 +103,27 @@
     function startEditing() {
         if (timer.running) return;
         editing = true;
-        editValue = formatTime(displaySeconds);
+        if (timer.mode === "alarm" && timer.target_minutes !== null) {
+            editValue = formatTargetTime(timer.target_minutes);
+        } else {
+            editValue = formatTime(displaySeconds);
+        }
     }
 
     /** 編集確定 */
     function commitEdit() {
         editing = false;
-        const seconds = parseTimeInput(editValue);
-        if (seconds !== null && seconds !== displaySeconds) {
-            onSetTime(timer.id, seconds);
+        if (timer.mode === "alarm") {
+            const target = parseTargetTime(editValue);
+            if (target !== null && target !== timer.target_minutes) {
+                const tzOffset = -new Date().getTimezoneOffset();
+                onSetTime(timer.id, 0, target, tzOffset);
+            }
+        } else {
+            const seconds = parseTimeInput(editValue);
+            if (seconds !== null && seconds !== displaySeconds) {
+                onSetTime(timer.id, seconds);
+            }
         }
     }
 
@@ -176,6 +208,16 @@
         </div>
     </div>
 
+    <!-- アラームモード: 目標時刻表示 -->
+    {#if timer.mode === "alarm" && timer.target_minutes !== null}
+        <div
+            class="mb-1 text-center text-sm text-gray-500 dark:text-gray-400"
+            data-testid="timer-target-display"
+        >
+            🔔 {formatTargetTime(timer.target_minutes)}
+        </div>
+    {/if}
+
     <!-- 残り時間表示 -->
     <div
         class="mb-4 text-center font-mono text-3xl font-bold sm:text-4xl"
@@ -183,7 +225,7 @@
     >
         {#if editing}
             <input
-                type="text"
+                type={timer.mode === "alarm" ? "time" : "text"}
                 bind:value={editValue}
                 onblur={commitEdit}
                 onkeydown={handleEditKeydown}
@@ -206,11 +248,13 @@
     <div class="flex flex-wrap items-center justify-center gap-2">
         <div class="flex flex-nowrap items-center gap-2">
             {#if timer.running}
-                <button
-                    onclick={() => onPause(timer.id)}
-                    class="cursor-pointer rounded bg-yellow-100 px-3 py-1.5 text-sm text-yellow-700 hover:bg-yellow-200"
-                    data-testid="timer-pause-btn">⏸ 一時停止</button
-                >
+                {#if timer.mode !== "alarm"}
+                    <button
+                        onclick={() => onPause(timer.id)}
+                        class="cursor-pointer rounded bg-yellow-100 px-3 py-1.5 text-sm text-yellow-700 hover:bg-yellow-200"
+                        data-testid="timer-pause-btn">⏸ 一時停止</button
+                    >
+                {/if}
             {:else}
                 <button
                     onclick={() => onStart(timer.id)}

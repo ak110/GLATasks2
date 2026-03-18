@@ -18,6 +18,8 @@ import {
   TimerStopSchema,
   AdjustTimerSchema,
   SetTimerTimeSchema,
+  StartTimerSchema,
+  ResetTimerSchema,
   LoginSchema,
   SearchTasksSchema,
   ReorderTasksSchema,
@@ -118,7 +120,15 @@ const API_ERRORS: Record<
   invalid_timer_ids: { code: "BAD_REQUEST", message: "タイマーIDが不正です" },
   timer_is_running: {
     code: "BAD_REQUEST",
-    message: "タイマー実行中は時刻を変更できません",
+    message: "タイマー実行中は変更できません",
+  },
+  alarm_missing_params: {
+    code: "BAD_REQUEST",
+    message: "アラームモードでは目標時刻とタイムゾーンオフセットが必須です",
+  },
+  countdown_missing_base_seconds: {
+    code: "BAD_REQUEST",
+    message: "カウントダウンモードではベース時間が必須です",
   },
 };
 
@@ -292,6 +302,9 @@ export const appRouter = t.router({
           input.name,
           input.base_seconds,
           input.adjust_minutes,
+          input.mode,
+          input.target_minutes ?? null,
+          input.tz_offset_minutes ?? null,
         );
         sendEvent(ctx.userId, "timers:updated");
         return { success: true };
@@ -315,9 +328,13 @@ export const appRouter = t.router({
       }),
 
     start: encryptedProcedure
-      .input(TimerIdSchema)
+      .input(StartTimerSchema)
       .mutation(async ({ ctx, input }) => {
-        await api.startTimer(ctx.userId, input.timerId);
+        await api.startTimer(
+          ctx.userId,
+          input.timerId,
+          input.tz_offset_minutes,
+        );
         sendEvent(ctx.userId, "timers:updated");
         return { success: true };
       }),
@@ -331,9 +348,13 @@ export const appRouter = t.router({
       }),
 
     reset: encryptedProcedure
-      .input(TimerIdSchema)
+      .input(ResetTimerSchema)
       .mutation(async ({ ctx, input }) => {
-        await api.resetTimer(ctx.userId, input.timerId);
+        await api.resetTimer(
+          ctx.userId,
+          input.timerId,
+          input.tz_offset_minutes,
+        );
         sendEvent(ctx.userId, "timers:updated");
         return { success: true };
       }),
@@ -349,7 +370,13 @@ export const appRouter = t.router({
     setTime: encryptedProcedure
       .input(SetTimerTimeSchema)
       .mutation(async ({ ctx, input }) => {
-        await api.setTimerTime(ctx.userId, input.timerId, input.seconds);
+        await api.setTimerTime(
+          ctx.userId,
+          input.timerId,
+          input.seconds,
+          input.target_minutes,
+          input.tz_offset_minutes,
+        );
         sendEvent(ctx.userId, "timers:updated");
         return { success: true };
       }),

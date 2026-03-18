@@ -48,6 +48,8 @@ export const timers = mysqlTable("timer", {
   id: int("id").primaryKey().autoincrement(),
   user_id: int("user_id").notNull(),
   name: varchar("name", { length: 255 }).notNull(),
+  mode: varchar("mode", { length: 10 }).notNull().default("countdown"),
+  target_minutes: int("target_minutes"),
   base_seconds: int("base_seconds").notNull(),
   adjust_minutes: int("adjust_minutes")
     .notNull()

@@ -66,28 +66,72 @@ export const TIMER_DEFAULT_BASE_MINUTES = 30;
 /** 延長/削減のデフォルト分数 */
 export const TIMER_DEFAULT_ADJUST_MINUTES = 10;
 
+/** タイマーモード */
+export const TIMER_MODES = ["countdown", "alarm"] as const;
+export const TimerModeSchema = z.enum(TIMER_MODES);
+export type TimerMode = z.infer<typeof TimerModeSchema>;
+
 // ── タイマー操作スキーマ ──
 
-export const CreateTimerSchema = z.object({
-  name: z.string().trim().max(255),
-  base_seconds: z.number().int().positive("ベース時間は正の整数が必要です"),
-  adjust_minutes: z
-    .number()
-    .int()
-    .min(1)
-    .max(999)
-    .default(TIMER_DEFAULT_ADJUST_MINUTES),
-});
+export const CreateTimerSchema = z
+  .object({
+    name: z.string().trim().max(255),
+    mode: TimerModeSchema.default("countdown"),
+    base_seconds: z.number().int().min(0, "ベース時間は0以上の整数が必要です"),
+    target_minutes: z.number().int().min(0).max(1439).optional(),
+    tz_offset_minutes: z.number().int().min(-720).max(840).optional(),
+    adjust_minutes: z
+      .number()
+      .int()
+      .min(1)
+      .max(999)
+      .default(TIMER_DEFAULT_ADJUST_MINUTES),
+  })
+  .refine(
+    (data) =>
+      data.mode !== "alarm" ||
+      (data.target_minutes !== undefined &&
+        data.tz_offset_minutes !== undefined),
+    { message: "アラームモードでは目標時刻とタイムゾーンオフセットが必須です" },
+  );
 
-export const UpdateTimerSchema = z.object({
-  timerId: z.number().int().positive(),
-  name: z.string().trim().max(255).optional(),
-  base_seconds: z.number().int().positive().optional(),
-  adjust_minutes: z.number().int().min(1).max(999).optional(),
-});
+export const UpdateTimerSchema = z
+  .object({
+    timerId: z.number().int().positive(),
+    name: z.string().trim().max(255).optional(),
+    mode: TimerModeSchema.optional(),
+    base_seconds: z.number().int().min(0).optional(),
+    target_minutes: z.number().int().min(0).max(1439).optional(),
+    tz_offset_minutes: z.number().int().min(-720).max(840).optional(),
+    adjust_minutes: z.number().int().min(1).max(999).optional(),
+  })
+  .refine(
+    (data) =>
+      data.mode !== "alarm" ||
+      (data.target_minutes !== undefined &&
+        data.tz_offset_minutes !== undefined),
+    { message: "アラームモードでは目標時刻とタイムゾーンオフセットが必須です" },
+  )
+  .refine(
+    (data) =>
+      data.mode !== "countdown" ||
+      data.base_seconds !== undefined ||
+      data.mode === undefined,
+    { message: "カウントダウンモードではベース時間が必須です" },
+  );
 
 export const TimerIdSchema = z.object({
   timerId: z.number().int().positive(),
+});
+
+export const StartTimerSchema = z.object({
+  timerId: z.number().int().positive(),
+  tz_offset_minutes: z.number().int().min(-720).max(840).optional(),
+});
+
+export const ResetTimerSchema = z.object({
+  timerId: z.number().int().positive(),
+  tz_offset_minutes: z.number().int().min(-720).max(840).optional(),
 });
 
 export const TimerStopSchema = z.object({
@@ -104,6 +148,8 @@ export const AdjustTimerSchema = z.object({
 export const SetTimerTimeSchema = z.object({
   timerId: z.number().int().positive(),
   seconds: z.number().int().min(0).max(359999),
+  target_minutes: z.number().int().min(0).max(1439).optional(),
+  tz_offset_minutes: z.number().int().min(-720).max(840).optional(),
 });
 
 // ── 認証スキーマ ──
@@ -149,6 +195,8 @@ export type CreateTimerInput = z.infer<typeof CreateTimerSchema>;
 export type UpdateTimerInput = z.infer<typeof UpdateTimerSchema>;
 export type AdjustTimerInput = z.infer<typeof AdjustTimerSchema>;
 export type SetTimerTimeInput = z.infer<typeof SetTimerTimeSchema>;
+export type StartTimerInput = z.infer<typeof StartTimerSchema>;
+export type ResetTimerInput = z.infer<typeof ResetTimerSchema>;
 export type TimerStopInput = z.infer<typeof TimerStopSchema>;
 export type SearchTasksInput = z.infer<typeof SearchTasksSchema>;
 export type ReorderTasksInput = z.infer<typeof ReorderTasksSchema>;

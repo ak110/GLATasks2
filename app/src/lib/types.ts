@@ -35,6 +35,8 @@ export type GetTasksResult =
 export type TimerInfo = {
   id: number;
   name: string;
+  mode: "countdown" | "alarm";
+  target_minutes: number | null;
   base_seconds: number;
   adjust_minutes: number;
   running: boolean;

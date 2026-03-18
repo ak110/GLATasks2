@@ -551,6 +551,8 @@ function toTimerInfo(row: typeof timers.$inferSelect): TimerInfo {
   return {
     id: row.id,
     name: row.name,
+    mode: row.mode as "countdown" | "alarm",
+    target_minutes: row.target_minutes,
     base_seconds: row.base_seconds,
     adjust_minutes: row.adjust_minutes,
     running: row.running === 1,
@@ -559,6 +561,23 @@ function toTimerInfo(row: typeof timers.$inferSelect): TimerInfo {
     started_at: row.started_at ? toUtcIso(row.started_at) : null,
     sort_order: row.sort_order,
   };
+}
+
+/** target_minutes と tz_offset から remaining_seconds を計算する（サーバー側 UTC 基準） */
+function calcAlarmRemainingSeconds(
+  targetMinutes: number,
+  tzOffsetMinutes: number,
+): number {
+  const nowUtcMs = Date.now();
+  const nowLocal = new Date(nowUtcMs + tzOffsetMinutes * 60 * 1000);
+  const nowLocalMinutes =
+    nowLocal.getUTCHours() * 60 + nowLocal.getUTCMinutes();
+  const nowLocalSeconds = nowLocal.getUTCSeconds();
+  let diffMinutes = targetMinutes - nowLocalMinutes;
+  if (diffMinutes < 0 || (diffMinutes === 0 && nowLocalSeconds > 0)) {
+    diffMinutes += 24 * 60;
+  }
+  return diffMinutes * 60 - nowLocalSeconds;
 }
 
 /** タイマー一覧取得 + サーバー時刻返却 */
@@ -585,7 +604,18 @@ export async function createTimer(
   name: string,
   baseSeconds: number,
   adjustMinutes: number,
+  mode: string = "countdown",
+  targetMinutes: number | null = null,
+  tzOffsetMinutes: number | null = null,
 ): Promise<void> {
+  if (mode === "alarm") {
+    if (targetMinutes === null || tzOffsetMinutes === null)
+      throw new Error("alarm_missing_params");
+  }
+  const isAlarm = mode === "alarm";
+  const remainingSeconds = isAlarm
+    ? calcAlarmRemainingSeconds(targetMinutes!, tzOffsetMinutes!)
+    : baseSeconds;
   const db = getDb();
   const now = new Date();
   // 現在の最大 sort_order を取得
@@ -597,9 +627,13 @@ export async function createTimer(
   await db.insert(timers).values({
     user_id: userId,
     name,
-    base_seconds: baseSeconds,
+    mode,
+    base_seconds: isAlarm ? 0 : baseSeconds,
     adjust_minutes: adjustMinutes,
-    remaining_seconds: baseSeconds,
+    remaining_seconds: remainingSeconds,
+    target_minutes: targetMinutes,
+    running: isAlarm ? 1 : 0,
+    started_at: isAlarm ? now : null,
     sort_order: sortOrder,
     created: now,
     updated: now,
@@ -610,15 +644,66 @@ export async function createTimer(
 export async function updateTimer(
   userId: number,
   timerId: number,
-  data: { name?: string; base_seconds?: number; adjust_minutes?: number },
+  data: {
+    name?: string;
+    mode?: string;
+    base_seconds?: number;
+    target_minutes?: number;
+    tz_offset_minutes?: number;
+    adjust_minutes?: number;
+  },
 ): Promise<void> {
-  await getOwnedTimer(timerId, userId);
+  const timer = await getOwnedTimer(timerId, userId);
   const db = getDb();
   const updates: Record<string, unknown> = { updated: new Date() };
   if (data.name !== undefined) updates.name = data.name;
-  if (data.base_seconds !== undefined) updates.base_seconds = data.base_seconds;
   if (data.adjust_minutes !== undefined)
     updates.adjust_minutes = data.adjust_minutes;
+
+  // モード変更処理
+  if (data.mode !== undefined && data.mode !== timer.mode) {
+    if (timer.running) throw new Error("timer_is_running");
+    updates.mode = data.mode;
+    updates.expired = 0;
+    if (data.mode === "alarm") {
+      if (
+        data.target_minutes === undefined ||
+        data.tz_offset_minutes === undefined
+      )
+        throw new Error("alarm_missing_params");
+      updates.target_minutes = data.target_minutes;
+      updates.base_seconds = 0;
+      updates.remaining_seconds = calcAlarmRemainingSeconds(
+        data.target_minutes,
+        data.tz_offset_minutes,
+      );
+    } else {
+      // alarm → countdown
+      if (data.base_seconds === undefined)
+        throw new Error("countdown_missing_base_seconds");
+      updates.base_seconds = data.base_seconds;
+      updates.target_minutes = null;
+      updates.remaining_seconds = data.base_seconds;
+    }
+  } else {
+    // モード変更なしの場合
+    if (data.base_seconds !== undefined)
+      updates.base_seconds = data.base_seconds;
+    if (data.target_minutes !== undefined) {
+      updates.target_minutes = data.target_minutes;
+      // アラームモードで target_minutes を変更した場合は remaining_seconds も再計算
+      if (
+        (data.mode ?? timer.mode) === "alarm" &&
+        data.tz_offset_minutes !== undefined
+      ) {
+        updates.remaining_seconds = calcAlarmRemainingSeconds(
+          data.target_minutes,
+          data.tz_offset_minutes,
+        );
+      }
+    }
+  }
+
   await db.update(timers).set(updates).where(eq(timers.id, timerId));
 }
 
@@ -636,20 +721,38 @@ export async function deleteTimer(
 export async function startTimer(
   userId: number,
   timerId: number,
+  tzOffsetMinutes?: number,
 ): Promise<void> {
   const timer = await getOwnedTimer(timerId, userId);
   if (timer.running) return;
-  if (timer.remaining_seconds <= 0) return;
+  const now = new Date();
   const db = getDb();
-  await db
-    .update(timers)
-    .set({
-      running: 1,
-      expired: 0,
-      started_at: new Date(),
-      updated: new Date(),
-    })
-    .where(eq(timers.id, timerId));
+
+  if (timer.mode === "alarm") {
+    if (timer.target_minutes === null || tzOffsetMinutes === undefined)
+      throw new Error("alarm_missing_params");
+    const remaining = calcAlarmRemainingSeconds(
+      timer.target_minutes,
+      tzOffsetMinutes,
+    );
+    if (remaining <= 0) return;
+    await db
+      .update(timers)
+      .set({
+        running: 1,
+        expired: 0,
+        remaining_seconds: remaining,
+        started_at: now,
+        updated: now,
+      })
+      .where(eq(timers.id, timerId));
+  } else {
+    if (timer.remaining_seconds <= 0) return;
+    await db
+      .update(timers)
+      .set({ running: 1, expired: 0, started_at: now, updated: now })
+      .where(eq(timers.id, timerId));
+  }
 }
 
 /** タイマーを一時停止する */
@@ -676,27 +779,39 @@ export async function pauseTimer(
 
 /**
  * タイマーをリセットする（トグル動作）。
- * - running中 or 途中使用中 → base_seconds に戻す
- * - remaining == base_seconds → 0 にクリア
- * - remaining == 0 → base_seconds に戻す
+ * - カウントダウン: running中 or 途中使用中 → base_seconds に戻す / base_seconds と一致 → 0 にクリア
+ * - アラーム: 次のターゲット時刻までの秒数をサーバー側で再計算
  */
 export async function resetTimer(
   userId: number,
   timerId: number,
+  tzOffsetMinutes?: number,
 ): Promise<void> {
   const timer = await getOwnedTimer(timerId, userId);
-  let currentRemaining = timer.remaining_seconds;
-  if (timer.running && timer.started_at) {
-    const elapsed = Math.floor(
-      (Date.now() - timer.started_at.getTime()) / 1000,
+  let newRemaining: number;
+
+  if (timer.mode === "alarm") {
+    if (timer.target_minutes === null || tzOffsetMinutes === undefined)
+      throw new Error("alarm_missing_params");
+    newRemaining = calcAlarmRemainingSeconds(
+      timer.target_minutes,
+      tzOffsetMinutes,
     );
-    currentRemaining = Math.max(0, timer.remaining_seconds - elapsed);
+  } else {
+    let currentRemaining = timer.remaining_seconds;
+    if (timer.running && timer.started_at) {
+      const elapsed = Math.floor(
+        (Date.now() - timer.started_at.getTime()) / 1000,
+      );
+      currentRemaining = Math.max(0, timer.remaining_seconds - elapsed);
+    }
+    // トグルロジック: base_seconds と一致 → 0、それ以外 → base_seconds
+    newRemaining =
+      !timer.running && currentRemaining === timer.base_seconds
+        ? 0
+        : timer.base_seconds;
   }
-  // トグルロジック: base_seconds と一致 → 0、それ以外 → base_seconds
-  const newRemaining =
-    !timer.running && currentRemaining === timer.base_seconds
-      ? 0
-      : timer.base_seconds;
+
   const db = getDb();
   await db
     .update(timers)
@@ -726,28 +841,33 @@ export async function adjustTimer(
     currentRemaining -= elapsed;
   }
   const newRemaining = Math.max(0, currentRemaining + minutes * 60);
+  // アラームモード: target_minutes も連動して更新
+  const targetMinutesUpdate =
+    timer.mode === "alarm" && timer.target_minutes !== null
+      ? (((timer.target_minutes + minutes) % 1440) + 1440) % 1440
+      : undefined;
   const db = getDb();
   if (timer.running && timer.started_at) {
     // running 中: started_at を現在時刻にリセットし、remaining_seconds を新しい値に
-    await db
-      .update(timers)
-      .set({
-        remaining_seconds: newRemaining,
-        started_at: newRemaining > 0 ? new Date() : null,
-        running: newRemaining > 0 ? 1 : 0,
-        expired: 0,
-        updated: new Date(),
-      })
-      .where(eq(timers.id, timerId));
+    const runningUpdates: Record<string, unknown> = {
+      remaining_seconds: newRemaining,
+      started_at: newRemaining > 0 ? new Date() : null,
+      running: newRemaining > 0 ? 1 : 0,
+      expired: 0,
+      updated: new Date(),
+    };
+    if (targetMinutesUpdate !== undefined)
+      runningUpdates.target_minutes = targetMinutesUpdate;
+    await db.update(timers).set(runningUpdates).where(eq(timers.id, timerId));
   } else {
-    await db
-      .update(timers)
-      .set({
-        remaining_seconds: newRemaining,
-        expired: 0,
-        updated: new Date(),
-      })
-      .where(eq(timers.id, timerId));
+    const stoppedUpdates: Record<string, unknown> = {
+      remaining_seconds: newRemaining,
+      expired: 0,
+      updated: new Date(),
+    };
+    if (targetMinutesUpdate !== undefined)
+      stoppedUpdates.target_minutes = targetMinutesUpdate;
+    await db.update(timers).set(stoppedUpdates).where(eq(timers.id, timerId));
   }
 }
 
@@ -788,12 +908,25 @@ export async function setTimerTime(
   userId: number,
   timerId: number,
   seconds: number,
+  targetMinutes?: number,
+  tzOffsetMinutes?: number,
 ): Promise<void> {
   const timer = await getOwnedTimer(timerId, userId);
   if (timer.running) throw new Error("timer_is_running");
   const db = getDb();
-  await db
-    .update(timers)
-    .set({ remaining_seconds: seconds, expired: 0, updated: new Date() })
-    .where(eq(timers.id, timerId));
+  const updates: Record<string, unknown> = { expired: 0, updated: new Date() };
+  if (targetMinutes !== undefined && timer.mode === "alarm") {
+    updates.target_minutes = targetMinutes;
+    if (tzOffsetMinutes !== undefined) {
+      updates.remaining_seconds = calcAlarmRemainingSeconds(
+        targetMinutes,
+        tzOffsetMinutes,
+      );
+    } else {
+      updates.remaining_seconds = seconds;
+    }
+  } else {
+    updates.remaining_seconds = seconds;
+  }
+  await db.update(timers).set(updates).where(eq(timers.id, timerId));
 }

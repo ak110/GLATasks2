@@ -4,17 +4,28 @@
      */
 
     import { TIMER_DEFAULT_ADJUST_MINUTES } from "$lib/schemas";
-    import { formatTime, parseTimeInput } from "$lib/timer-utils";
+    import type { TimerMode } from "$lib/schemas";
+    import {
+        formatTime,
+        parseTimeInput,
+        formatTargetTime,
+        parseTargetTime,
+    } from "$lib/timer-utils";
 
     type Props = {
         open: boolean;
         mode: "create" | "edit";
         name: string;
+        timerMode: TimerMode;
         baseSeconds: number;
+        targetMinutes: number | null;
         adjustMinutes: number;
         onSubmit: (data: {
             name: string;
+            mode: TimerMode;
             base_seconds: number;
+            target_minutes: number | null;
+            tz_offset_minutes: number | null;
             adjust_minutes: number;
         }) => void;
         onClose: () => void;
@@ -24,14 +35,18 @@
         open,
         mode,
         name: initialName,
+        timerMode: initialTimerMode,
         baseSeconds: initialBaseSeconds,
+        targetMinutes: initialTargetMinutes,
         adjustMinutes: initialAdjustMinutes,
         onSubmit,
         onClose,
     }: Props = $props();
 
     let localName = $state("");
+    let localTimerMode = $state<TimerMode>("countdown");
     let localBaseTime = $state("");
+    let localTargetTime = $state("");
     let localAdjustMinutes = $state(TIMER_DEFAULT_ADJUST_MINUTES);
     let nameInputEl = $state<HTMLInputElement | null>(null);
 
@@ -39,7 +54,12 @@
     $effect(() => {
         if (open) {
             localName = initialName;
+            localTimerMode = initialTimerMode;
             localBaseTime = formatTime(initialBaseSeconds);
+            localTargetTime =
+                initialTargetMinutes !== null
+                    ? formatTargetTime(initialTargetMinutes)
+                    : "";
             localAdjustMinutes = initialAdjustMinutes;
             queueMicrotask(() => nameInputEl?.focus());
         }
@@ -56,13 +76,29 @@
     });
 
     function handleSubmit() {
-        const baseSeconds = parseTimeInput(localBaseTime);
-        if (baseSeconds === null || baseSeconds <= 0) return;
-        onSubmit({
-            name: localName.trim(),
-            base_seconds: baseSeconds,
-            adjust_minutes: localAdjustMinutes,
-        });
+        if (localTimerMode === "alarm") {
+            const target = parseTargetTime(localTargetTime);
+            if (target === null) return;
+            onSubmit({
+                name: localName.trim(),
+                mode: "alarm",
+                base_seconds: 0,
+                target_minutes: target,
+                tz_offset_minutes: -new Date().getTimezoneOffset(),
+                adjust_minutes: localAdjustMinutes,
+            });
+        } else {
+            const baseSeconds = parseTimeInput(localBaseTime);
+            if (baseSeconds === null || baseSeconds <= 0) return;
+            onSubmit({
+                name: localName.trim(),
+                mode: "countdown",
+                base_seconds: baseSeconds,
+                target_minutes: null,
+                tz_offset_minutes: null,
+                adjust_minutes: localAdjustMinutes,
+            });
+        }
     }
 </script>
 
@@ -114,21 +150,64 @@
                     />
                 </div>
 
-                <div>
-                    <label
-                        for="timer-base-time"
-                        class="mb-1 block text-sm text-gray-600 dark:text-gray-300"
-                        >ベース時間</label
+                <!-- モード切替 -->
+                <div class="flex gap-0" data-testid="timer-mode-selector">
+                    <button
+                        type="button"
+                        onclick={() => (localTimerMode = "countdown")}
+                        class="cursor-pointer rounded-l px-4 py-1.5 text-sm {localTimerMode ===
+                        'countdown'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'}"
+                        data-testid="timer-mode-countdown"
                     >
-                    <input
-                        id="timer-base-time"
-                        type="text"
-                        bind:value={localBaseTime}
-                        class="w-full rounded border border-gray-200 px-3 py-2 font-mono focus:border-blue-400 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-                        placeholder="HH:MM:SS"
-                        data-testid="timer-base-time-input"
-                    />
+                        カウントダウン
+                    </button>
+                    <button
+                        type="button"
+                        onclick={() => (localTimerMode = "alarm")}
+                        class="cursor-pointer rounded-r px-4 py-1.5 text-sm {localTimerMode ===
+                        'alarm'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'}"
+                        data-testid="timer-mode-alarm"
+                    >
+                        アラーム
+                    </button>
                 </div>
+
+                {#if localTimerMode === "countdown"}
+                    <div>
+                        <label
+                            for="timer-base-time"
+                            class="mb-1 block text-sm text-gray-600 dark:text-gray-300"
+                            >ベース時間</label
+                        >
+                        <input
+                            id="timer-base-time"
+                            type="text"
+                            bind:value={localBaseTime}
+                            class="w-full rounded border border-gray-200 px-3 py-2 font-mono focus:border-blue-400 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                            placeholder="HH:MM:SS"
+                            data-testid="timer-base-time-input"
+                        />
+                    </div>
+                {:else}
+                    <div>
+                        <label
+                            for="timer-target-time"
+                            class="mb-1 block text-sm text-gray-600 dark:text-gray-300"
+                            >目標時刻</label
+                        >
+                        <input
+                            id="timer-target-time"
+                            type="time"
+                            bind:value={localTargetTime}
+                            class="w-full rounded border border-gray-200 px-3 py-2 font-mono focus:border-blue-400 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                            data-testid="timer-target-time-input"
+                        />
+                    </div>
+                {/if}
 
                 <div>
                     <label

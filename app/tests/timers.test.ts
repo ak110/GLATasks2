@@ -158,6 +158,124 @@ test.describe("timers", () => {
     await expect(card).not.toBeVisible({ timeout: 10000 });
   });
 
+  test("アラームモードでタイマーを追加できる", async ({ page }) => {
+    const timerName = `アラーム_${Date.now()}`;
+
+    // 追加ボタンをクリック
+    await page.click('[data-testid="timer-add-btn"]');
+    await page.locator('[data-testid="timer-name-input"]').waitFor();
+
+    // フォームを入力
+    await page.fill('[data-testid="timer-name-input"]', timerName);
+
+    // アラームモードに切り替え
+    await page.click('[data-testid="timer-mode-alarm"]');
+
+    // 目標時刻を入力
+    await page.fill('[data-testid="timer-target-time-input"]', "23:59");
+
+    // 送信
+    await page.click('[data-testid="timer-submit-btn"]');
+    await page.waitForResponse((res) => res.url().includes("/api/trpc"));
+
+    // タイマーカードが表示される
+    const card = page
+      .locator('[data-testid="timer-card"]')
+      .filter({ hasText: timerName });
+    await expect(card).toBeVisible({ timeout: 10000 });
+
+    // 目標時刻が表示される
+    await expect(
+      card.locator('[data-testid="timer-target-display"]'),
+    ).toContainText("23:59");
+
+    // アラームは自動スタートするのでカウントダウンが表示される
+    const display = await card
+      .locator('[data-testid="timer-display"]')
+      .textContent();
+    expect(display).not.toBe("00:00:00");
+
+    // 後片付け
+    page.once("dialog", (dialog) => dialog.accept());
+    await card.locator('[data-testid="timer-delete-btn"]').click();
+    await expect(card).not.toBeVisible({ timeout: 10000 });
+  });
+
+  test("アラームモードの±ボタンで目標時刻がずれる", async ({ page }) => {
+    const timerName = `アラーム±_${Date.now()}`;
+
+    // アラームタイマー作成
+    await page.click('[data-testid="timer-add-btn"]');
+    await page.locator('[data-testid="timer-name-input"]').waitFor();
+    await page.fill('[data-testid="timer-name-input"]', timerName);
+    await page.click('[data-testid="timer-mode-alarm"]');
+    await page.fill('[data-testid="timer-target-time-input"]', "12:00");
+    await page.fill('[data-testid="timer-adjust-input"]', "10");
+    await page.click('[data-testid="timer-submit-btn"]');
+
+    const card = page
+      .locator('[data-testid="timer-card"]')
+      .filter({ hasText: timerName });
+    await expect(card).toBeVisible({ timeout: 10000 });
+    await expect(
+      card.locator('[data-testid="timer-target-display"]'),
+    ).toContainText("12:00");
+
+    // +10分
+    await card.locator('[data-testid="timer-plus-btn"]').click();
+    await expect(
+      card.locator('[data-testid="timer-target-display"]'),
+    ).toContainText("12:10", { timeout: 5000 });
+
+    // -10分で戻る
+    await card.locator('[data-testid="timer-minus-btn"]').click();
+    await expect(
+      card.locator('[data-testid="timer-target-display"]'),
+    ).toContainText("12:00", { timeout: 5000 });
+
+    // 後片付け
+    page.once("dialog", (dialog) => dialog.accept());
+    await card.locator('[data-testid="timer-delete-btn"]').click();
+    await expect(card).not.toBeVisible({ timeout: 10000 });
+  });
+
+  test("アラームモードのリセットで再計算される", async ({ page }) => {
+    const timerName = `アラームReset_${Date.now()}`;
+
+    // アラームタイマー作成
+    await page.click('[data-testid="timer-add-btn"]');
+    await page.locator('[data-testid="timer-name-input"]').waitFor();
+    await page.fill('[data-testid="timer-name-input"]', timerName);
+    await page.click('[data-testid="timer-mode-alarm"]');
+    await page.fill('[data-testid="timer-target-time-input"]', "23:59");
+    await page.click('[data-testid="timer-submit-btn"]');
+
+    const card = page
+      .locator('[data-testid="timer-card"]')
+      .filter({ hasText: timerName });
+    await expect(card).toBeVisible({ timeout: 10000 });
+
+    // リセットで停止＆再計算される
+    await card.locator('[data-testid="timer-reset-btn"]').click();
+    await page.waitForResponse((res) => res.url().includes("/api/trpc"));
+
+    // 開始ボタンが表示される（停止状態）
+    await expect(card.locator('[data-testid="timer-start-btn"]')).toBeVisible({
+      timeout: 5000,
+    });
+
+    // カウントダウン表示が 00:00:00 でない（ライブ計算される）
+    const display = await card
+      .locator('[data-testid="timer-display"]')
+      .textContent();
+    expect(display).not.toBe("00:00:00");
+
+    // 後片付け
+    page.once("dialog", (dialog) => dialog.accept());
+    await card.locator('[data-testid="timer-delete-btn"]').click();
+    await expect(card).not.toBeVisible({ timeout: 10000 });
+  });
+
   test("タイマーを編集できる", async ({ page }) => {
     const timerName = `編集前_${Date.now()}`;
     const newName = `編集後_${Date.now()}`;
