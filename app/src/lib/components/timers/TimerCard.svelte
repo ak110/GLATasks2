@@ -75,15 +75,18 @@
         );
     }
 
+    // 停止中アラームかどうか（カウントダウン非表示・インターバル不要）
+    const isStoppedAlarm = $derived(
+        timer.mode === "alarm" &&
+            !timer.running &&
+            timer.target_minutes !== null,
+    );
+
     // 1秒ごとに表示更新
     $effect(() => {
         displaySeconds = calcRemaining();
 
-        // alarm は停止中でもカウントダウン表示を更新する
-        if (
-            timer.running ||
-            (timer.mode === "alarm" && timer.target_minutes !== null)
-        ) {
+        if (timer.running) {
             const id = setInterval(() => {
                 displaySeconds = calcRemaining();
             }, 1000);
@@ -210,39 +213,65 @@
 
     <!-- アラームモード: 目標時刻表示 -->
     {#if timer.mode === "alarm" && timer.target_minutes !== null}
-        <div
-            class="mb-1 text-center text-sm text-gray-500 dark:text-gray-400"
-            data-testid="timer-target-display"
-        >
-            🔔 {formatTargetTime(timer.target_minutes)}
-        </div>
+        {#if editing}
+            <div
+                class="mb-1 text-center text-sm"
+                data-testid="timer-target-display"
+            >
+                🔔 <input
+                    type="time"
+                    bind:value={editValue}
+                    onblur={commitEdit}
+                    onkeydown={handleEditKeydown}
+                    class="cursor-pointer rounded border border-gray-300 bg-white px-1 py-0.5 text-center text-sm focus:border-blue-400 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                    data-testid="timer-time-input"
+                />
+            </div>
+        {:else if !timer.running}
+            <button
+                class="mb-1 w-full cursor-pointer bg-transparent text-center text-sm text-gray-500 dark:text-gray-400"
+                onclick={startEditing}
+                data-testid="timer-target-display"
+            >
+                🔔 {formatTargetTime(timer.target_minutes)}
+            </button>
+        {:else}
+            <div
+                class="mb-1 text-center text-sm text-gray-500 dark:text-gray-400"
+                data-testid="timer-target-display"
+            >
+                🔔 {formatTargetTime(timer.target_minutes)}
+            </div>
+        {/if}
     {/if}
 
-    <!-- 残り時間表示 -->
-    <div
-        class="mb-4 text-center font-mono text-3xl font-bold sm:text-4xl"
-        data-testid="timer-display"
-    >
-        {#if editing}
-            <input
-                type={timer.mode === "alarm" ? "time" : "text"}
-                bind:value={editValue}
-                onblur={commitEdit}
-                onkeydown={handleEditKeydown}
-                class="w-full rounded border border-gray-300 bg-white px-2 py-1 text-center font-mono text-3xl font-bold text-gray-800 focus:border-blue-400 focus:outline-none sm:text-4xl dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-                data-testid="timer-time-input"
-            />
-        {:else if timer.running}
-            <span class="text-blue-600">{formatTime(displaySeconds)}</span>
-        {:else}
-            <button
-                class="cursor-pointer bg-transparent {isExpired
-                    ? 'text-red-500'
-                    : 'text-gray-800 dark:text-gray-100'}"
-                onclick={startEditing}>{formatTime(displaySeconds)}</button
-            >
-        {/if}
-    </div>
+    <!-- 残り時間表示（停止中アラームでは非表示） -->
+    {#if !isStoppedAlarm}
+        <div
+            class="mb-4 text-center font-mono text-3xl font-bold sm:text-4xl"
+            data-testid="timer-display"
+        >
+            {#if editing}
+                <input
+                    type={timer.mode === "alarm" ? "time" : "text"}
+                    bind:value={editValue}
+                    onblur={commitEdit}
+                    onkeydown={handleEditKeydown}
+                    class="w-full rounded border border-gray-300 bg-white px-2 py-1 text-center font-mono text-3xl font-bold text-gray-800 focus:border-blue-400 focus:outline-none sm:text-4xl dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                    data-testid="timer-time-input"
+                />
+            {:else if timer.running}
+                <span class="text-blue-600">{formatTime(displaySeconds)}</span>
+            {:else}
+                <button
+                    class="cursor-pointer bg-transparent {isExpired
+                        ? 'text-red-500'
+                        : 'text-gray-800 dark:text-gray-100'}"
+                    onclick={startEditing}>{formatTime(displaySeconds)}</button
+                >
+            {/if}
+        </div>
+    {/if}
 
     <!-- 操作ボタン -->
     <div class="flex flex-wrap items-center justify-center gap-2">

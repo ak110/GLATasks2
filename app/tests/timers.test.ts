@@ -264,11 +264,17 @@ test.describe("timers", () => {
       timeout: 5000,
     });
 
-    // カウントダウン表示が 00:00:00 でない（ライブ計算される）
-    const display = await card
-      .locator('[data-testid="timer-display"]')
+    // 停止中アラームではカウントダウン非表示、目標時刻のみ表示される
+    await expect(
+      card.locator('[data-testid="timer-display"]'),
+    ).not.toBeVisible();
+    await expect(
+      card.locator('[data-testid="timer-target-display"]'),
+    ).toBeVisible();
+    const targetText = await card
+      .locator('[data-testid="timer-target-display"]')
       .textContent();
-    expect(display).not.toBe("00:00:00");
+    expect(targetText).toContain("23:59");
 
     // 後片付け
     page.once("dialog", (dialog) => dialog.accept());
