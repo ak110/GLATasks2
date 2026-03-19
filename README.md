@@ -1,6 +1,6 @@
 # GLATasks
 
-[![Test](https://github.com/ak110/GLATasks2/actions/workflows/test.yaml/badge.svg)](https://github.com/ak110/GLATasks2/actions/workflows/test.yaml)
+[![CI](https://github.com/ak110/GLATasks2/actions/workflows/ci.yaml/badge.svg)](https://github.com/ak110/GLATasks2/actions/workflows/ci.yaml)
 [![Deploy](https://github.com/ak110/GLATasks2/actions/workflows/deploy.yaml/badge.svg)](https://github.com/ak110/GLATasks2/actions/workflows/deploy.yaml)
 
 タスク管理＆カウントダウンタイマーアプリ。
