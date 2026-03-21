@@ -23,25 +23,10 @@
 
 ## SvelteKit コーディングスタイル
 
-- コンポーネントファイルは `app/src/` 以下に配置
-- サーバーサイドの load 関数（`+page.server.ts`）でデータを取得し、クライアントに渡す
-- API 呼び出しは tRPC 経由で行う（`src/lib/server/trpc.ts` でルーター定義、`src/lib/trpc.ts` でクライアント）
-- 入力バリデーションには Zod スキーマ（`src/lib/schemas.ts`）を使用する
-- クライアント側のデータ取得には TanStack Svelte Query を使用する
 - JSDocコメントを記述する
   - ファイルの先頭に`@fileoverview`で概要を記述
   - 関数・クラス・メソッドには機能を説明するコメントを記述
   - 自明な`@param`や`@returns`は省略する
-- パッケージ管理には`pnpm`を使う
-- `make format`でprettier + eslintをまとめて実行できる
-- `make test`でformat + lint + type check + e2eテストをまとめて実行できる
-
-### コンポーネント構造
-
-- `app/src/lib/components/` 配下に機能別ディレクトリで分類する
-  - `layout/` — ヘッダーなどのレイアウト部品
-  - `lists/` — リスト関連コンポーネント
-  - `tasks/` — タスク関連コンポーネント
 
 ### Tailwind CSS の規約
 
@@ -60,8 +45,6 @@
 ### ダークモードの色マッピング
 
 Tailwind CSS v4 の `@custom-variant dark` を使用。`<html>` に `.dark` クラスを付与して切り替え。
-
-テーマ管理: `app/src/lib/theme.ts`（light / dark / system の3状態トグル）
 
 #### 設計原則
 
