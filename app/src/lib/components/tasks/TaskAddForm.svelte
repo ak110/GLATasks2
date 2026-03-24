@@ -34,7 +34,7 @@
     }
 
     function handleKeydown(e: KeyboardEvent) {
-        if (e.key === "Enter" && !e.shiftKey) {
+        if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
             e.preventDefault();
             handleSubmit(e);
         }
@@ -48,7 +48,7 @@
     <form onsubmit={handleSubmit} class="flex items-start gap-2">
         <textarea
             bind:value
-            placeholder="タスクを追加... (Shift+Enter で改行、Enter で送信)"
+            placeholder="タスクを追加... (Ctrl+Enter で送信)"
             rows={formFocused || value ? 5 : 1}
             onfocus={() => (formFocused = true)}
             onblur={handleBlur}
