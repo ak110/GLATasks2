@@ -34,7 +34,7 @@ jobs:
           context: .
           file: Dockerfile
           push: true
-          tags: ghcr.io/ak110/glatasks2:latest
+          tags: ghcr.io/ak110/glatasks:latest
 
   deploy:
     needs: build-and-push

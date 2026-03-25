@@ -1,7 +1,7 @@
 ---
 services:
   app:
-    image: ghcr.io/ak110/glatasks2:latest
+    image: ghcr.io/ak110/glatasks:latest
     restart: always
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/healthcheck"]

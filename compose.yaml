@@ -48,7 +48,7 @@ services:
     profiles:
       - production
       - staging
-    image: ghcr.io/ak110/glatasks2:latest
+    image: ghcr.io/ak110/glatasks:latest
     restart: "no"
     environment:
       - DATABASE_URL=mysql://glatasks:glatasks@db/glatasks

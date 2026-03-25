@@ -197,6 +197,6 @@ gh workflow run release.yaml --field="bump=マイナーバージョンアップ"
 gh workflow run release.yaml --field="bump=メジャーバージョンアップ"
 ```
 
-<https://github.com/ak110/GLATasks2/actions> で状況を確認できる。
+<https://github.com/ak110/GLATasks/actions> で状況を確認できる。
 
 リリース作成後、deploy.yaml が自動的にトリガーされ本番デプロイが実行される。詳細は [CI/CD](#cicd) セクションを参照。
