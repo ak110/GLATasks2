@@ -17,6 +17,11 @@ export const GET: RequestHandler = async (event) => {
       userId: event.locals.user_id ?? null,
       encryptKey: getEncryptKey(),
     }),
+    onError: ({ error, path }) => {
+      // 想定内のエラー（認証・バリデーション等）はログ不要
+      if (error.code !== "INTERNAL_SERVER_ERROR") return;
+      console.error(`tRPC エラー [${path}]:`, error.cause ?? error);
+    },
   });
 };
 

@@ -31,7 +31,7 @@ export async function encryptObject(obj: unknown): Promise<string> {
   const full = new Uint8Array(12 + encrypted.byteLength);
   full.set(iv);
   full.set(new Uint8Array(encrypted), 12);
-  return btoa(String.fromCodePoint(...full));
+  return Buffer.from(full).toString("base64");
 }
 
 /**
@@ -39,7 +39,7 @@ export async function encryptObject(obj: unknown): Promise<string> {
  */
 export async function decryptToString(ciphertext: string): Promise<string> {
   const key = await getCryptoKey(["decrypt"]);
-  const data = Uint8Array.from(atob(ciphertext), (c) => c.codePointAt(0)!);
+  const data = new Uint8Array(Buffer.from(ciphertext, "base64"));
   const iv = data.slice(0, 12);
   const encrypted = data.slice(12);
   const decrypted = await globalThis.crypto.subtle.decrypt(
