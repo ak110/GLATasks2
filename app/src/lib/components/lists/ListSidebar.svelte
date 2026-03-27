@@ -9,7 +9,6 @@
     type Props = {
         lists: ListInfo[];
         selectedListId: number | null;
-        showType: "active" | "archived" | "all";
         isLoading: boolean;
         mobileView: "lists" | "tasks";
         openMenuId: number | null;
@@ -26,7 +25,6 @@
     let {
         lists,
         selectedListId,
-        showType,
         isLoading,
         mobileView,
         openMenuId,
@@ -60,7 +58,6 @@
             <ListItem
                 {list}
                 isSelected={selectedListId === list.id}
-                {showType}
                 {openMenuId}
                 {onSelect}
                 {onToggleMenu}

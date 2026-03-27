@@ -8,7 +8,6 @@
     type Props = {
         list: ListInfo;
         isSelected: boolean;
-        showType: "active" | "archived" | "all";
         openMenuId: number | null;
         onSelect: (listId: number) => void;
         onToggleMenu: (listId: number) => void;
@@ -21,7 +20,6 @@
     let {
         list,
         isSelected,
-        showType,
         openMenuId,
         onSelect,
         onToggleMenu,
@@ -74,7 +72,7 @@
                 >
                     名前変更
                 </button>
-                {#if showType === "archived"}
+                {#if list.status === "archived"}
                     <button
                         class="block w-full cursor-pointer px-4 py-1.5 text-left hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700"
                         onclick={() => {

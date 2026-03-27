@@ -534,7 +534,6 @@
     <ListSidebar
         {lists}
         {selectedListId}
-        {showType}
         {isLoading}
         {mobileView}
         {openMenuId}

@@ -10,6 +10,7 @@ export type ListInfo = {
   title: string;
   sort_order: number;
   last_updated: string;
+  status: string;
 };
 
 /** タスク情報 */

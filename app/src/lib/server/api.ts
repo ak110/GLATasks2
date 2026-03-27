@@ -164,14 +164,16 @@ export async function getLists(
   return rows
     .filter((r) => {
       if (showType === "active") return r.status === "active";
-      if (showType === "archived") return r.status === "archived";
-      return true; // "all"
+      // "archived" と "all" では全リストを表示
+      // （アーカイブ表示でアクティブなリスト内のアーカイブ済みタスクも確認できるようにする）
+      return true;
     })
     .map((r) => ({
       id: r.id,
       title: r.title,
       sort_order: r.sort_order,
       last_updated: toUtcIso(r.last_updated),
+      status: r.status,
     }));
 }
 
