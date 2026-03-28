@@ -528,9 +528,13 @@
 />
 
 <!-- ボディ: サイドバー + メインコンテンツ -->
-<div
-    class="mx-auto flex h-[calc(100vh-3rem)] w-full px-3 sm:max-w-[540px] md:max-w-[720px] lg:max-w-[960px] xl:max-w-[1140px] 2xl:max-w-[1320px]"
->
+<!--
+    参考: bootstrapのcontainer風にするなら
+    w-full px-3 sm:max-w-[540px] md:max-w-[720px] lg:max-w-[960px] xl:max-w-[1140px] 2xl:max-w-[1320px]
+    という感じ。
+    ここではそこまで細かくはしない。
+-->
+<div class="mx-auto flex h-[calc(100vh-3rem)] w-full xl:max-w-285">
     <ListSidebar
         {lists}
         {selectedListId}
