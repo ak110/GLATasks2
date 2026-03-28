@@ -9,7 +9,7 @@
         createMutation,
         useQueryClient,
     } from "@tanstack/svelte-query";
-    import { trpc } from "$lib/trpc";
+    import { trpc, tabId } from "$lib/trpc";
     import { subscribe } from "$lib/sse-client";
     import { onMount } from "svelte";
     import type { TaskStatus } from "$lib/schemas";
@@ -29,6 +29,8 @@
 
     let selectedListId = $state<number | null>(null);
     let showType = $state<"active" | "archived" | "all">("active");
+    // 他端末で更新されたタスクのIDセット（リスト切り替えでクリア）
+    let updatedTaskIds = $state<Set<number>>(new Set());
     let addListTitle = $state("");
     let addTaskText = $state("");
     let openMenuId = $state<number | null>(null);
@@ -124,8 +126,50 @@
         const unsub1 = subscribe("lists:updated", () => {
             queryClient.invalidateQueries({ queryKey: ["lists"] });
         });
-        const unsub2 = subscribe("tasks:updated", () => {
-            queryClient.invalidateQueries({ queryKey: ["tasks"] });
+        const unsub2 = subscribe("tasks:updated", (e) => {
+            // 自分のタブからのイベント → データ再取得のみ
+            if (e.data === tabId) {
+                queryClient.invalidateQueries({ queryKey: ["tasks"] });
+                return;
+            }
+            // 他タブ/他端末からの更新 → スナップショット比較で変更タスクを検出
+            const currentData = queryClient.getQueryData<GetTasksResult>([
+                "tasks",
+                selectedListId,
+                showType,
+            ]);
+            const oldTasks: TaskInfo[] =
+                currentData && "data" in currentData ? currentData.data : [];
+            const oldMap = new Map(
+                oldTasks.map((t) => [
+                    t.id,
+                    `${t.title}\0${t.notes}\0${t.status}`,
+                ]),
+            );
+            queryClient.invalidateQueries({ queryKey: ["tasks"] }).then(() => {
+                const newData = queryClient.getQueryData<GetTasksResult>([
+                    "tasks",
+                    selectedListId,
+                    showType,
+                ]);
+                const newTasks: TaskInfo[] =
+                    newData && "data" in newData ? newData.data : [];
+                const changed = new Set(updatedTaskIds);
+                let hasNew = false;
+                for (const task of newTasks) {
+                    const oldKey = oldMap.get(task.id);
+                    const newKey = `${task.title}\0${task.notes}\0${task.status}`;
+                    if (oldKey === undefined || oldKey !== newKey) {
+                        if (!changed.has(task.id)) {
+                            changed.add(task.id);
+                            hasNew = true;
+                        }
+                    }
+                }
+                if (hasNew) {
+                    updatedTaskIds = changed;
+                }
+            });
         });
         // ドラッグ終了時にサイドバーのハイライトをリセット
         const clearDragOver = () => (dragOverListId = null);
@@ -335,12 +379,14 @@
     function selectList(listId: number) {
         selectedListId = listId;
         addTaskText = "";
+        updatedTaskIds = new Set();
         // ハッシュ更新 → hashchange イベントで hasHash と localStorage が同期される
         location.hash = "#" + listId;
     }
 
     async function changeShowType(type: "active" | "archived" | "all") {
         showType = type;
+        updatedTaskIds = new Set();
         await queryClient.invalidateQueries({ queryKey: ["lists"] });
         if (!lists.some((l) => l.id === selectedListId)) {
             const first = lists[0];
@@ -677,6 +723,7 @@
                 onToggle={toggleTask}
                 onEdit={openEditDialog}
                 onReorder={handleReorderTasks}
+                {updatedTaskIds}
             />
         {:else}
             <div class="flex flex-1 items-center justify-center">

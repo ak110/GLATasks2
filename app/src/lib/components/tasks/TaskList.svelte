@@ -12,9 +12,17 @@
         onToggle: (taskId: number, checked: boolean) => void;
         onEdit: (task: TaskInfo) => void;
         onReorder?: (taskIds: number[]) => void;
+        updatedTaskIds?: Set<number>;
     };
 
-    let { tasks, isLoading, onToggle, onEdit, onReorder }: Props = $props();
+    let {
+        tasks,
+        isLoading,
+        onToggle,
+        onEdit,
+        onReorder,
+        updatedTaskIds,
+    }: Props = $props();
 
     // D&D 状態管理
     let draggedId = $state<number | null>(null);
@@ -65,6 +73,7 @@
                 {onToggle}
                 {onEdit}
                 isDragging={draggedId === task.id}
+                isRemoteUpdated={updatedTaskIds?.has(task.id) ?? false}
                 dropIndicator={dropTargetId === task.id ? dropPosition : null}
                 onDragStart={onReorder ? handleDragStart : undefined}
                 onDragOver={onReorder ? handleDragOver : undefined}

@@ -35,6 +35,7 @@ interface Context {
   event: RequestEvent;
   userId: number | null;
   encryptKey: string;
+  tabId: string | null;
 }
 
 // ── tRPC 初期化 ──
@@ -190,7 +191,7 @@ export const appRouter = t.router({
       .input(CreateListSchema)
       .mutation(async ({ ctx, input }) => {
         await api.postList(ctx.userId, input.title);
-        sendEvent(ctx.userId, "lists:updated");
+        sendEvent(ctx.userId, "lists:updated", ctx.tabId);
         return { success: true };
       }),
 
@@ -198,7 +199,7 @@ export const appRouter = t.router({
       .input(UpdateListSchema)
       .mutation(async ({ ctx, input }) => {
         await api.renameList(ctx.userId, input.listId, input.title);
-        sendEvent(ctx.userId, "lists:updated");
+        sendEvent(ctx.userId, "lists:updated", ctx.tabId);
         return { success: true };
       }),
 
@@ -206,7 +207,7 @@ export const appRouter = t.router({
       .input(UpdateListSchema.pick({ listId: true }))
       .mutation(async ({ ctx, input }) => {
         await api.deleteList(ctx.userId, input.listId);
-        sendEvent(ctx.userId, "lists:updated");
+        sendEvent(ctx.userId, "lists:updated", ctx.tabId);
         return { success: true };
       }),
 
@@ -214,7 +215,7 @@ export const appRouter = t.router({
       .input(UpdateListSchema.pick({ listId: true }))
       .mutation(async ({ ctx, input }) => {
         await api.archiveList(ctx.userId, input.listId);
-        sendEvent(ctx.userId, "lists:updated");
+        sendEvent(ctx.userId, "lists:updated", ctx.tabId);
         return { success: true };
       }),
 
@@ -222,7 +223,7 @@ export const appRouter = t.router({
       .input(UpdateListSchema.pick({ listId: true }))
       .mutation(async ({ ctx, input }) => {
         await api.unarchiveList(ctx.userId, input.listId);
-        sendEvent(ctx.userId, "lists:updated");
+        sendEvent(ctx.userId, "lists:updated", ctx.tabId);
         return { success: true };
       }),
 
@@ -230,7 +231,7 @@ export const appRouter = t.router({
       .input(UpdateListSchema.pick({ listId: true }))
       .mutation(async ({ ctx, input }) => {
         await api.clearList(ctx.userId, input.listId);
-        sendEvent(ctx.userId, "tasks:updated");
+        sendEvent(ctx.userId, "tasks:updated", ctx.tabId);
         return { success: true };
       }),
   }),
@@ -252,7 +253,7 @@ export const appRouter = t.router({
       .input(CreateTaskSchema)
       .mutation(async ({ ctx, input }) => {
         await api.postTask(ctx.userId, input.listId, input.text);
-        sendEvent(ctx.userId, "tasks:updated");
+        sendEvent(ctx.userId, "tasks:updated", ctx.tabId);
         return { success: true };
       }),
 
@@ -261,7 +262,7 @@ export const appRouter = t.router({
       .mutation(async ({ ctx, input }) => {
         const { listId, taskId, ...data } = input;
         const result = await api.patchTask(ctx.userId, listId, taskId, data);
-        sendEvent(ctx.userId, "tasks:updated");
+        sendEvent(ctx.userId, "tasks:updated", ctx.tabId);
         return result;
       }),
 
@@ -275,7 +276,7 @@ export const appRouter = t.router({
       .input(ReorderTasksSchema)
       .mutation(async ({ ctx, input }) => {
         await api.reorderTasks(ctx.userId, input.listId, input.taskIds);
-        sendEvent(ctx.userId, "tasks:updated");
+        sendEvent(ctx.userId, "tasks:updated", ctx.tabId);
         return { success: true };
       }),
   }),
@@ -290,7 +291,7 @@ export const appRouter = t.router({
       .input(ReorderTimersSchema)
       .mutation(async ({ ctx, input }) => {
         await api.reorderTimers(ctx.userId, input.timerIds);
-        sendEvent(ctx.userId, "timers:updated");
+        sendEvent(ctx.userId, "timers:updated", ctx.tabId);
         return { success: true };
       }),
 
@@ -306,7 +307,7 @@ export const appRouter = t.router({
           input.target_minutes ?? null,
           input.tz_offset_minutes ?? null,
         );
-        sendEvent(ctx.userId, "timers:updated");
+        sendEvent(ctx.userId, "timers:updated", ctx.tabId);
         return { success: true };
       }),
 
@@ -315,7 +316,7 @@ export const appRouter = t.router({
       .mutation(async ({ ctx, input }) => {
         const { timerId, ...data } = input;
         await api.updateTimer(ctx.userId, timerId, data);
-        sendEvent(ctx.userId, "timers:updated");
+        sendEvent(ctx.userId, "timers:updated", ctx.tabId);
         return { success: true };
       }),
 
@@ -323,7 +324,7 @@ export const appRouter = t.router({
       .input(TimerIdSchema)
       .mutation(async ({ ctx, input }) => {
         await api.deleteTimer(ctx.userId, input.timerId);
-        sendEvent(ctx.userId, "timers:updated");
+        sendEvent(ctx.userId, "timers:updated", ctx.tabId);
         return { success: true };
       }),
 
@@ -335,7 +336,7 @@ export const appRouter = t.router({
           input.timerId,
           input.tz_offset_minutes,
         );
-        sendEvent(ctx.userId, "timers:updated");
+        sendEvent(ctx.userId, "timers:updated", ctx.tabId);
         return { success: true };
       }),
 
@@ -343,7 +344,7 @@ export const appRouter = t.router({
       .input(TimerIdSchema)
       .mutation(async ({ ctx, input }) => {
         await api.pauseTimer(ctx.userId, input.timerId);
-        sendEvent(ctx.userId, "timers:updated");
+        sendEvent(ctx.userId, "timers:updated", ctx.tabId);
         return { success: true };
       }),
 
@@ -355,7 +356,7 @@ export const appRouter = t.router({
           input.timerId,
           input.tz_offset_minutes,
         );
-        sendEvent(ctx.userId, "timers:updated");
+        sendEvent(ctx.userId, "timers:updated", ctx.tabId);
         return { success: true };
       }),
 
@@ -363,7 +364,7 @@ export const appRouter = t.router({
       .input(AdjustTimerSchema)
       .mutation(async ({ ctx, input }) => {
         await api.adjustTimer(ctx.userId, input.timerId, input.minutes);
-        sendEvent(ctx.userId, "timers:updated");
+        sendEvent(ctx.userId, "timers:updated", ctx.tabId);
         return { success: true };
       }),
 
@@ -377,7 +378,7 @@ export const appRouter = t.router({
           input.target_minutes,
           input.tz_offset_minutes,
         );
-        sendEvent(ctx.userId, "timers:updated");
+        sendEvent(ctx.userId, "timers:updated", ctx.tabId);
         return { success: true };
       }),
 
@@ -385,7 +386,7 @@ export const appRouter = t.router({
       .input(TimerStopSchema)
       .mutation(async ({ ctx, input }) => {
         await api.stopTimer(ctx.userId, input.timerId, input.started_at);
-        sendEvent(ctx.userId, "timers:updated");
+        sendEvent(ctx.userId, "timers:updated", ctx.tabId);
         return { success: true };
       }),
   }),

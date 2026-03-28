@@ -7,6 +7,9 @@ import { observable } from "@trpc/server/observable";
 import type { AppRouter } from "$lib/server/trpc";
 import { encrypt, decrypt } from "$lib/crypto";
 
+// タブ固有のID（SSEイベントの発信元識別に使用）
+export const tabId = crypto.randomUUID();
+
 // 暗号化鍵を保持するグローバル変数
 let encryptKey: string | null = null;
 
@@ -88,7 +91,12 @@ async function encryptedFetch(
   url: RequestInfo | URL,
   init?: RequestInit,
 ): Promise<Response> {
-  if (init?.body && encryptKey) {
+  // タブIDヘッダーを付与（SSEイベントの発信元識別用）
+  const headers = new Headers(init?.headers);
+  headers.set("X-Tab-Id", tabId);
+  init = { ...init, headers };
+
+  if (init.body && encryptKey) {
     try {
       const bodyObj = JSON.parse(init.body as string);
       // バッチリクエストの各アイテムを暗号化

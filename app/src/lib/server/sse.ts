@@ -38,10 +38,15 @@ export function removeConnection(
 }
 
 /** 指定ユーザーの全接続にイベントを送信する */
-export function sendEvent(userId: number, eventType: SSEEventType): void {
+export function sendEvent(
+  userId: number,
+  eventType: SSEEventType,
+  sourceTabId?: string | null,
+): void {
   const userConnections = connections.get(userId);
   if (!userConnections) return;
-  const data = `event: ${eventType}\ndata: \n\n`;
+  // data に発信元タブIDを含める（クライアント側で自タブのイベントを識別するため）
+  const data = `event: ${eventType}\ndata: ${sourceTabId ?? ""}\n\n`;
   const encoded = new TextEncoder().encode(data);
   for (const controller of userConnections) {
     try {
