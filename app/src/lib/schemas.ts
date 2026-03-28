@@ -27,7 +27,7 @@ export const UpdateTaskSchema = z
   .object({
     listId: z.number().int().positive(),
     taskId: z.number().int().positive(),
-    text: z.string().min(1).max(10000).optional(),
+    text: z.string().max(10000).optional(),
     status: TaskStatusSchema.optional(),
     completed: z.string().datetime().nullable().optional(),
     move_to: z.number().int().positive().optional(),

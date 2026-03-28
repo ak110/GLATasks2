@@ -1,6 +1,6 @@
 <script lang="ts">
     /**
-     * @fileoverview タスク管理メインページ（リスト一覧 + タスク一覧）
+     * @fileoverview タスクメモ管理メインページ（リスト一覧 + タスク一覧）
      */
 
     import { writable, derived } from "svelte/store";
@@ -360,7 +360,7 @@
 
     async function addTask() {
         if (!selectedListId) return;
-        const text = addTaskText.trim();
+        const text = addTaskText.trimEnd();
         if (!text) return;
         await $createTaskMutation.mutateAsync({ listId: selectedListId, text });
     }
@@ -640,9 +640,13 @@
                                     onclick={() => goToSearchResult(listId)}
                                 >
                                     <!-- eslint-disable-next-line svelte/no-at-html-tags -- linkify()が自前でHTMLエスケープ済み -->
-                                    {@html linkify(task.title)}
+                                    {@html linkify(
+                                        task.title ||
+                                            task.notes ||
+                                            "（空のタスク）",
+                                    )}
                                 </button>
-                                {#if task.notes}
+                                {#if task.title && task.notes}
                                     <p
                                         class="mt-0.5 whitespace-pre-wrap text-gray-500 dark:text-gray-400"
                                     >

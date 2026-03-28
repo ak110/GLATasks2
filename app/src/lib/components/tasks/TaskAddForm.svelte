@@ -27,7 +27,7 @@
 
     function handleSubmit(e: Event) {
         e.preventDefault();
-        const text = value.trim();
+        const text = value.trimEnd();
         if (text) {
             onSubmit(text);
         }

@@ -74,14 +74,16 @@
         class:line-through={task.status === "completed"}
         data-testid="task-text"
     >
-        <p
-            class="leading-tight {task.status === 'completed'
-                ? 'text-gray-400 dark:text-gray-500'
-                : 'dark:text-gray-100'}"
-        >
-            <!-- eslint-disable-next-line svelte/no-at-html-tags -- linkify()が自前でHTMLエスケープ済み -->
-            {@html linkify(task.title)}
-        </p>
+        {#if task.title}
+            <p
+                class="leading-tight {task.status === 'completed'
+                    ? 'text-gray-400 dark:text-gray-500'
+                    : 'dark:text-gray-100'}"
+            >
+                <!-- eslint-disable-next-line svelte/no-at-html-tags -- linkify()が自前でHTMLエスケープ済み -->
+                {@html linkify(task.title)}
+            </p>
+        {/if}
         {#if task.notes}
             <p
                 class="mt-0.5 whitespace-pre-wrap {task.status === 'completed'
@@ -90,6 +92,11 @@
             >
                 <!-- eslint-disable-next-line svelte/no-at-html-tags -- linkify()が自前でHTMLエスケープ済み -->
                 {@html linkify(task.notes)}
+            </p>
+        {/if}
+        {#if !task.title && !task.notes}
+            <p class="leading-tight text-gray-400 dark:text-gray-500">
+                （空のタスク）
             </p>
         {/if}
     </div>
