@@ -117,6 +117,10 @@
             aria-label="ドラッグして並び替え"
             ondragstart={(e) => {
                 e.dataTransfer!.effectAllowed = "move";
+                e.dataTransfer!.setData(
+                    "application/x-task-id",
+                    String(task.id),
+                );
                 onDragStart(task.id);
             }}>⠿</span
         >

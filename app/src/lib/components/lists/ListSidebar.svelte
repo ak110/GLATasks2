@@ -13,6 +13,7 @@
         mobileView: "lists" | "tasks";
         openMenuId: number | null;
         addListTitle: string;
+        dragOverListId?: number | null;
         onSelect: (listId: number) => void;
         onToggleMenu: (listId: number) => void;
         onRename: (listId: number, currentTitle: string) => void;
@@ -20,6 +21,8 @@
         onUnarchive: (listId: number) => void;
         onDelete: (listId: number) => void;
         onAddList: (title: string) => void;
+        onTaskDragOver?: (listId: number) => void;
+        onTaskDrop?: (taskId: number, targetListId: number) => void;
     };
 
     let {
@@ -29,6 +32,7 @@
         mobileView,
         openMenuId,
         addListTitle = $bindable(),
+        dragOverListId = null,
         onSelect,
         onToggleMenu,
         onRename,
@@ -36,6 +40,8 @@
         onUnarchive,
         onDelete,
         onAddList,
+        onTaskDragOver,
+        onTaskDrop,
     }: Props = $props();
 
     function handleAddList(e: Event) {
@@ -59,12 +65,15 @@
                 {list}
                 isSelected={selectedListId === list.id}
                 {openMenuId}
+                isDragOver={dragOverListId === list.id}
                 {onSelect}
                 {onToggleMenu}
                 {onRename}
                 {onArchive}
                 {onUnarchive}
                 {onDelete}
+                onTaskDragOver={() => onTaskDragOver?.(list.id)}
+                onTaskDrop={(taskId) => onTaskDrop?.(taskId, list.id)}
             />
         {/each}
         {#if lists.length === 0 && !isLoading}

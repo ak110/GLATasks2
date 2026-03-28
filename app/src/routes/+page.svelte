@@ -32,6 +32,7 @@
     let addListTitle = $state("");
     let addTaskText = $state("");
     let openMenuId = $state<number | null>(null);
+    let dragOverListId = $state<number | null>(null);
     let hasHash = $state(false);
     let searchQuery = $state("");
     let debouncedQuery = $state("");
@@ -126,9 +127,13 @@
         const unsub2 = subscribe("tasks:updated", () => {
             queryClient.invalidateQueries({ queryKey: ["tasks"] });
         });
+        // ドラッグ終了時にサイドバーのハイライトをリセット
+        const clearDragOver = () => (dragOverListId = null);
+        document.addEventListener("dragend", clearDragOver);
         return () => {
             unsub1();
             unsub2();
+            document.removeEventListener("dragend", clearDragOver);
         };
     });
 
@@ -472,6 +477,36 @@
         $reorderTasksMutation.mutate({ listId: selectedListId, taskIds });
     }
 
+    /** サイドバーのリストへのタスクD&D移動（楽観的更新 + 失敗時ロールバック） */
+    async function handleTaskDropToList(taskId: number, targetListId: number) {
+        if (!selectedListId || targetListId === selectedListId) return;
+        dragOverListId = null;
+
+        // 楽観的更新: 現在のリストのキャッシュからタスクを除去
+        queryClient.setQueryData(
+            ["tasks", selectedListId, showType],
+            (old: GetTasksResult | undefined) => {
+                if (!old || !("data" in old)) return old;
+                return {
+                    ...old,
+                    data: old.data.filter((t) => t.id !== taskId),
+                };
+            },
+        );
+
+        try {
+            await $updateTaskMutation.mutateAsync({
+                listId: selectedListId,
+                taskId,
+                move_to: targetListId,
+                keep_order: false,
+            });
+        } catch {
+            // 失敗時はキャッシュを再取得してロールバック
+            queryClient.invalidateQueries({ queryKey: ["tasks"] });
+        }
+    }
+
     /** 検索結果のタスクをクリックしてリストに遷移 */
     function goToSearchResult(listId: number) {
         searchQuery = "";
@@ -541,6 +576,7 @@
         {isLoading}
         {mobileView}
         {openMenuId}
+        {dragOverListId}
         bind:addListTitle
         onSelect={selectList}
         onToggleMenu={(listId) => {
@@ -551,6 +587,8 @@
         onUnarchive={unarchiveList}
         onDelete={deleteList}
         onAddList={addList}
+        onTaskDragOver={(listId) => (dragOverListId = listId)}
+        onTaskDrop={handleTaskDropToList}
     />
 
     <!-- メインコンテンツ: 選択リストのタスク or 検索結果 -->

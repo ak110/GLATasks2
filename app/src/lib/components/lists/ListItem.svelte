@@ -9,33 +9,53 @@
         list: ListInfo;
         isSelected: boolean;
         openMenuId: number | null;
+        isDragOver?: boolean;
         onSelect: (listId: number) => void;
         onToggleMenu: (listId: number) => void;
         onRename: (listId: number, currentTitle: string) => void;
         onArchive: (listId: number) => void;
         onUnarchive: (listId: number) => void;
         onDelete: (listId: number) => void;
+        onTaskDragOver?: () => void;
+        onTaskDrop?: (taskId: number) => void;
     };
 
     let {
         list,
         isSelected,
         openMenuId,
+        isDragOver = false,
         onSelect,
         onToggleMenu,
         onRename,
         onArchive,
         onUnarchive,
         onDelete,
+        onTaskDragOver,
+        onTaskDrop,
     }: Props = $props();
 </script>
 
 <div
     class="group flex items-center border-b border-gray-200 dark:border-gray-700 dark:text-gray-100 {isSelected
         ? 'bg-blue-50 dark:bg-blue-900/30'
+        : ''} {isDragOver
+        ? 'bg-blue-50 ring-2 ring-blue-400 ring-inset dark:bg-blue-900/30 dark:ring-blue-500'
         : ''}"
     data-testid="list-item"
     role="listitem"
+    ondragover={(e) => {
+        if (e.dataTransfer?.types.includes("application/x-task-id")) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "move";
+            onTaskDragOver?.();
+        }
+    }}
+    ondrop={(e) => {
+        e.preventDefault();
+        const taskId = Number(e.dataTransfer?.getData("application/x-task-id"));
+        if (taskId) onTaskDrop?.(taskId);
+    }}
 >
     <button
         class="min-w-0 flex-1 cursor-pointer truncate px-4 py-2.5 text-left"
