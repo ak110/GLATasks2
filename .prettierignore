@@ -3,3 +3,4 @@ app/build/
 .cache/
 node_modules/
 pnpm-lock.yaml
+docs/

@@ -1,4 +1,7 @@
-# 開発手順
+---
+title: 開発手順
+description: 開発環境の構築、テスト、CI/CD、リリース手順
+---
 
 ## 作業ディレクトリ
 
@@ -200,3 +203,27 @@ gh workflow run release.yaml --field="bump=メジャーバージョンアップ"
 <https://github.com/ak110/GLATasks/actions> で状況を確認できる。
 
 リリース作成後、deploy.yaml が自動的にトリガーされ本番デプロイが実行される。詳細は [CI/CD](#cicd) セクションを参照。
+
+## ドキュメントサイト
+
+[Starlight (Astro)](https://starlight.astro.build/) を使用。`docs/` ディレクトリが Starlight プロジェクト、`docs/src/content/docs/` にドキュメントの Markdown ファイルを配置。
+
+### ローカルプレビュー
+
+```bash
+make docs
+```
+
+`http://localhost:4321/GLATasks/` でプレビューできる。
+
+### デプロイ
+
+master への push 時に `docs/` 配下の変更があれば `docs.yaml` ワークフローが自動実行され、GitHub Pages にデプロイされる。
+
+### GitHub Pages の初期設定
+
+GitHub Pages のソースを GitHub Actions に設定する:
+
+```bash
+gh api repos/ak110/GLATasks/pages -X POST -f build_type=workflow
+```

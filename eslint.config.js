@@ -29,6 +29,7 @@ export default [
       "app/tests/**",
       "node_modules/**",
       ".cache/**",
+      "docs/**",
     ],
   },
 ];

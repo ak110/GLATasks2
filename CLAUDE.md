@@ -5,6 +5,6 @@
 ## 関連ドキュメント
 
 - @README.md
-- @docs/architecture.md
-- @docs/coding-style.md
-- @docs/development.md
+- @docs/src/content/docs/development/architecture.md
+- @docs/src/content/docs/development/coding-style.md
+- @docs/src/content/docs/development/development.md
