@@ -1,26 +1,87 @@
 ---
 title: はじめに
-description: GLATasks のセットアップと基本的な使い方
+description: GLATasks の概要と機能紹介
 ---
 
-## 技術スタック
+GLATasks は、タスクメモ管理とカウントダウンタイマーを統合した Web アプリ。自前のサーバーにデプロイして利用する。
 
-SvelteKit + Drizzle ORM + MariaDB + nginx
+## 主な機能
 
-詳細は[アーキテクチャ](/GLATasks/development/architecture/)を参照。
+### タスク管理
 
-## ローカル起動
+- 複数のリストでタスクを分類・整理
+- タスクの追加・編集・完了・削除
+- ドラッグ＆ドロップによる並び替えやリスト間移動
+- 全文検索（`/` キーでフォーカス）
+- キーボードショートカット（`N` でタスク追加、`/` で検索）
 
-```bash
-make deploy
-```
+### カウントダウンタイマー
 
-## 停止
+- 複数タイマーの同時実行
+- カウントダウンモード（残り時間を指定）とアラームモード（目標時刻を指定）
+- ボタンで時間の延長・短縮
+- タイマー完了時のビープ音・ブラウザ通知
+
+### リアルタイム同期
+
+- 複数の端末・タブ間で変更が即座に反映（SSE による同期）
+- 他端末で更新されたタスクには青丸マークで通知
+
+### テーマ
+
+- ライト / ダーク / システム連動の3段階テーマ切り替え
+
+### マルチプラットフォーム
+
+- PWA としてホーム画面に追加可能
+- [Chrome 拡張機能](/GLATasks/guide/chrome-extension/)で Web ページをワンクリック保存
+- [Android 共有メニュー](/GLATasks/guide/android-share/)から直接タスク追加
+
+## デプロイ
+
+### 前提条件
+
+- Docker / Docker Compose がインストールされたサーバー
+- HTTPS 環境（リバースプロキシ等）
+
+### 手順
+
+1. リポジトリをクローン
+
+   ```bash
+   git clone https://github.com/ak110/GLATasks.git
+   cd GLATasks
+   ```
+
+2. `.env` を作成（`.env-example` を参考に）
+
+   ```bash
+   cp .env-example .env
+   ```
+
+   `DATA_DIR` にデータ保存先ディレクトリのパスを設定する。`COMPOSE_PROFILE` は `production` を推奨。
+
+3. 起動
+
+   ```bash
+   make deploy
+   ```
+
+4. HTTPS でアクセスできるようリバースプロキシを設定する。設定例は[アーキテクチャの外部リバースプロキシ設定](/GLATasks/development/architecture/#外部リバースプロキシ設定)を参照。
+
+5. ブラウザでアクセスし、ユーザー登録してログインする。
+
+### 停止
 
 ```bash
 make stop
 ```
 
-## 本番デプロイ
+### 更新
 
-GitHub Actions 経由で自動デプロイされる。詳細は[開発手順の CI/CD セクション](/GLATasks/development/development/#cicd)を参照。
+最新版にアップデートする場合:
+
+```bash
+git pull
+make deploy
+```
